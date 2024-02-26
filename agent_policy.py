@@ -37,8 +37,8 @@ class AgentPolicy(nn.Module):
         self.optimizer_class = th.optim.Adam
         self.optimizer_kwargs = {'eps': 1e-5}
 
-        features_extractor_class = load_entry_point(features_extractor_entry_point)
-        self.features_extractor = features_extractor_class(observation_space, **features_extractor_kwargs)
+        features_extractor_class = load_entry_point(features_extractor_entry_point)  # Define o modelo do agente que será usado
+        self.features_extractor = features_extractor_class(observation_space, **features_extractor_kwargs)  # Cria o modelo seguindo as configurações
 
         distribution_class = load_entry_point(distribution_entry_point)
         self.action_dist = distribution_class(int(np.prod(action_space.shape)), **distribution_kwargs)
@@ -72,7 +72,7 @@ class AgentPolicy(nn.Module):
 
         self.policy_head = nn.Sequential(*policy_net).to(self.device)
         # mu->alpha/mean, sigma->beta/log_std (nn.Module, nn.Parameter)
-        self.dist_mu, self.dist_sigma = self.action_dist.proba_distribution_net(last_layer_dim_pi)
+        self.dist_mu, self.dist_sigma = self.action_dist.proba_distribution_net(last_layer_dim_pi)  # Modelos para pegar a média e o desvio padrão das ações
 
         last_layer_dim_vf = self.features_extractor.features_dim
 

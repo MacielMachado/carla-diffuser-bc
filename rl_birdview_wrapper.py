@@ -31,16 +31,16 @@ eval_num_zombie_walkers = {
 
 class RlBirdviewWrapper(gym.Wrapper):
     def __init__(self, env):
-        self._ev_id = list(env._obs_configs.keys())[0]
+        self._ev_id = list(env._obs_configs.keys())[0]  # Hero mode gives birdview, central_rgb, control, gnss, left_rgb, right_rgb, route_plan, speed, velocity
         self._render_dict = {}
 
         observation_space = {}
         observation_space['birdview'] = env.observation_space[self._ev_id]['birdview']['masks']
-        observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)
+        observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # We create this new observation dimension
 
         env.observation_space = gym.spaces.Dict(**observation_space)
 
-        env.action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)
+        env.action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)  # Define action dimensionality
 
         super(RlBirdviewWrapper, self).__init__(env)
 

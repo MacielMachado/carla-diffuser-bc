@@ -150,31 +150,31 @@ def env_maker():
     return env
 
 if __name__ == '__main__':
-    env = SubprocVecEnv([env_maker])
+    env = SubprocVecEnv([env_maker])  # Configuração do ambiente
 
     resume_last_train = False
 
     observation_space = {}
-    observation_space['birdview'] = gym.spaces.Box(low=0, high=255, shape=(3, 192, 192), dtype=np.uint8)
-    observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)
-    observation_space = gym.spaces.Dict(**observation_space)
+    observation_space['birdview'] = gym.spaces.Box(low=0, high=255, shape=(3, 192, 192), dtype=np.uint8)  # Define o tipo de dado que tará uma dimensão
+    observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # Define o tipo de dimensão que terá o estado
+    observation_space = gym.spaces.Dict(**observation_space)  # Cria um espaço de observação
 
-    action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)
+    action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)  # Define o espaço de ação
 
     # network
     policy_kwargs = {
         'observation_space': observation_space,
         'action_space': action_space,
         'policy_head_arch': [256, 256],
-        'features_extractor_entry_point': 'torch_layers:XtMaCNN',
+        'features_extractor_entry_point': 'torch_layers:XtMaCNN',  # Escolhe o modelo que irá usar
         'features_extractor_kwargs': {'states_neurons': [256,256]},
         'distribution_entry_point': 'distributions:BetaDistribution',
     }
 
     device = 'cuda'
 
-    policy = AgentPolicy(**policy_kwargs)
-    policy.to(device)
+    policy = AgentPolicy(**policy_kwargs)  # Define a arquitetura da política do agente
+    policy.to(device)  # Joga a política para a GPU
 
     batch_size = 24
 
