@@ -1,13 +1,10 @@
-from data_collect import reward_configs, terminal_configs, obs_configs
 from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion
-from stable_baselines3.common.vec_env import SubprocVecEnv
-from rl_birdview_wrapper import RlBirdviewWrapper
+from data_preprocessing import DataHandler, CarlaCustomDataset
 from expert_dataset import ExpertDataset
-from carla_gym.envs import EndlessEnv
 from torchvision import transforms
+import torch.utils.data as data
 from tqdm import tqdm
 import numpy as np
-import carla
 import torch
 import wandb
 import gym
@@ -47,7 +44,7 @@ class Trainer():
         if self.run_wandb:
             self.config_wandb(project_name="Carla-Diffuser", name=self.name)
         dataload_train = self.prepare_dataset(self.expert_dataset)
-        x_dim, y_dim, state_dim = self.get_x_and_y_dim(dataload_train)
+        x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
         conv_model = self.create_conv_model(x_dim, y_dim)
         model = self.create_agent_model(conv_model, x_dim, y_dim)
         optim = self.create_optimizer(model)
@@ -80,27 +77,29 @@ class Trainer():
         return repo.head.object.hexsha
 
     def prepare_dataset(self, dataset):
-        gail_train_loader = torch.utils.data.DataLoader(
-            dataset,
-            batch_size=batch_size,
-            shuffle=True)
-
+        obs = DataHandler().preprocess_images(dataset, feature='birdview')
+        # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
+        state = np.array([np.array(ele[0]['state']) for ele in dataset])
+        actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
+        dataset = CarlaCustomDataset(obs, actions)
+        dataloader = data.DataLoader(dataset,
+                                     batch_size=self.batch_size,
+                                     shuffle=True)
         '''
         The datasets have keys with the following information: birdview,
         central_rgb, left_rgb, right_rgb, item_idx, done, action, state
         '''
-        return gail_train_loader
+        return dataloader
     
     def get_x_and_y_dim(self, dataset):
         '''
         '''
-        y_dim = tuple(next(iter(dataset))[0]['actions'].shape)[-1]
-        x_dim = tuple(np.transpose(next(iter(dataset))[0]['birdview'], [0, 2, 3, 1]).shape)[1:]
-        state_dim = tuple(next(iter(dataset))[0]['state'].shape)[-1]
-        return x_dim, y_dim, state_dim
+        y_dim = tuple(next(iter(dataset))[1].shape)[-1]
+        x_dim = tuple(next(iter(dataset))[0].shape)[1:]
+        return x_dim, y_dim
     
     def create_conv_model(self, x_dim, y_dim):
-        cnn_out_dim = 1152
+        cnn_out_dim = 4608
         if self.embedding == "Model_cnn_bc":
             return Model_cnn_bc(self.n_hidden, y_dim,
                                 embed_dim=self.embed_dim,
@@ -141,9 +140,8 @@ class Trainer():
             pbar = tqdm(dataload_train)
             loss_ep, n_batch = 0, 0
             for x_batch, y_batch in pbar:
-                birdview_tensor = torch.tensor(np.transpose(np.array(x_batch['birdview'][0]), (1, 2, 0)))
-                x_batch = birdview_tensor.type(torch.FloatTensor).to(self.device)
-                y_batch = y_batch[0].type(torch.FloatTensor).to(self.device)
+                x_batch = x_batch.type(torch.FloatTensor).to(self.device)
+                y_batch = y_batch.type(torch.FloatTensor).to(self.device)
                 loss = model.loss_on_batch(x_batch, y_batch)
                 optim.zero_grad()
                 loss.backward()
@@ -160,9 +158,8 @@ class Trainer():
                     # log metrics to wandb
                     wandb.log({"loss": loss_ep/n_batch,
                                 "lr": lr_decay,
-                                "left_action_MSE": action_MSE[0],
-                                "acceleration_action_MSE": action_MSE[1],
-                                "right_action_MSE": action_MSE[2]})
+                                "steering_MSE": action_MSE[0],
+                                "acceleration_MSE": action_MSE[1]})
                         
                     results_ep.append(loss_ep / n_batch)
 
@@ -192,23 +189,14 @@ def extract_action_mse(y, y_hat):
     return mse
 
 
-def env_maker():
-    env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                    terminal_configs=terminal_configs, host='localhost', port=2000,
-                    seed=2021, no_rendering=True, **env_configs)
-    env = RlBirdviewWrapper(env)
-    return env
-
-
 if __name__ == '__main__':
-    env = SubprocVecEnv([env_maker])  # Create and set the env up
     resume_last_train = False
     observation_space = {}
     observation_space['birdview'] = gym.spaces.Box(low=0, high=255, shape=(3, 192, 192), dtype=np.uint8)  # Define o tipo de dado que tará uma dimensão
     observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # Define o tipo de dimensão que terá o estado
     observation_space = gym.spaces.Dict(**observation_space)  # Cria um espaço de observação
     action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)  # Define o espaço de ação
-    device = 'cuda'
+    device = 'cpu'
     batch_size = 24
 
     gail_train_loader = torch.utils.data.DataLoader(
@@ -225,7 +213,7 @@ if __name__ == '__main__':
 
     Trainer(n_epoch=750,
             lrate=0.0001,
-            device='cuda', 
+            device='cpu', 
             n_hidden=128,
             batch_size=32,
             n_T=20,
