@@ -9,6 +9,8 @@ import torch
 import wandb
 import gym
 import git
+import os
+
 
 class Trainer():
     def __init__(self, n_epoch, lrate, device, n_hidden, batch_size, n_T,
@@ -165,13 +167,17 @@ class Trainer():
 
             if ep in [1, 20, 40, 80, 150, 250, 500, 600, 749]:
                 name=f'model_novo_ep_{ep}'
-                self.save_model(model, name, ep)
+                self.save_model(model, ep)
 
         if self.run_wandb:
             wandb.finish()
         
         return model
 
+
+    def save_model(self, model, ep=''):
+        os.makedirs(os.getcwd()+'/model_pytorch/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
