@@ -3,7 +3,7 @@ import numpy as np
 import tqdm
 import torch as th
 from pathlib import Path
-import wandb
+# import # wandb
 import gym
 
 from expert_dataset import ExpertDataset
@@ -34,9 +34,9 @@ def learn_bc(policy, device, expert_loader, eval_loader, env, resume_last_train)
     if resume_last_train:
         with open(last_checkpoint_path, 'r') as f:
             wb_run_path = f.read()
-        api = wandb.Api()
-        wandb_run = api.run(wb_run_path)
-        wandb_run_id = wandb_run.id
+        # api = # wandb.Api()
+        # wandb_run = api.run(wb_run_path)
+        # wandb_run_id = # wandb_run.id
         ckpt_path = (ckpt_dir / 'ckpt_latest.pth').as_posix()
         saved_variables = th.load(ckpt_path, map_location='cuda')
         train_kwargs = saved_variables['train_init_kwargs']
@@ -44,11 +44,11 @@ def learn_bc(policy, device, expert_loader, eval_loader, env, resume_last_train)
         i_steps = train_kwargs['i_steps']
 
         policy.load_state_dict(saved_variables['policy_state_dict'])
-        wandb.init(project='gail-carla2', id=wandb_run_id, resume='must')
-    else:
-        run = wandb.init(project='gail-carla2', reinit=True)
-        with open(last_checkpoint_path, 'w') as log_file:
-            log_file.write(wandb.run.path)
+        # # wandb.init(project='gail-carla2', id=# wandb_run_id, resume='must')
+    # else:
+        # run = # wandb.init(project='gail-carla2', reinit=True)
+        # with open(last_checkpoint_path, 'w') as log_file:
+            # log_file.write(# wandb.run.path)
         start_ep = 0
         i_steps = 0
 
@@ -109,17 +109,17 @@ def learn_bc(policy, device, expert_loader, eval_loader, env, resume_last_train)
         
         loss = total_loss / i_batch
         eval_loss = total_eval_loss / i_eval_batch
-        wandb.log({
-            'loss': loss,
-            'eval_loss': eval_loss,
-        }, step=i_steps)
+        # wandb.log({
+        #     'loss': loss,
+        #     'eval_loss': eval_loss,
+        # }, step=i_steps)
 
         if i_steps - steps_last_eval > eval_step:
             eval_video_path = (video_path / f'bc_eval_{i_steps}.mp4').as_posix()
             avg_ep_stat, avg_route_completion, ep_events = evaluate_policy(env, policy, eval_video_path)
             env.reset()
-            wandb.log(avg_ep_stat, step=i_steps)
-            wandb.log(avg_route_completion, step=i_steps)
+            # wandb.log(avg_ep_stat, step=i_steps)
+            # wandb.log(avg_route_completion, step=i_steps)
             steps_last_eval = i_steps
 
         if min_eval_loss > eval_loss:
@@ -138,7 +138,7 @@ def learn_bc(policy, device, expert_loader, eval_loader, env, resume_last_train)
         th.save({'policy_state_dict': policy.state_dict(),
                  'train_init_kwargs': train_init_kwargs},
                 ckpt_path)
-        wandb.save(f'./{ckpt_path}')
+        # wandb.save(f'./{ckpt_path}')
     run = run.finish()
 
 

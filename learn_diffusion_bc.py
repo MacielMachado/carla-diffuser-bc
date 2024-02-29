@@ -230,7 +230,7 @@ if __name__ == '__main__':
             guide_w=0.0,
             betas=(1e-4, 0.02),
             dataset_path='gail_experts',
-            run_wandb=True,
+            run_wandb=False,
             record_run=True,
             expert_dataset=ExpertDataset('gail_experts', n_routes=1, n_eps=1),
             name='gail_experts_nroutes1_neps1',

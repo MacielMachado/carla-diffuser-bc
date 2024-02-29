@@ -44,7 +44,7 @@ class RlBirdviewWrapper(gym.Wrapper):
 
         super(RlBirdviewWrapper, self).__init__(env)
 
-        self.eval_mode = False
+        self.eval_mode = True
 
     def reset(self):
         if self.eval_mode:
@@ -106,25 +106,30 @@ class RlBirdviewWrapper(gym.Wrapper):
         }
         return obs, reward, done, info
 
-    def render(self, mode='human'):
+    def render(self, mode='human', diff=True):
         '''
         train render: used in train_rl.py
         '''
+        if diff:
+            self.action_log_probs = [0.0]
+            self.action_mu = [0.0]
+            self.action_sigma = [0.0]
         self._render_dict['action_log_probs'] = self.action_log_probs
         self._render_dict['action_mu'] = self.action_mu
         self._render_dict['action_sigma'] = self.action_sigma
-        return self.im_render(self._render_dict)
+        return self.im_render(self._render_dict, diff=diff)
 
     @staticmethod
-    def im_render(render_dict):
+    def im_render(render_dict, diff=True):
         im_birdview = render_dict['im_render']
         h, w, c = im_birdview.shape
         im = np.zeros([h, w*2, c], dtype=np.uint8)
         im[:h, :w] = im_birdview
 
-        action_str = np.array2string(render_dict['action'], precision=2, separator=',', suppress_small=True)
-        mu_str = np.array2string(render_dict['action_mu'], precision=2, separator=',', suppress_small=True)
-        sigma_str = np.array2string(render_dict['action_sigma'], precision=2, separator=',', suppress_small=True)
+        if not diff:
+            action_str = np.array2string(render_dict['action'], precision=2, separator=',', suppress_small=True)
+            mu_str = np.array2string(render_dict['action_mu'], precision=2, separator=',', suppress_small=True)
+            sigma_str = np.array2string(render_dict['action_sigma'], precision=2, separator=',', suppress_small=True)
         state_str = np.array2string(render_dict['obs']['state'], precision=2, separator=',', suppress_small=True)
 
         txt_t = f'step:{render_dict["timestamp"]["step"]:5}, frame:{render_dict["timestamp"]["frame"]:5}'
@@ -132,8 +137,9 @@ class RlBirdviewWrapper(gym.Wrapper):
         txt_2 = f's{state_str}'
         im = cv2.putText(im, txt_2, (3, 36), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), 1)
 
-        txt_3 = f'a{mu_str} b{sigma_str}'
-        im = cv2.putText(im, txt_3, (w, 12), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), 1)
+        if not diff:
+            txt_3 = f'a{mu_str} b{sigma_str}'
+            im = cv2.putText(im, txt_3, (w, 12), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), 1)
         for i, txt in enumerate(render_dict['reward_debug']['debug_texts'] +
                                 render_dict['terminal_debug']['debug_texts']):
             im = cv2.putText(im, txt, (w, (i+2)*12), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), 1)

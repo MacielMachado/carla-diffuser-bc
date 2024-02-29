@@ -89,8 +89,8 @@ class DataHandler():
 
         return stacked_images
     
-    def __preprocess_birdview(self, images_array):
-        obs = np.array([np.array(ele[0]['birdview']) for ele in images_array])
+    def __preprocess_birdview(self, images_array, eval=False):
+        obs = images_array['birdview'] if eval else np.array([np.array(ele[0]['birdview']) for ele in images_array])
         obs = np.transpose(obs, (0, 2, 3, 1))
         obs = DataHandler().to_greyscale(obs)
         obs = DataHandler().normalizing(obs)
@@ -103,9 +103,9 @@ class DataHandler():
         images = DataHandler().stack_with_previous(images)
         return images
     
-    def preprocess_images(self, images_array, feature: str):
+    def preprocess_images(self, images_array, feature: str, eval=False):
         if feature == 'birdview':
-            return self.__preprocess_birdview(images_array)
+            return self.__preprocess_birdview(images_array, eval)
         elif feature == 'human':
             return self.__preprocess_human_images(images_array)
         raise NotImplementedError
