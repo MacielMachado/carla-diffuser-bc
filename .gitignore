@@ -7,5 +7,6 @@ wandb
 *.pyc
 screenlog.0
 *.png
+*.mp4
 
 model_pytorch/

@@ -104,7 +104,12 @@ class RlBirdviewWrapper(gym.Wrapper):
             'reward_debug': info['reward_debug'],
             'terminal_debug': info['terminal_debug']
         }
+        info['left_rgb'] = obs['left_rgb']
+        info['central_rgb'] = obs['central_rgb']
+        info['right_rgb'] = obs['right_rgb']
+
         return obs, reward, done, info
+        # return obs, '', '', ''
 
     def render(self, mode='human', diff=True):
         '''

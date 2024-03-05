@@ -42,17 +42,11 @@ def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
         list_render.append(env.render(mode='rgb_array'))
         n_step += 1
         env_done |= done
+        
+        print(f'n_step: {n_step}')
 
         for i in np.where(done)[0]:
-            if not info[i]['timeout']:
-                ep_stat_buffer.append(info[i]['episode_stat'])
-                if n_step < min_eval_steps or not np.all(env_done):
-                    route_completion_buffer.append(info[i]['route_completion'])
-                ep_events[f'venv_{i}'].append(info[i]['episode_event'])
-                n_timeout += int(info[i]['timeout'])
-
-    for ep_info in info:
-        route_completion_buffer.append(ep_info['route_completion'])
+            break
 
     # conda install x264=='1!152.20180717' ffmpeg=4.0.2 -c conda-forge
     encoder = ImageEncoder(video_path, list_render[0].shape, 30, 30)
@@ -60,25 +54,12 @@ def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
         encoder.capture_frame(im)
     encoder.close()
 
-    # avg_ep_stat = get_avg_ep_stat(ep_stat_buffer, prefix='eval/')
-    # avg_route_completion = get_avg_route_completion(route_completion_buffer, prefix='eval/')
-    avg_ep_stat['eval/eval_timeout'] = n_timeout
-
-    duration = time.time() - t0
-    avg_ep_stat['time/t_eval'] = duration
-    avg_ep_stat['time/fps_eval'] = n_step * env.num_envs / duration
-
-    for i in range(env.num_envs):
-        env.set_attr('eval_mode', False, indices=i)
-    obs = env.reset()
-    return avg_ep_stat, avg_route_completion, ep_events
-
-
-
 def env_maker():
+
     env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
                     terminal_configs=terminal_configs, host='localhost', port=2000,
-                    seed=2021, no_rendering=True, **env_configs)
+                    seed=np.random.randint(1, 3001), 
+                    no_rendering=True, **env_configs)
     env = RlBirdviewWrapper(env)
     return env
 
@@ -86,9 +67,6 @@ def env_maker():
 if __name__ == '__main__':
     diff_bc_video = 'diff_bc_video'
     os.makedirs(diff_bc_video, exist_ok=True)
-
-    eval_video_path = diff_bc_video+'/diff_bc_eval.mp4'
-    env = SubprocVecEnv([env_maker])
 
     device = 'cpu'
     net_type = 'transformer'
@@ -118,7 +96,11 @@ if __name__ == '__main__':
     model_path = 'model_pytorch/gail_experts_nroutes1_neps1_a51b_ep_20.pkl'
     model.load_state_dict(torch.load(model_path))
 
-    avg_ep_stat, avg_route_completion, ep_events = evaluate_policy(env=env,
-                                                                   model=model,
-                                                                   video_path=eval_video_path,
-                                                                   device='cpu')
+    for i in range(10):
+        eval_video_path = diff_bc_video+f'/diff_bc_eval_150_{i}.mp4'
+        env = SubprocVecEnv([env_maker])
+        avg_ep_stat, avg_route_completion, ep_events = evaluate_policy(
+            env=env,
+            model=model,
+            video_path=eval_video_path,
+            device='cpu')
