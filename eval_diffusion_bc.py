@@ -21,7 +21,6 @@ def handle_obs(obs):
     obs = DataHandler().preprocess_images(obs, feature='birdview', eval=True)
     return obs
 
-
 def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
     model = model.eval()
     t0 = time.time()
@@ -99,7 +98,7 @@ if __name__ == '__main__':
     for i in range(10):
         eval_video_path = diff_bc_video+f'/diff_bc_eval_150_{i}.mp4'
         env = SubprocVecEnv([env_maker])
-        avg_ep_stat, avg_route_completion, ep_events = evaluate_policy(
+        evaluate_policy(
             env=env,
             model=model,
             video_path=eval_video_path,
