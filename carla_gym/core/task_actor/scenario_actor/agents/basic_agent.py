@@ -50,8 +50,9 @@ class BasicAgent(object):
             speed = np.linalg.norm(vel)
 
             throttle, steer, brake = self._local_planner.run_step(route_plan, transform, forward_speed)
-
-        return np.array([throttle, steer, brake], dtype=np.float64)
+        if brake > 0:
+            throttle = -1.0 * brake
+        return np.array([throttle, steer], dtype=np.float64)
 
     def _is_vehicle_hazard(self, ev_transform, ev_id, vehicle_list):
         ego_vehicle_location = ev_transform.location

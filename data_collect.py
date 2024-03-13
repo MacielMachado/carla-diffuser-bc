@@ -8,6 +8,7 @@ from pathlib import Path
 
 from carla_gym.envs import LeaderboardEnv
 from carla_gym.core.task_actor.scenario_actor.agents.constant_speed_agent import ConstantSpeedAgent
+from carla_gym.core.task_actor.scenario_actor.agents.basic_agent import BasicAgent
 from carla_gym.utils.expert_noiser import ExpertNoiser
 from rl_birdview_wrapper import RlBirdviewWrapper
 
@@ -48,7 +49,7 @@ obs_configs = {
             'width_in_pixels': 192,
             'pixels_ev_to_bottom': 40,
             'pixels_per_meter': 5.0,
-            'history_idx': [-16, -11, -6, -1],
+            'history_idx': [-16, -6, -1],
             'scale_bbox': True,
             'scale_mask_col': 1.0
         },
@@ -107,7 +108,7 @@ if __name__ == '__main__':
             lateral_noiser = ExpertNoiser('Spike', frequency=25, intensity=4, min_noise_time_amount=0.5)
 
             obs = env.reset()
-            basic_agent = ConstantSpeedAgent(env.env._ev_handler.ego_vehicles['hero'], None, 6.0)
+            basic_agent = BasicAgent(env.env._ev_handler.ego_vehicles['hero'], None, 6.0)
             ep_dict = {}
             ep_dict['done'] = []
             ep_dict['actions'] = []
@@ -121,7 +122,7 @@ if __name__ == '__main__':
                 action = basic_agent.get_action()
                 ep_dict['actions'].append([action[0], action[1]])
                 birdview = obs['birdview']
-                for i_mask in range(1):
+                for i_mask in range(2):
                     birdview_mask = birdview[i_mask * 3: i_mask * 3 + 3]
                     birdview_mask = np.transpose(birdview_mask, [1, 2, 0]).astype(np.uint8)
                     Image.fromarray(birdview_mask).save(episode_dir / 'birdview_masks' / '{:0>4d}_{:0>2d}.png'.format(i_step, i_mask))

@@ -21,6 +21,10 @@ class DataHandler():
                np.array(array[int((1-frac) * length):])
 
     def to_greyscale(self, imgs):
+        if imgs.shape[-1] == 6:
+            birdview = np.dot(imgs[:,:,:,:3], [0.2989, 0.5870, 0.1140])
+            semaphore = np.dot(imgs[:,:,:,3:], [0.2989, 0.5870, 0.1140])
+            return np.stack((birdview, semaphore),axis=3)
         return np.dot(imgs, [0.2989, 0.5870, 0.1140])
         
     def normalizing(self, imgs):
@@ -67,7 +71,8 @@ class DataHandler():
         return canny
 
     def stack_with_previous(self, images_array):
-        images_array = np.expand_dims(images_array, axis=-1)
+        if len(images_array.shape) == 3:
+            images_array = np.expand_dims(images_array, axis=-1)
         batch_size, height, width, channels = images_array.shape
         stacked_images = np.zeros((batch_size, height, width, channels * 4), dtype=images_array.dtype)
 

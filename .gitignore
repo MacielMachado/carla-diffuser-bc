@@ -1,6 +1,7 @@
 .venv
 video
-gail_experts
+gail_experts_basic
+gail_experts_semaphores
 ckpt
 outputs
 wandb
@@ -8,5 +9,7 @@ wandb
 screenlog.0
 *.png
 *.mp4
+*.txt
+*.jpg
 
 model_pytorch/

@@ -7,6 +7,7 @@ import time
 import torch as th
 import numpy as np
 import pandas as pd
+import os
 
 from PIL import Image
 
@@ -51,10 +52,15 @@ class ExpertDataset(th.utils.data.Dataset):
             # Load only the first time, images in uint8 are supposed to be light
             ep_dir = self.dataset_path / 'route_{:0>2d}/ep_{:0>2d}'.format(route_idx, ep_idx)
             masks_list = []
-            for mask_index in range(1):
+            # semaphore_list = []
+            for mask_index in range(2):
                 mask_tensor = self.process_image(ep_dir / 'birdview_masks/{:0>4d}_{:0>2d}.png'.format(step_idx, mask_index))
+                semaphore = ep_dir / 'birdview_masks/{:0>4d}_{:0>2d}.png'.format(step_idx, mask_index+1)
+                semaphore_tensor = self.process_image(semaphore) if os.path.exists(semaphore) else []
+                # semaphore_list.append(semaphore_tensor)
                 masks_list.append(mask_tensor)
             birdview = th.cat(masks_list)
+            # semaphores = th.cat(semaphore_list)
 
             central_rgb = self.process_image(ep_dir / 'central_rgb/{:0>4d}.png'.format(step_idx))
             left_rgb = self.process_image(ep_dir / 'left_rgb/{:0>4d}.png'.format(step_idx))
@@ -62,6 +68,7 @@ class ExpertDataset(th.utils.data.Dataset):
 
             obs_dict = {
                 'birdview': birdview,
+                # 'semaphore': semaphores,
                 'central_rgb': central_rgb,
                 'left_rgb': left_rgb,
                 'right_rgb': right_rgb,
