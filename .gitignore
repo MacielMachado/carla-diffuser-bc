@@ -11,5 +11,8 @@ screenlog.0
 *.mp4
 *.txt
 *.jpg
+*.npy
+*.pth
+
 
 model_pytorch/

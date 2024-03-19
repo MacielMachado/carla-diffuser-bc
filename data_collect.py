@@ -30,7 +30,7 @@ terminal_configs = {
 env_configs = {
     'carla_map': 'Town01',
     'weather_group': 'dynamic_1.0',
-    'routes_group': 'train'
+    'routes_group': 'eval'
 }
 
 obs_configs = {
@@ -92,7 +92,7 @@ if __name__ == '__main__':
                          terminal_configs=terminal_configs, host="localhost", port=2000,
                          seed=2021, no_rendering=False, **env_configs)
     env = RlBirdviewWrapper(env)
-    expert_file_dir = Path('gail_experts')
+    expert_file_dir = Path('gail_experts_multi')
     expert_file_dir.mkdir(parents=True, exist_ok=True)
     # obs_metrics = ['control', 'vel_xy', 'linear_speed', 'vec', 'traj', 'cmd', 'command', 'state']
     for route_id in tqdm.tqdm(range(10)):
