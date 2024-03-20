@@ -49,7 +49,7 @@ obs_configs = {
             'width_in_pixels': 192,
             'pixels_ev_to_bottom': 40,
             'pixels_per_meter': 5.0,
-            'history_idx': [-16, -6, -1],
+            'history_idx': [-16, -11, -6, -1],
             'scale_bbox': True,
             'scale_mask_col': 1.0
         },
@@ -92,7 +92,7 @@ if __name__ == '__main__':
                          terminal_configs=terminal_configs, host="localhost", port=2000,
                          seed=2021, no_rendering=False, **env_configs)
     env = RlBirdviewWrapper(env)
-    expert_file_dir = Path('gail_experts_multi')
+    expert_file_dir = Path('gail_experts_multi_sempahore')
     expert_file_dir.mkdir(parents=True, exist_ok=True)
     # obs_metrics = ['control', 'vel_xy', 'linear_speed', 'vec', 'traj', 'cmd', 'command', 'state']
     for route_id in tqdm.tqdm(range(10)):
@@ -108,7 +108,7 @@ if __name__ == '__main__':
             lateral_noiser = ExpertNoiser('Spike', frequency=25, intensity=4, min_noise_time_amount=0.5)
 
             obs = env.reset()
-            basic_agent = BasicAgent(env.env._ev_handler.ego_vehicles['hero'], None, 6.0)
+            basic_agent = ConstantSpeedAgent(env.env._ev_handler.ego_vehicles['hero'], None, 6.0)
             ep_dict = {}
             ep_dict['done'] = []
             ep_dict['actions'] = []
