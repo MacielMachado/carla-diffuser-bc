@@ -202,7 +202,7 @@ if __name__ == '__main__':
     observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # Define o tipo de dimensão que terá o estado
     observation_space = gym.spaces.Dict(**observation_space)  # Cria um espaço de observação
     action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)  # Define o espaço de ação
-    device = 'cpu'
+    device = 'cuda'
     batch_size = 24
 
     gail_train_loader = torch.utils.data.DataLoader(
@@ -219,7 +219,7 @@ if __name__ == '__main__':
 
     Trainer(n_epoch=750,
             lrate=0.0001,
-            device='cpu', 
+            device='cuda', 
             n_hidden=128,
             batch_size=32,
             n_T=20,
