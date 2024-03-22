@@ -89,7 +89,7 @@ obs_configs = {
 
 if __name__ == '__main__':
     env = LeaderboardEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                         terminal_configs=terminal_configs, host="localhost", port=2000,
+                         terminal_configs=terminal_configs, host="localhost", port=2001,
                          seed=2021, no_rendering=False, **env_configs)
     env = RlBirdviewWrapper(env)
     expert_file_dir = Path('gail_experts_multi_sempahore')

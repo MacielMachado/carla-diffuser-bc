@@ -44,7 +44,7 @@ class TrainerSemaphores():
 
     def main(self):
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Semaphores",
+            self.config_wandb(project_name="Carla-Diffuser-Multi",
                               name=self.name)
         dataload_train = self.prepare_dataset(self.expert_dataset)
         x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
@@ -82,10 +82,7 @@ class TrainerSemaphores():
         return repo.head.object.hexsha
 
     def prepare_dataset(self, dataset):
-        obs_path = self.expert_dataset+'all_observations.pth'
-        obs = np.array(torch.load(obs_path))
-        obs = np.transpose(obs, (0,1,3,4,2))
-        obs = DataHandler().preprocess_images(obs, feature='front')
+        obs = DataHandler().preprocess_images(dataset, feature='birdview')
         # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
         state = np.array([np.array(ele[0]['state']) for ele in dataset])
         actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
@@ -98,6 +95,23 @@ class TrainerSemaphores():
         central_rgb, left_rgb, right_rgb, item_idx, done, action, state
         '''
         return dataloader
+    
+        # obs_path = self.expert_dataset+'all_observations.pth'
+        # obs = np.array(torch.load(obs_path))
+        # obs = np.transpose(obs, (0,1,3,4,2))
+        # obs = DataHandler().preprocess_images(obs, feature='front')
+        # # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
+        # state = np.array([np.array(ele[0]['state']) for ele in dataset])
+        # actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
+        # dataset = CarlaCustomDataset(obs, actions)
+        # dataloader = data.DataLoader(dataset,
+        #                              batch_size=self.batch_size,
+        #                              shuffle=True)
+        # '''
+        # The datasets have keys with the following information: birdview,
+        # central_rgb, left_rgb, right_rgb, item_idx, done, action, state
+        # '''
+        # return dataloader
     
     def get_x_and_y_dim(self, dataset):
         '''
@@ -181,8 +195,8 @@ class TrainerSemaphores():
         return model
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/sempahores/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/multi/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/multi/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 
 def extract_action_mse(y, y_hat):
@@ -232,10 +246,10 @@ if __name__ == '__main__':
         embed_dim=128,
         guide_w=0.0,
         betas=(1e-4, 0.02),
-        dataset_path='gail_experts_semaphores',
-        run_wandb=False,
-        record_run=False,
-        expert_dataset=dataset_path,
+        dataset_path='gail_experts_multi',
+        run_wandb=True,
+        record_run=True,
+        expert_dataset=ExpertDataset('gail_experts_multi', n_routes=1, n_eps=1),
         name='gail_experts_semaphores_nroutes1_neps1',
         param_search=False,
         embedding="Model_cnn_mlp",).main()

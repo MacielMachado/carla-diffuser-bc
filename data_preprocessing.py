@@ -1,3 +1,4 @@
+import os
 import cv2
 import math
 import torch
@@ -179,3 +180,94 @@ class DatasetHandler():
         indices = np.argpartition(rewards[:,1], -num_ele)[-num_ele:]
         highest_rewards = rewards[indices]
         return highest_rewards
+    
+
+class BirdViewMovieMaker():
+    def __init__(self, path):
+        self.path = path
+
+    def save_record(self):
+        # Define video properties
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Video format (check FourCC codes online)
+        fps = 24  # Frames per second
+        video_path = self.path + "video_output.mp4"  # Output video path
+
+        # Get image size from the first image
+        img_path = os.path.join(self.path, "0000_00.png")  # Assuming your images follow a naming convention
+        img = cv2.imread(img_path)
+        height, width, channels = img.shape
+
+        # Create video writer
+        video = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
+
+        # Loop through images and write to video
+        for ele in sorted(os.listdir(self.path)):  # Assuming images are in "images" folder
+            if ele[-6:-4] == '00':
+                img_path = self.path + ele
+                img = cv2.imread(img_path)
+                video.write(img)
+
+        # Release resources
+        video.release()
+        cv2.destroyAllWindows()
+
+        print("Video created successfully!")
+
+
+class FrontCameraMovieMaker():
+    def __init__(self, path):
+        self.path = path
+
+    def save_record(self):
+        # Define video properties
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Video format (check FourCC codes online)
+        fps = 24  # Frames per second
+        video_path = self.path + "video_output.mp4"  # Output video path
+
+        # Get image size from the first image
+        central_img_path = os.path.join(self.path, "central_rgb/0000.png")
+        left_img_path = os.path.join(self.path, "left_rgb/0000.png")
+        right_img_path = os.path.join(self.path, "right_rgb/0000.png")
+
+        central_img = cv2.imread(central_img_path)
+        left_img = cv2.imread(left_img_path)
+        right_img = cv2.imread(right_img_path)
+        height, central_width, channels = central_img.shape
+        _, left_width, _ = left_img.shape
+        _, right_width, _ = right_img.shape
+        width = left_width + central_width + right_width
+        img = np.hstack((left_img, central_img, right_img))
+
+        video = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
+
+        front_path = os.path.join(self.path, "central_rgb")
+        left_path = os.path.join(self.path, "left_rgb")
+        right_path = os.path.join(self.path, "right_rgb")
+
+        for ele in sorted(os.listdir(front_path)):
+            front_img = cv2.imread(os.path.join(front_path, ele))
+            left_img = cv2.imread(os.path.join(left_path, ele))
+            right_img = cv2.imread(os.path.join(right_path, ele))
+
+            img = np.hstack((left_img, front_img, right_img))
+            video.write(img)
+
+        video.release()
+        cv2.destroyAllWindows()
+
+        print("Video created successfully")
+
+
+if __name__ == '__main__':
+
+    path='gail_experts_multi_sempahore/'
+    for i in range(len(os.listdir(path))):
+        route_path = path + f'route_0{i}/ep_00/'
+        object = FrontCameraMovieMaker(path=route_path)
+        object.save_record()
+
+    # path='gail_experts_multi_sempahore/'
+    # for i in range(len(os.listdir(path))):
+    #     route_path = path + f'route_0{i}/ep_00/birdview_masks'
+    #     object = BirdViewMovieMaker(path=route_path)
+    #     object.save_record()

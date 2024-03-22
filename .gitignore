@@ -13,6 +13,7 @@ screenlog.0
 *.jpg
 *.npy
 *.pth
+*.avi
 
 
 model_pytorch/
