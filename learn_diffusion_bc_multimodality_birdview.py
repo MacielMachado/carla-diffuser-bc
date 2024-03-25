@@ -214,7 +214,7 @@ if __name__ == '__main__':
     observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # Define o tipo de dimensão que terá o estado
     observation_space = gym.spaces.Dict(**observation_space)  # Cria um espaço de observação
     action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)  # Define o espaço de ação
-    device = 'cpu'
+    device = 'cuda'
     batch_size = 24
 
     '''
@@ -236,7 +236,7 @@ if __name__ == '__main__':
     TrainerSemaphores(
         n_epoch=750,
         lrate=0.0001,
-        device='cpu', 
+        device='cuda', 
         n_hidden=128,
         batch_size=32,
         n_T=20,
@@ -249,7 +249,7 @@ if __name__ == '__main__':
         dataset_path='gail_experts_multi',
         run_wandb=True,
         record_run=True,
-        expert_dataset=ExpertDataset('gail_experts_multi', n_routes=1, n_eps=1),
+        expert_dataset=ExpertDataset('gail_experts_multi', n_routes=1, n_eps=1, semaphore=False),
         name='gail_experts_semaphores_nroutes1_neps1',
         param_search=False,
         embedding="Model_cnn_mlp",).main()

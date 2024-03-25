@@ -13,12 +13,13 @@ from PIL import Image
 
 
 class ExpertDataset(th.utils.data.Dataset):
-    def __init__(self, dataset_directory, n_routes=1, n_eps=1, route_start=0, ep_start=0):
+    def __init__(self, dataset_directory, n_routes=1, n_eps=1, route_start=0, ep_start=0, semaphore=False):
         self.dataset_path = Path(dataset_directory)
         self.length = 0
         self.get_idx = []
         self.trajs_states = []
         self.trajs_actions = []
+        self.semaphore = semaphore
 
         for route_idx in range(route_start, route_start + n_routes):
             for ep_idx in range(ep_start, ep_start + n_eps):
@@ -53,7 +54,8 @@ class ExpertDataset(th.utils.data.Dataset):
             ep_dir = self.dataset_path / 'route_{:0>2d}/ep_{:0>2d}'.format(route_idx, ep_idx)
             masks_list = []
             # semaphore_list = []
-            for mask_index in range(2):
+            mask_size = 2 if self.semaphore else 1
+            for mask_index in range(mask_size):
                 mask_tensor = self.process_image(ep_dir / 'birdview_masks/{:0>4d}_{:0>2d}.png'.format(step_idx, mask_index))
                 semaphore = ep_dir / 'birdview_masks/{:0>4d}_{:0>2d}.png'.format(step_idx, mask_index+1)
                 semaphore_tensor = self.process_image(semaphore) if os.path.exists(semaphore) else []
