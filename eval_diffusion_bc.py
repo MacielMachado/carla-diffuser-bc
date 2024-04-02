@@ -26,7 +26,8 @@ def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
     t0 = time.time()
     # for i in range(env.num_envs):
     #     env.set_attr('eval_mode', True, indices=1)
-    obs = handle_obs(env.reset())
+    obs = env.reset()
+    obs = handle_obs(obs)
     n_step = 0
     env_done = np.array([False]*env.num_envs)
     list_render = []
@@ -56,7 +57,7 @@ def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
 def env_maker():
 
     env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                    terminal_configs=terminal_configs, host='localhost', port=2000,
+                    terminal_configs=terminal_configs, host='localhost', port=2010,
                     seed=np.random.randint(1, 3001), 
                     no_rendering=True, **env_configs)
     env = RlBirdviewWrapper(env)
@@ -92,14 +93,14 @@ if __name__ == '__main__':
         drop_prob=0.0,
         guide_w=0.0,)
     
-    model_path = 'model_pytorch/gail_experts_nroutes1_neps1_a51b_ep_20.pkl'
+    model_path = 'model_pytorch/gail_experts_nroutes1_neps1_b842_ep_500.pkl'
     model.load_state_dict(torch.load(model_path))
 
     for i in range(10):
-        eval_video_path = diff_bc_video+f'/diff_bc_eval_150_{i}.mp4'
+        eval_video_path = diff_bc_video+f'/diff_bc_eval_500_{i}.mp4'
         env = SubprocVecEnv([env_maker])
         evaluate_policy(
             env=env,
             model=model,
             video_path=eval_video_path,
-            device='cpu')
+            device=device)

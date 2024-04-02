@@ -57,7 +57,7 @@ def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
 def env_maker():
 
     env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                    terminal_configs=terminal_configs, host='localhost', port=2000,
+                    terminal_configs=terminal_configs, host='localhost', port=2005,
                     seed=np.random.randint(1, 3001), 
                     no_rendering=True, **env_configs)
     env = RlBirdviewWrapper(env)
@@ -93,11 +93,11 @@ if __name__ == '__main__':
         drop_prob=0.0,
         guide_w=0.0,)
     
-    model_path = 'model_pytorch/multi/gail_experts_semaphores_nroutes1_neps1_a6bd_ep_80.pkl'
+    model_path = 'model_pytorch/multi/gail_experts_semaphores_nroutes1_neps1_c4c3_ep_749.pkl'
     model.load_state_dict(torch.load(model_path))
 
     for i in range(10):
-        eval_video_path = diff_bc_video+f'/diff_bc_eval_multi_80_{i}.mp4'
+        eval_video_path = diff_bc_video+f'/diff_bc_eval_multi_749_{i}.mp4'
         env = SubprocVecEnv([env_maker])
         evaluate_policy(
             env=env,

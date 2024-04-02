@@ -30,7 +30,13 @@ terminal_configs = {
 env_configs = {
     'carla_map': 'Town01',
     'weather_group': 'dynamic_1.0',
-    'routes_group': 'eval'
+    'routes_group': 'multi'
+}
+
+env_configs_default = {
+    'carla_map': 'Town02',
+    'weather_group': 'dynamic_1.0',
+    'routes_group': 'train'
 }
 
 obs_configs = {
@@ -89,13 +95,13 @@ obs_configs = {
 
 if __name__ == '__main__':
     env = LeaderboardEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                         terminal_configs=terminal_configs, host="localhost", port=2001,
+                         terminal_configs=terminal_configs, host="localhost", port=2021,
                          seed=2021, no_rendering=False, **env_configs)
     env = RlBirdviewWrapper(env)
-    expert_file_dir = Path('gail_experts_multi_sempahore')
+    expert_file_dir = Path('gail_experts_multi_novo')
     expert_file_dir.mkdir(parents=True, exist_ok=True)
     # obs_metrics = ['control', 'vel_xy', 'linear_speed', 'vec', 'traj', 'cmd', 'command', 'state']
-    for route_id in tqdm.tqdm(range(10)):
+    for route_id in tqdm.tqdm(range(30)):
         env.set_task_idx(route_id)
         for ep_id in range(1):
             episode_dir = expert_file_dir / ('route_%02d' % route_id) / ('ep_%02d' % ep_id)
@@ -122,7 +128,7 @@ if __name__ == '__main__':
                 action = basic_agent.get_action()
                 ep_dict['actions'].append([action[0], action[1]])
                 birdview = obs['birdview']
-                for i_mask in range(2):
+                for i_mask in range(1):
                     birdview_mask = birdview[i_mask * 3: i_mask * 3 + 3]
                     birdview_mask = np.transpose(birdview_mask, [1, 2, 0]).astype(np.uint8)
                     Image.fromarray(birdview_mask).save(episode_dir / 'birdview_masks' / '{:0>4d}_{:0>2d}.png'.format(i_step, i_mask))

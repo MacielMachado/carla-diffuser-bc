@@ -215,42 +215,65 @@ class BirdViewMovieMaker():
 
 
 class FrontCameraMovieMaker():
-    def __init__(self, path):
+    def __init__(self, path, name_index=''):
         self.path = path
+        self.name_index = name_index
 
     def save_record(self):
         # Define video properties
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Video format (check FourCC codes online)
         fps = 24  # Frames per second
-        video_path = self.path + "video_output.mp4"  # Output video path
+        video_path = os.path.join(self.path.split("/")[0],
+                                  "video_output_"+self.name_index+".mp4")  # Output video path
 
         # Get image size from the first image
         central_img_path = os.path.join(self.path, "central_rgb/0000.png")
         left_img_path = os.path.join(self.path, "left_rgb/0000.png")
         right_img_path = os.path.join(self.path, "right_rgb/0000.png")
+        birdview_img_path = os.path.join(self.path, "birdview_masks/0000_00.png")
 
-        central_img = cv2.imread(central_img_path)
-        left_img = cv2.imread(left_img_path)
-        right_img = cv2.imread(right_img_path)
+        central_img_old = cv2.imread(central_img_path)
+        left_img_old = cv2.imread(left_img_path)
+        right_img_old = cv2.imread(right_img_path)
+
+        central_img = np.zeros((192, central_img_old.shape[1], central_img_old.shape[2]))
+        central_img[:central_img_old.shape[0], :, :] = central_img_old
+        left_img = np.zeros((192, left_img_old.shape[1], left_img_old.shape[2]))
+        left_img[:left_img_old.shape[0], :, :] = left_img_old
+        right_img = np.zeros((192, right_img_old.shape[1], right_img_old.shape[2]))
+        right_img[:right_img_old.shape[0], :, :] = right_img_old
+
+        birdview_img = cv2.imread(birdview_img_path)
         height, central_width, channels = central_img.shape
+
         _, left_width, _ = left_img.shape
         _, right_width, _ = right_img.shape
-        width = left_width + central_width + right_width
-        img = np.hstack((left_img, central_img, right_img))
+        _, birdview_width, _ = birdview_img.shape
+        width = left_width + central_width + right_width + birdview_width
+        img = np.hstack((left_img, central_img, right_img, birdview_img))
 
         video = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
 
         front_path = os.path.join(self.path, "central_rgb")
         left_path = os.path.join(self.path, "left_rgb")
         right_path = os.path.join(self.path, "right_rgb")
+        birdview_path = os.path.join(self.path, "birdview_masks")
 
         for ele in sorted(os.listdir(front_path)):
-            front_img = cv2.imread(os.path.join(front_path, ele))
-            left_img = cv2.imread(os.path.join(left_path, ele))
-            right_img = cv2.imread(os.path.join(right_path, ele))
+            central_img_old = cv2.imread(os.path.join(front_path, ele))
+            left_img_old = cv2.imread(os.path.join(left_path, ele))
+            right_img_old = cv2.imread(os.path.join(right_path, ele))
+            birdview_img = cv2.imread(os.path.join(birdview_path, ele[:4]+'_00'+ele[-4:]))
 
-            img = np.hstack((left_img, front_img, right_img))
-            video.write(img)
+            central_img = np.zeros((192, central_img_old.shape[1], central_img_old.shape[2]))
+            central_img[:central_img_old.shape[0], :, :] = central_img_old
+            left_img = np.zeros((192, left_img_old.shape[1], left_img_old.shape[2]))
+            left_img[:left_img_old.shape[0], :, :] = left_img_old
+            right_img = np.zeros((192, right_img_old.shape[1], right_img_old.shape[2]))
+            right_img[:right_img_old.shape[0], :, :] = right_img_old
+
+            img = np.hstack((left_img, central_img, right_img, birdview_img))
+            video.write(cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_BGR2RGB))
 
         video.release()
         cv2.destroyAllWindows()
@@ -260,10 +283,14 @@ class FrontCameraMovieMaker():
 
 if __name__ == '__main__':
 
-    path='gail_experts_multi_sempahore/'
+    path='gail_experts_multi_novo/'
     for i in range(len(os.listdir(path))):
-        route_path = path + f'route_0{i}/ep_00/'
-        object = FrontCameraMovieMaker(path=route_path)
+        if i < 10:
+            index_str = "0"+str(i)
+        else:
+            index_str = str(i)
+        route_path = path + f'route_{index_str}/ep_00/'
+        object = FrontCameraMovieMaker(path=route_path, name_index=str(i))
         object.save_record()
 
     # path='gail_experts_multi_sempahore/'
