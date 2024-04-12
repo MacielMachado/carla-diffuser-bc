@@ -22,14 +22,15 @@ class LeaderboardEnv(CarlaMultiAgentEnv):
 
     @staticmethod
     def build_all_tasks(carla_map, weather_group, routes_group, routes_file):
-        assert carla_map in ['Town01', 'Town02', 'Town03', 'Town04', 'Town05', 'Town06']
+        assert carla_map in ['Town01', 'Town02', 'Town03', 'Town04', 'Town05', 'Town06', 'Town10']
         num_zombie_vehicles = {
             'Town01': 120,
             'Town02': 70,
             'Town03': 70,
             'Town04': 150,
             'Town05': 120,
-            'Town06': 120
+            'Town06': 120,
+            'Town10': 120
         }
         num_zombie_walkers = {
             'Town01': 120,
@@ -37,7 +38,8 @@ class LeaderboardEnv(CarlaMultiAgentEnv):
             'Town03': 70,
             'Town04': 80,
             'Town05': 120,
-            'Town06': 80
+            'Town06': 80,
+            'Town10': 80
         }
 
         # weather
@@ -61,6 +63,9 @@ class LeaderboardEnv(CarlaMultiAgentEnv):
             description_folder = CARLA_GYM_ROOT_DIR / 'envs/scenario_descriptions/LeaderBoard' \
                 / f'Town04_{routes_group}'
         elif carla_map == 'Town01' and routes_group is 'multi':
+            description_folder = CARLA_GYM_ROOT_DIR / 'envs/scenario_descriptions/LeaderBoard' \
+                / f'Town01_{routes_group}'
+        elif carla_map == 'Town01' and routes_group is 'multi_novo':
             description_folder = CARLA_GYM_ROOT_DIR / 'envs/scenario_descriptions/LeaderBoard' \
                 / f'Town01_{routes_group}'
         else:

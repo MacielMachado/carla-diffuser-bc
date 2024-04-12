@@ -21,6 +21,8 @@ if __name__ == "__main__":
     vids = []
     acts = []
     for d in tqdm(list(data_dir.glob("*"))):
+        if str(d).split("/")[-1][:4] != '2022':
+            continue
         vid_path = str(d / "0.mp4")
         act_path = str(d / "actions.json")
         vid, _, metadata = torchvision.io.read_video(str(vid_path))

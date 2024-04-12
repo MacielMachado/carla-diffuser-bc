@@ -223,8 +223,8 @@ class FrontCameraMovieMaker():
         # Define video properties
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Video format (check FourCC codes online)
         fps = 24  # Frames per second
-        video_path = os.path.join(self.path.split("/")[0],
-                                  "video_output_"+self.name_index+".mp4")  # Output video path
+        video_path = os.path.join(self.path.split("/")[0], self.path.split("/")[1],
+                                  "video_output_dir_"+self.name_index+".mp4")  # Output video path
 
         # Get image size from the first image
         central_img_path = os.path.join(self.path, "central_rgb/0000.png")
@@ -283,15 +283,17 @@ class FrontCameraMovieMaker():
 
 if __name__ == '__main__':
 
-    path='gail_experts_multi_novo/'
+    path='gail_experts_multi_bruno_3/'
+    # os.makedirs(path, exist_ok=False)
     for i in range(len(os.listdir(path))):
-        if i < 10:
-            index_str = "0"+str(i)
-        else:
-            index_str = str(i)
-        route_path = path + f'route_{index_str}/ep_00/'
-        object = FrontCameraMovieMaker(path=route_path, name_index=str(i))
-        object.save_record()
+        if os.listdir(path)[i][-4:] != '.mp4':
+            if i < 10:
+                index_str = "0"+str(i)
+            else:
+                index_str = str(i)
+            route_path = path + f'route_{index_str}/ep_00/'
+            object = FrontCameraMovieMaker(path=route_path, name_index=str(i))
+            object.save_record()
 
     # path='gail_experts_multi_sempahore/'
     # for i in range(len(os.listdir(path))):
