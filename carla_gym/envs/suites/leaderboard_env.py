@@ -65,7 +65,7 @@ class LeaderboardEnv(CarlaMultiAgentEnv):
         elif carla_map == 'Town01' and routes_group is 'multi':
             description_folder = CARLA_GYM_ROOT_DIR / 'envs/scenario_descriptions/LeaderBoard' \
                 / f'Town01_{routes_group}'
-        elif carla_map == 'Town01' and routes_group is 'multi_novo':
+        elif carla_map == 'Town01' and routes_group is 'multi_bruno':
             description_folder = CARLA_GYM_ROOT_DIR / 'envs/scenario_descriptions/LeaderBoard' \
                 / f'Town01_{routes_group}'
         else:

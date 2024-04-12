@@ -30,7 +30,7 @@ terminal_configs = {
 env_configs = {
     'carla_map': 'Town01',
     'weather_group': 'dynamic_1.0',
-    'routes_group': 'multi_novo'
+    'routes_group': 'multi_bruno'
 }
 
 # env_configs = {
