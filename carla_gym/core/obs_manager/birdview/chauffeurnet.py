@@ -186,7 +186,8 @@ class ObsManager(ObsManagerBase):
 
         # masks
         c_road = road_mask * 255
-        c_route = route_mask * 255
+        # c_route = route_mask * 255
+        c_route = np.zeros_like(route_mask) * 255
         c_lane = lane_mask_all * 255
         c_lane[lane_mask_broken] = 120
 
@@ -205,6 +206,7 @@ class ObsManager(ObsManagerBase):
 
         # masks = np.stack((c_road, c_route, c_lane, *c_tl_history), axis=2)
         masks = np.stack((c_road, c_route, c_lane), axis=2)
+        # masks = np.stack((c_road, c_lane), axis=2)
         masks = np.transpose(masks, [2, 0, 1])
 
         obs_dict = {'rendered': image, 'masks': masks}

@@ -283,7 +283,7 @@ class FrontCameraMovieMaker():
 
 if __name__ == '__main__':
 
-    path='gail_experts_multi_bruno_3/'
+    path='gail_experts_multi_bruno_3_simples/'
     # os.makedirs(path, exist_ok=False)
     for i in range(len(os.listdir(path))):
         if os.listdir(path)[i][-4:] != '.mp4':
@@ -291,9 +291,11 @@ if __name__ == '__main__':
                 index_str = "0"+str(i)
             else:
                 index_str = str(i)
-            route_path = path + f'route_{index_str}/ep_00/'
-            object = FrontCameraMovieMaker(path=route_path, name_index=str(i))
-            object.save_record()
+        for j in range(len(os.listdir(path + f'route_{index_str}/'))):
+            if os.listdir(path)[i][-4:] != '.mp4':
+                route_path = path + f'route_{index_str}/ep_0{j}' 
+                object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
+                object.save_record()
 
     # path='gail_experts_multi_sempahore/'
     # for i in range(len(os.listdir(path))):

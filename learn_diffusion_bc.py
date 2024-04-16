@@ -205,11 +205,11 @@ if __name__ == '__main__':
     device = 'cuda'
     batch_size = 24
 
-    gail_train_loader = torch.utils.data.DataLoader(
-        ExpertDataset('gail_experts', n_routes=1, n_eps=1),
-        batch_size=batch_size,
-        shuffle=True,
-    )
+    # gail_train_loader = torch.utils.data.DataLoader(
+    #     ExpertDataset('gail_experts', n_routes=1, n_eps=1),
+    #     batch_size=batch_size,
+    #     shuffle=True,
+    # )
 
     '''
     The datasets have keys with the following information: birdview,
@@ -229,10 +229,10 @@ if __name__ == '__main__':
             embed_dim=128,
             guide_w=0.0,
             betas=(1e-4, 0.02),
-            dataset_path='gail_experts',
-            run_wandb=False,
+            dataset_path='gail_experts_multi_bruno_3_simples',
+            run_wandb=True,
             record_run=True,
-            expert_dataset=ExpertDataset('gail_experts', n_routes=1, n_eps=1),
+            expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
             name='gail_experts_nroutes1_neps1',
             param_search=False,
             embedding="Model_cnn_mlp",).main()
