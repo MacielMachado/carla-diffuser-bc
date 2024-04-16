@@ -44,7 +44,7 @@ class Trainer():
 
     def main(self):
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser", name=self.name)
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality", name=self.name)
         dataload_train = self.prepare_dataset(self.expert_dataset)
         x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
         conv_model = self.create_conv_model(x_dim, y_dim)
