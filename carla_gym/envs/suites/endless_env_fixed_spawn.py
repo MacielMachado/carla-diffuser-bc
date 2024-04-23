@@ -9,16 +9,16 @@
 from carla_gym.carla_multi_agent_env import CarlaMultiAgentEnv
 
 
-class EndlessEnv(CarlaMultiAgentEnv):
+class EndlessFixedSpawnEnv(CarlaMultiAgentEnv):
     def __init__(self, carla_map, host, port, seed, no_rendering, obs_configs, reward_configs, terminal_configs,
-                 num_zombie_vehicles, num_zombie_walkers, weather_group):
-        all_tasks = self.build_all_tasks(num_zombie_vehicles, num_zombie_walkers, weather_group)
+                 num_zombie_vehicles, num_zombie_walkers, weather_group, spawn_point):
+        all_tasks = self.build_all_tasks(num_zombie_vehicles, num_zombie_walkers, weather_group, spawn_point)
         super().__init__(carla_map, host, port, seed, no_rendering,
                          obs_configs, reward_configs, terminal_configs, all_tasks)
         stop = True
 
     @staticmethod
-    def build_all_tasks(num_zombie_vehicles, num_zombie_walkers, weather_group):
+    def build_all_tasks(num_zombie_vehicles, num_zombie_walkers, weather_group, spawn_point):
         if weather_group == 'new':
             weathers = ['SoftRainSunset', 'WetSunset']
         elif weather_group == 'train':
@@ -45,6 +45,7 @@ class EndlessEnv(CarlaMultiAgentEnv):
                 'hero': True
             }
         }
+
         all_tasks = []
         for weather in weathers:
             task = {
@@ -61,5 +62,7 @@ class EndlessEnv(CarlaMultiAgentEnv):
                 'scenario_actors': {},
             }
             all_tasks.append(task)
+        
+        all_tasks[0]['ego_vehicles'] = {**all_tasks[0]['ego_vehicles'], **{'spawn_point':spawn_point}}
 
         return all_tasks

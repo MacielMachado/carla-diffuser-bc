@@ -104,10 +104,10 @@ if __name__ == '__main__':
                          terminal_configs=terminal_configs, host="localhost", port=2021,
                          seed=2021, no_rendering=False, **env_configs)
     env = RlBirdviewWrapper(env)
-    expert_file_dir = Path('gail_experts_town01_multi_bruno_3_simples/')
+    expert_file_dir = Path('gail_experts_town01_multi_bruno_3_full/')
     expert_file_dir.mkdir(parents=True, exist_ok=True)
     # obs_metrics = ['control', 'vel_xy', 'linear_speed', 'vec', 'traj', 'cmd', 'command', 'state']
-    for route_id in tqdm.tqdm(range(2)):
+    for route_id in tqdm.tqdm(range(12)):
         env.set_task_idx(route_id)
         for ep_id in range(10):
             episode_dir = expert_file_dir / ('route_%02d' % route_id) / ('ep_%02d' % ep_id)

@@ -5,10 +5,10 @@ import os
 from gym.wrappers.monitoring.video_recorder import ImageEncoder
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from rl_birdview_wrapper import RlBirdviewWrapper
-from carla_gym.envs import EndlessEnv
+from carla_gym.envs import EndlessEnv, EndlessFixedSpawnEnv
 from models import Model_cnn_mlp, Model_Cond_Diffusion
 from data_collect import reward_configs, terminal_configs, obs_configs
-from data_preprocessing import DataHandler
+from data_preprocessing import DataHandler, FrontCameraMovieMaker
 
 env_configs = {
     'carla_map': 'Town01',
@@ -17,11 +17,20 @@ env_configs = {
     'weather_group': 'dynamic_1.0'
 }
 
+spawn_point = {
+    'pitch':360.0,
+    'roll':0.0,
+    'x':150.6903991699219,
+    'y':194.78451538085938,
+    'yaw':179.83230590820312,
+    'z':0.0
+}
+
 def handle_obs(obs):
     obs = DataHandler().preprocess_images(obs, feature='birdview', eval=True)
     return obs
 
-def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
+def evaluate_policy(env, model, video_path, device, min_eval_steps=300):
     model = model.eval()
     t0 = time.time()
     # for i in range(env.num_envs):
@@ -34,9 +43,9 @@ def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
     ep_stat_buffer = []
     route_completion_buffer = []
 
-    while n_step < min_eval_steps or not not np.all(env_done):
-        actions = model.sample(torch.tensor(obs).float()).to(device)
-        obs, reward, done, info = env.step(np.array(actions.detach()))
+    while n_step < min_eval_steps and np.sum(env_done) == 0:
+        actions = model.sample(torch.tensor(obs).float().to(device)).to(device)
+        obs, reward, done, info = env.step(np.array(actions.detach().cpu()))
         obs = handle_obs(obs)
     
         list_render.append(env.render(mode='rgb_array'))
@@ -44,9 +53,6 @@ def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
         env_done |= done
         
         print(f'n_step: {n_step}')
-
-        for i in np.where(done)[0]:
-            break
 
     # conda install x264=='1!152.20180717' ffmpeg=4.0.2 -c conda-forge
     encoder = ImageEncoder(video_path, list_render[0].shape, 30, 30)
@@ -56,19 +62,24 @@ def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
 
 def env_maker():
 
-    env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                    terminal_configs=terminal_configs, host='localhost', port=2010,
+    # env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+    #                 terminal_configs=terminal_configs, host='localhost', port=3001,
+    #                 seed=np.random.randint(1, 3001), 
+    #                 no_rendering=True, **env_configs)
+
+    env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+                    terminal_configs=terminal_configs, host='localhost', port=3001,
                     seed=np.random.randint(1, 3001), 
-                    no_rendering=True, **env_configs)
+                    no_rendering=True, **env_configs, spawn_point=spawn_point)
     env = RlBirdviewWrapper(env)
     return env
 
 
 if __name__ == '__main__':
-    diff_bc_video = 'diff_bc_video'
+    diff_bc_video = 'diff_bc_video_multi_5/'
     os.makedirs(diff_bc_video, exist_ok=True)
 
-    device = 'cpu'
+    device = 'cuda'
     net_type = 'transformer'
     x_shape = (192, 192, 4)
     y_dim = 2
@@ -87,20 +98,37 @@ if __name__ == '__main__':
         nn_model,
         betas=(1e-4, 0.02),
         n_T=20,
-        device='cpu',
+        device='cuda',
         x_dim=(192, 192, 4),
         y_dim=2,
         drop_prob=0.0,
         guide_w=0.0,)
     
-    model_path = 'model_pytorch/gail_experts_nroutes1_neps1_b842_ep_500.pkl'
-    model.load_state_dict(torch.load(model_path))
+    model_path = 'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_749.pkl'
+    models = [
+            # 'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_1.pkl',
+            'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_20.pkl',
+            'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_40.pkl',
+            'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_80.pkl',
+            'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_150.pkl',
+            'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_250.pkl',
+            'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_500.pkl',
+            'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_600.pkl',
+            'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_749.pkl']
 
-    for i in range(10):
-        eval_video_path = diff_bc_video+f'/diff_bc_eval_500_{i}.mp4'
-        env = SubprocVecEnv([env_maker])
-        evaluate_policy(
-            env=env,
-            model=model,
-            video_path=eval_video_path,
-            device=device)
+    models = {'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_80.pkl',}
+
+    env = SubprocVecEnv([env_maker])
+
+    for model_path in sorted(models):
+        model.load_state_dict(torch.load(model_path))
+        for i in range(10):
+            # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
+            eval_video_path = diff_bc_video + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
+            evaluate_policy(
+                env=env,
+                model=model,
+                video_path=eval_video_path,
+                device=device)
+            # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
+            # object.save_record()

@@ -162,24 +162,24 @@ class ObsManager(ObsManagerBase):
         # render
         image = np.zeros([self._width, self._width, 3], dtype=np.uint8)
         image[road_mask] = COLOR_ALUMINIUM_5
-        image[route_mask] = COLOR_ALUMINIUM_3
+        # image[route_mask] = COLOR_ALUMINIUM_3
         image[lane_mask_all] = COLOR_MAGENTA
         image[lane_mask_broken] = COLOR_MAGENTA_2
 
-        h_len = len(self._history_idx)-1
-        for i, mask in enumerate(stop_masks):
-            image[mask] = tint(COLOR_YELLOW_2, (h_len-i)*0.2)
-        for i, mask in enumerate(tl_green_masks):
-            image[mask] = tint(COLOR_GREEN, (h_len-i)*0.2)
-        for i, mask in enumerate(tl_yellow_masks):
-            image[mask] = tint(COLOR_YELLOW, (h_len-i)*0.2)
-        for i, mask in enumerate(tl_red_masks):
-            image[mask] = tint(COLOR_RED, (h_len-i)*0.2)
+        # h_len = len(self._history_idx)-1
+        # for i, mask in enumerate(stop_masks):
+        #     image[mask] = tint(COLOR_YELLOW_2, (h_len-i)*0.2)
+        # for i, mask in enumerate(tl_green_masks):
+        #     image[mask] = tint(COLOR_GREEN, (h_len-i)*0.2)
+        # for i, mask in enumerate(tl_yellow_masks):
+        #     image[mask] = tint(COLOR_YELLOW, (h_len-i)*0.2)
+        # for i, mask in enumerate(tl_red_masks):
+        #     image[mask] = tint(COLOR_RED, (h_len-i)*0.2)
 
-        for i, mask in enumerate(vehicle_masks):
-            image[mask] = tint(COLOR_BLUE, (h_len-i)*0.2)
-        for i, mask in enumerate(walker_masks):
-            image[mask] = tint(COLOR_CYAN, (h_len-i)*0.2)
+        # for i, mask in enumerate(vehicle_masks):
+        #     image[mask] = tint(COLOR_BLUE, (h_len-i)*0.2)
+        # for i, mask in enumerate(walker_masks):
+        #     image[mask] = tint(COLOR_CYAN, (h_len-i)*0.2)
 
         image[ev_mask] = COLOR_WHITE
         # image[obstacle_mask] = COLOR_BLUE
@@ -187,7 +187,7 @@ class ObsManager(ObsManagerBase):
         # masks
         c_road = road_mask * 255
         # c_route = route_mask * 255
-        c_route = np.zeros_like(route_mask) * 255
+        c_route = np.zeros_like(route_mask)
         c_lane = lane_mask_all * 255
         c_lane[lane_mask_broken] = 120
 
