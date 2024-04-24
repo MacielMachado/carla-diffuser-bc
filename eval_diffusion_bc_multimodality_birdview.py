@@ -58,7 +58,7 @@ def env_maker():
 
     env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
                     terminal_configs=terminal_configs, host='localhost', port=2005,
-                    seed=np.random.randint(1, 3001), 
+                    seed=100, 
                     no_rendering=True, **env_configs)
     env = RlBirdviewWrapper(env)
     return env

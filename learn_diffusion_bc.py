@@ -44,7 +44,7 @@ class Trainer():
 
     def main(self):
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multimodality", name=self.name)
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Full", name=self.name)
         dataload_train = self.prepare_dataset(self.expert_dataset)
         x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
         conv_model = self.create_conv_model(x_dim, y_dim)
@@ -176,8 +176,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch_multi_full/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_full/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -232,7 +232,7 @@ if __name__ == '__main__':
             dataset_path='gail_experts_multi_bruno_3_simples',
             run_wandb=True,
             record_run=True,
-            expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
+            expert_dataset=ExpertDataset('gail_experts_town01_multi_bruno_3_full', n_routes=34, n_eps=10),
             name='gail_experts_nroutes1_neps1',
             param_search=False,
             embedding="Model_cnn_mlp",).main()

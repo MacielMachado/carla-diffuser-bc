@@ -116,7 +116,7 @@ if __name__ == '__main__':
             'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_600.pkl',
             'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_749.pkl']
 
-    models = {'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_80.pkl',}
+    models = {'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_20.pkl',}
 
     env = SubprocVecEnv([env_maker])
 
