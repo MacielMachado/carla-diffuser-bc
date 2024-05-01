@@ -18,7 +18,7 @@ class Trainer():
                  guide_w, betas, dataset_path, run_wandb, record_run,
                  expert_dataset, name='', param_search=False,
                  embedding="Model_cnn_mlp",):
-
+        print("3")
         self.n_epoch = n_epoch
         self.lrate = lrate
         self.device = device
@@ -43,13 +43,20 @@ class Trainer():
         self.expert_dataset = expert_dataset
 
     def main(self):
+        print("4")
         if self.run_wandb:
             self.config_wandb(project_name="Carla-Diffuser-Multimodality-Full", name=self.name)
+        print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
+        print("5")
         x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
+        print("6")
         conv_model = self.create_conv_model(x_dim, y_dim)
+        print("7")
         model = self.create_agent_model(conv_model, x_dim, y_dim)
+        print("8")
         optim = self.create_optimizer(model)
+        print("8")
         model = self.train(model, dataload_train, optim)
 
     def config_wandb(self, project_name, name):
@@ -80,13 +87,18 @@ class Trainer():
 
     def prepare_dataset(self, dataset):
         obs = DataHandler().preprocess_images(dataset, feature='birdview')
+        print("4.1")
         # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
         state = np.array([np.array(ele[0]['state']) for ele in dataset])
+        print("4.2")
         actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
+        print("4.3")
         dataset = CarlaCustomDataset(obs, actions)
+        print("4.4")
         dataloader = data.DataLoader(dataset,
                                      batch_size=self.batch_size,
                                      shuffle=True)
+        print("4.5")
         '''
         The datasets have keys with the following information: birdview,
         central_rgb, left_rgb, right_rgb, item_idx, done, action, state
@@ -196,6 +208,7 @@ def extract_action_mse(y, y_hat):
 
 
 if __name__ == '__main__':
+    print('1')
     resume_last_train = False
     observation_space = {}
     observation_space['birdview'] = gym.spaces.Box(low=0, high=255, shape=(3, 192, 192), dtype=np.uint8)  # Define o tipo de dado que tará uma dimensão
@@ -216,7 +229,7 @@ if __name__ == '__main__':
     central_rgb, left_rgb, right_rgb, item_idx, done, action, state
     '''
     stop  = 1
-
+    print('2')
     Trainer(n_epoch=750,
             lrate=0.0001,
             device='cuda', 
