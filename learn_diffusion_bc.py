@@ -53,7 +53,7 @@ class Trainer():
         model = self.train(model, dataload_train, optim)
 
     def config_wandb(self, project_name, name):
-        wandb.login(key='9bcc371f01af2fc8ddab2c3ad226caad57dc4ac5')
+        wandb.login(key='69f1a00e3df4080d87a2110307267dd38599de6b')
         config={
                 "n_epoch": self.n_epoch,
                 "lrate": self.lrate,
@@ -165,7 +165,7 @@ class Trainer():
                         
                     results_ep.append(loss_ep / n_batch)
 
-            if ep in [1, 20, 40, 80, 150, 250, 500, 600, 749]:
+            if ep in [1, 20, 40, 60, 80, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 749]:
                 name=f'model_novo_ep_{ep}'
                 self.save_model(model, ep)
 
