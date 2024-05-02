@@ -45,7 +45,7 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Full", name=self.name)
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Discretizado", name=self.name)
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
         print("5")
@@ -177,7 +177,7 @@ class Trainer():
                         
                     results_ep.append(loss_ep / n_batch)
 
-            if ep in [1, 20, 40, 60, 80, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 749]:
+            if ep in [1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 749]:
                 name=f'model_novo_ep_{ep}'
                 self.save_model(model, ep)
 
@@ -243,9 +243,9 @@ if __name__ == '__main__':
             guide_w=0.0,
             betas=(1e-4, 0.02),
             dataset_path='gail_experts_multi_bruno_3_simples',
-            run_wandb=True,
+            run_wandb=False,
             record_run=True,
-            expert_dataset=ExpertDataset('gail_experts_town01_multi_bruno_3_full', n_routes=34, n_eps=10),
+            expert_dataset=ExpertDataset('gail_experts_town01_multi_bruno_3_simples_teste', n_routes=34, n_eps=10),
             name='gail_experts_nroutes1_neps1',
             param_search=False,
             embedding="Model_cnn_mlp",).main()
