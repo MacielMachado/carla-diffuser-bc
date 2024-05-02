@@ -245,7 +245,7 @@ if __name__ == '__main__':
             dataset_path='gail_experts_multi_bruno_3_simples',
             run_wandb=False,
             record_run=True,
-            expert_dataset=ExpertDataset('gail_experts_town01_multi_bruno_3_simples_teste', n_routes=34, n_eps=10),
+            expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=34, n_eps=10),
             name='gail_experts_nroutes1_neps1',
             param_search=False,
             embedding="Model_cnn_mlp",).main()
