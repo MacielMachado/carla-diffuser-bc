@@ -17,20 +17,11 @@ env_configs = {
     'weather_group': 'dynamic_1.0'
 }
 
-spawn_point = {
-    'pitch':360.0,
-    'roll':0.0,
-    'x':150.6903991699219,
-    'y':194.78451538085938,
-    'yaw':179.83230590820312,
-    'z':0.0
-}
-
 def handle_obs(obs):
     obs = DataHandler().preprocess_images(obs, feature='birdview', eval=True)
     return obs
 
-def evaluate_policy(env, model, video_path, device, min_eval_steps=300):
+def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
     model = model.eval()
     t0 = time.time()
     # for i in range(env.num_envs):
@@ -62,21 +53,16 @@ def evaluate_policy(env, model, video_path, device, min_eval_steps=300):
 
 def env_maker():
 
-    # env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-    #                 terminal_configs=terminal_configs, host='localhost', port=3001,
-    #                 seed=np.random.randint(1, 3001), 
-    #                 no_rendering=True, **env_configs)
-
-    env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+    env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
                     terminal_configs=terminal_configs, host='localhost', port=3001,
                     seed=np.random.randint(1, 3001), 
-                    no_rendering=True, **env_configs, spawn_point=spawn_point)
+                    no_rendering=True, **env_configs)
     env = RlBirdviewWrapper(env)
     return env
 
 
 if __name__ == '__main__':
-    diff_bc_video = 'diff_bc_video_multi_full/'
+    diff_bc_video = 'diff_bc_video_fixed_full/'
     os.makedirs(diff_bc_video, exist_ok=True)
 
     device = 'cuda'
@@ -106,26 +92,13 @@ if __name__ == '__main__':
     
     # model_path = 'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_749.pkl'
     models = [
-            # 'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_1.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_20.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_30.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_40.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_50.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_60.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_70.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_80.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_90.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_100.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_120.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_150.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_200.pkl',
-            # 'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_250.pkl',
-            'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_300.pkl',
-            'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_350.pkl',
-            'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_400.pkl',
-            'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_500.pkl',
-            'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_600.pkl',
-            'model_pytorch_multi_full/gail_experts_nroutes1_neps1_8290_ep_749.pkl',
+            'model_pytorch/fixed/gail_experts_nroutes1_neps1_b842_ep_500.pkl',
+            'model_pytorch/fixed/gail_experts_nroutes1_neps1_63f5_ep_250.pkl',
+            'model_pytorch/fixed/gail_experts_nroutes1_neps1_b668_ep_150.pkl',
+            'model_pytorch/fixed/gail_experts_nroutes1_neps1_b668_ep_80.pkl',
+            'model_pytorch/fixed/gail_experts_nroutes1_neps1_a51b_ep_40.pkl',
+            'model_pytorch/fixed/gail_experts_nroutes1_neps1_a51b_ep_20.pkl',
+            'model_pytorch/fixed/gail_experts_nroutes1_neps1_a51b_ep_1.pkl',
             ]
 
     # models = {'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_20.pkl',}

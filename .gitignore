@@ -2,6 +2,7 @@
 video
 gail_experts_basic
 gail_experts_semaphores
+model_pytorch_multi_full/
 ckpt
 outputs
 wandb
