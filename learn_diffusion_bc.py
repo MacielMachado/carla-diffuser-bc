@@ -86,7 +86,7 @@ class Trainer():
         return repo.head.object.hexsha
 
     def prepare_dataset(self, dataset):
-        obs = DataHandler().preprocess_images(dataset, feature='birdview')
+        obs = DataHandler().preprocess_images(dataset, feature='front')
         print("4.1")
         # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
         state = np.array([np.array(ele[0]['state']) for ele in dataset])
@@ -114,6 +114,7 @@ class Trainer():
     
     def create_conv_model(self, x_dim, y_dim):
         cnn_out_dim = 4608
+        cnn_out_dim = 4096
         if self.embedding == "Model_cnn_bc":
             return Model_cnn_bc(self.n_hidden, y_dim,
                                 embed_dim=self.embed_dim,
@@ -188,8 +189,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch_multi_full/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_full/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch_multi_full_front/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_full_front/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -234,7 +235,7 @@ if __name__ == '__main__':
             lrate=0.0001,
             device='cuda', 
             n_hidden=128,
-            batch_size=32,
+            batch_size=2,
             n_T=20,
             net_type='transformer',
             drop_prob=0.0,

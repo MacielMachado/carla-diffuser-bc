@@ -92,7 +92,7 @@ if __name__ == '__main__':
     
     # model_path = 'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_749.pkl'
     models = [
-            'model_pytorch/fixed/gail_experts_nroutes1_neps1_b842_ep_500.pkl',
+            # 'model_pytorch/fixed/gail_experts_nroutes1_neps1_b842_ep_500.pkl',
             'model_pytorch/fixed/gail_experts_nroutes1_neps1_63f5_ep_250.pkl',
             'model_pytorch/fixed/gail_experts_nroutes1_neps1_b668_ep_150.pkl',
             'model_pytorch/fixed/gail_experts_nroutes1_neps1_b668_ep_80.pkl',

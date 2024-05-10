@@ -98,6 +98,27 @@ class DataHandler():
     def stack_with_previous_front(self, images_array, seq):
         pass
 
+    def __preprocess_front_images(self, images_array, eval):
+        obs_front = images_array['central_rgb'] if eval else np.array([np.array(ele[0]['central_rgb']) for ele in images_array])
+        obs_front = np.transpose(obs_front, (0, 2, 3, 1))
+        obs_front = DataHandler().to_greyscale(obs_front)
+        obs_front = DataHandler().normalizing(obs_front)
+        obs_front = DataHandler().stack_with_previous(obs_front)
+
+        obs_left = images_array['left_rgb'] if eval else np.array([np.array(ele[0]['left_rgb']) for ele in images_array])
+        obs_left = np.transpose(obs_left, (0, 2, 3, 1))
+        obs_left = DataHandler().to_greyscale(obs_left)
+        obs_left = DataHandler().normalizing(obs_left)
+        obs_left = DataHandler().stack_with_previous(obs_left)
+
+        obs_right = images_array['right_rgb'] if eval else np.array([np.array(ele[0]['right_rgb']) for ele in images_array])
+        obs_right = np.transpose(obs_right, (0, 2, 3, 1))
+        obs_right = DataHandler().to_greyscale(obs_right)
+        obs_right = DataHandler().normalizing(obs_right)
+        obs_right = DataHandler().stack_with_previous(obs_right)
+        
+        obs_stack = np.concatenate((obs_left, obs_front, obs_right), axis=3)
+        return obs_stack
 
     def __preprocess_birdview(self, images_array, eval=False):
         obs = images_array['birdview'] if eval else np.array([np.array(ele[0]['birdview']) for ele in images_array])
@@ -113,19 +134,13 @@ class DataHandler():
         images = DataHandler().stack_with_previous(images)
         return images
     
-    def __preprocess_front_images(self, images_array):
-        images = DataHandler().to_greyscale(images_array)
-        images = DataHandler().normalizing(images)
-        images = DataHandler().stack_with_previous(images)
-        return images
-    
     def preprocess_images(self, images_array, feature: str, eval=False):
         if feature == 'birdview':
             return self.__preprocess_birdview(images_array, eval)
         elif feature == 'human':
             return self.__preprocess_human_images(images_array)
         elif feature == 'front':
-            return self.__preprocess_front_images(images_array)
+            return self.__preprocess_front_images(images_array, eval)
         raise NotImplementedError
     
     def preprocess_actions(self, actions_array, origin):
