@@ -73,7 +73,7 @@ class DataHandler():
         canny = cv2.Canny(observation, 50, 150)
         return canny
 
-    def stack_with_previous(self, images_array, num_images=4):
+    def stack_with_previous(self, images_array, num_images=3):
         if len(images_array.shape) == 3:
             images_array = np.expand_dims(images_array, axis=-1)
         batch_size, height, width, channels = images_array.shape
