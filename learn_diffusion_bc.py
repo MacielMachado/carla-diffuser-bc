@@ -45,7 +45,7 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Front", name=self.name)
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Front-Resnet18", name=self.name)
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
         print("5")
