@@ -45,7 +45,7 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Front-Resnet18", name=self.name)
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Birdview-Resnet18", name=self.name)
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
         print("5")
@@ -86,7 +86,7 @@ class Trainer():
         return repo.head.object.hexsha
 
     def prepare_dataset(self, dataset):
-        obs = DataHandler().preprocess_images(dataset, feature='front')
+        obs = DataHandler().preprocess_images(dataset, feature='birdview')
         print("4.1")
         # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
         state = np.array([np.array(ele[0]['state']) for ele in dataset])
@@ -195,8 +195,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch_multi_full_front/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_full_front/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch_multi_full_birdview/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_full_birdview/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
