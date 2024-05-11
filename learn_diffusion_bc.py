@@ -16,8 +16,8 @@ class Trainer():
     def __init__(self, n_epoch, lrate, device, n_hidden, batch_size, n_T,
                  net_type, drop_prob, extra_diffusion_steps, embed_dim,
                  guide_w, betas, dataset_path, run_wandb, record_run,
-                 expert_dataset, name='', param_search=False,
-                 embedding="Model_cnn_mlp",):
+                 expert_dataset, data_type, name='', param_search=False,
+                 embedding="Model_cnn_mlp"):
         print("3")
         self.n_epoch = n_epoch
         self.lrate = lrate
@@ -41,6 +41,7 @@ class Trainer():
         self.patience = 20
         self.early_stopping_counter = 0
         self.expert_dataset = expert_dataset
+        self.data_type = data_type
 
     def main(self):
         print("4")
@@ -86,7 +87,7 @@ class Trainer():
         return repo.head.object.hexsha
 
     def prepare_dataset(self, dataset):
-        obs = DataHandler().preprocess_images(dataset, feature='birdview')
+        obs = DataHandler().preprocess_images(dataset, feature=self.data_type, embedding=self.embedding)
         print("4.1")
         # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
         state = np.array([np.array(ele[0]['state']) for ele in dataset])
@@ -114,7 +115,7 @@ class Trainer():
     
     def create_conv_model(self, x_dim, y_dim):
         cnn_out_dim = 4608
-        cnn_out_dim = 4096
+        # cnn_out_dim = 4096
         # cnn_out_dim = 4
         if self.embedding == "Model_cnn_bc":
             return Model_cnn_bc(self.n_hidden, y_dim,
@@ -129,7 +130,7 @@ class Trainer():
             return Model_cnn_mlp_resnet18(x_dim, self.n_hidden, y_dim,
                                 embed_dim=self.embed_dim,
                                 net_type=self.net_type,
-                                cnn_out_dim=cnn_out_dim).to(self.device)
+                                cnn_out_dim=cnn_out_dim, origin=self.data_type).to(self.device)
         else:
             raise NotImplementedError
     
@@ -241,7 +242,7 @@ if __name__ == '__main__':
             lrate=0.0001,
             device='cuda', 
             n_hidden=128,
-            batch_size=2,
+            batch_size=32,
             n_T=20,
             net_type='transformer',
             drop_prob=0.0,
@@ -255,7 +256,8 @@ if __name__ == '__main__':
             expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
             name='gail_experts_nroutes1_neps1',
             param_search=False,
-            embedding="Model_cnn_mlp_resnet18",).main()
+            embedding="Model_cnn_mlp_resnet18",
+            data_type='birdview').main()
 
 
 

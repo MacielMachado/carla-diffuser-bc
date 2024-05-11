@@ -73,26 +73,26 @@ class DataHandler():
         canny = cv2.Canny(observation, 50, 150)
         return canny
 
-    def stack_with_previous(self, images_array):
+    def stack_with_previous(self, images_array, num_images=4):
         if len(images_array.shape) == 3:
             images_array = np.expand_dims(images_array, axis=-1)
         batch_size, height, width, channels = images_array.shape
-        stacked_images = np.zeros((batch_size, height, width, channels * 4), dtype=images_array.dtype)
+        stacked_images = np.zeros((batch_size, height, width, channels * num_images), dtype=images_array.dtype)
 
         for i in range(batch_size):
-            if i < 3:
+            if i < num_images-1:
                     stacked_images[i, :, :, :] = np.concatenate([
                     images_array[i, :, :, :],
                     images_array[i, :, :, :],
                     images_array[i, :, :, :],
-                    images_array[i, :, :, :]
+                    # images_array[i, :, :, :]
                 ], axis=-1)
             else:
                 stacked_images[i, :, :, :] = np.concatenate([
                     images_array[i, :, :, :],
                     images_array[i - 1, :, :, :],
                     images_array[i - 2, :, :, :],
-                    images_array[i - 3, :, :, :]
+                    # images_array[i - 3, :, :, :]
                 ], axis=-1)
 
         return stacked_images
@@ -128,13 +128,22 @@ class DataHandler():
                 mode='constant'))
         return np.array(obs_stack_resized)
 
-    def __preprocess_birdview(self, images_array, eval=False):
+    def __resize(self, obs):
+        obs_resized = []
+        for i in tqdm(range(len(obs)), desc='Image Resize'):
+            obs_resized.append(resize(
+                obs[i,:,:,:],
+                (224, 224, obs.shape[-1]),
+                mode='constant'))
+        return np.array(obs_resized)
+
+    def __preprocess_birdview(self, images_array, eval=False, embedding='Model_cnn_mlp'):
         obs = images_array['birdview'] if eval else np.array([np.array(ele[0]['birdview']) for ele in images_array])
         obs = np.transpose(obs, (0, 2, 3, 1))
         obs = DataHandler().to_greyscale(obs)
         obs = DataHandler().normalizing(obs)
         obs = DataHandler().stack_with_previous(obs)
-        return obs
+        return self.__resize(obs) if embedding == 'Model_cnn_mlp_resnet18' else obs
     
     def __preprocess_human_images(self, images_array):
         images = DataHandler().to_greyscale(images_array)
@@ -142,9 +151,9 @@ class DataHandler():
         images = DataHandler().stack_with_previous(images)
         return images
     
-    def preprocess_images(self, images_array, feature: str, eval=False):
+    def preprocess_images(self, images_array, feature: str, eval=False, embedding='Model_cnn_mlp'):
         if feature == 'birdview':
-            return self.__preprocess_birdview(images_array, eval)
+            return self.__preprocess_birdview(images_array, eval, embedding)
         elif feature == 'human':
             return self.__preprocess_human_images(images_array)
         elif feature == 'front':

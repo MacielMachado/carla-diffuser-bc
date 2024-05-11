@@ -943,7 +943,7 @@ class ResidualConvBlock(nn.Module):
 
 
 class Model_cnn_mlp_resnet18(nn.Module):
-    def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, output_dim=None, cnn_out_dim=4096):
+    def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, output_dim=None, cnn_out_dim=4096, origin='birdview'):
         super(Model_cnn_mlp_resnet18, self).__init__()
         self.x_shape = x_shape
         self.n_hidden = n_hidden
@@ -951,21 +951,28 @@ class Model_cnn_mlp_resnet18(nn.Module):
         self.embed_dim = embed_dim
         self.n_feat = 64
         self.net_type = net_type
-
+        if origin == 'birdview':
+            num_channels = 4
+        elif origin == 'front':
+            num_channels = 12
+        else:
+            raise NotImplementedError
+ 
         if output_dim is None:
             self.output_dim = y_dim  # by default, just output size of action space
         else:
             self.output_dim = output_dim  # sometimes overwrite, eg for discretised, mean/variance, mixture density models
 
         self.model = models.resnet18(pretrained=True)
-        self.new_conv1 = torch.nn.Conv2d(12, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+        self.new_conv1 = torch.nn.Conv2d(num_channels, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
         self.num_fc_ftrs = self.model.fc.in_features
         self.new_fc = nn.Linear(self.num_fc_ftrs, cnn_out_dim)
     
         weights = self.model.conv1.weight
-        new_weights = torch.cat([weights] * 4, dim=1)
+        if origin == 'front':
+            weights = torch.cat([weights] * 4, dim=1)
         self.model.conv1 = self.new_conv1
-        self.model.conv1.weight = torch.nn.Parameter(new_weights)
+        self.model.conv1.weight = torch.nn.Parameter(weights)
         self.model.fc = self.new_fc
 
         self.nn_downstream = Model_mlp_diff_embed(
