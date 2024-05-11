@@ -3,7 +3,9 @@ import cv2
 import math
 import torch
 import numpy as np
+from tqdm import tqdm
 import matplotlib.pyplot as plt
+from skimage.transform import resize
 
 class DataHandler():
     def __init__(self):
@@ -116,9 +118,15 @@ class DataHandler():
         obs_right = DataHandler().to_greyscale(obs_right)
         obs_right = DataHandler().normalizing(obs_right)
         obs_right = DataHandler().stack_with_previous(obs_right)
-        
+
         obs_stack = np.concatenate((obs_left, obs_front, obs_right), axis=3)
-        return obs_stack
+        obs_stack_resized = []
+        for i in tqdm(range(len(obs_stack)), desc='Image Resize'):
+            obs_stack_resized.append(resize(
+                obs_stack[i,:,:,:],
+                (224, 224, obs_stack.shape[-1]),
+                mode='constant'))
+        return np.array(obs_stack_resized)
 
     def __preprocess_birdview(self, images_array, eval=False):
         obs = images_array['birdview'] if eval else np.array([np.array(ele[0]['birdview']) for ele in images_array])

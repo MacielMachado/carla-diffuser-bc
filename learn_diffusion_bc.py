@@ -1,4 +1,4 @@
-from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion
+from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet18
 from data_preprocessing import DataHandler, CarlaCustomDataset
 from expert_dataset import ExpertDataset
 from torchvision import transforms
@@ -115,12 +115,18 @@ class Trainer():
     def create_conv_model(self, x_dim, y_dim):
         cnn_out_dim = 4608
         cnn_out_dim = 4096
+        # cnn_out_dim = 4
         if self.embedding == "Model_cnn_bc":
             return Model_cnn_bc(self.n_hidden, y_dim,
                                 embed_dim=self.embed_dim,
                                 net_type=self.net_type).to(self.device)
         elif self.embedding == "Model_cnn_mlp":
             return Model_cnn_mlp(x_dim, self.n_hidden, y_dim,
+                                embed_dim=self.embed_dim,
+                                net_type=self.net_type,
+                                cnn_out_dim=cnn_out_dim).to(self.device)
+        elif self.embedding == 'Model_cnn_mlp_resnet18':
+            return Model_cnn_mlp_resnet18(x_dim, self.n_hidden, y_dim,
                                 embed_dim=self.embed_dim,
                                 net_type=self.net_type,
                                 cnn_out_dim=cnn_out_dim).to(self.device)
@@ -244,12 +250,12 @@ if __name__ == '__main__':
             guide_w=0.0,
             betas=(1e-4, 0.02),
             dataset_path='gail_experts_multi_bruno_3_simples',
-            run_wandb=True,
-            record_run=True,
+            run_wandb=False,
+            record_run=False,
             expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
             name='gail_experts_nroutes1_neps1',
             param_search=False,
-            embedding="Model_cnn_mlp",).main()
+            embedding="Model_cnn_mlp_resnet18",).main()
 
 
 

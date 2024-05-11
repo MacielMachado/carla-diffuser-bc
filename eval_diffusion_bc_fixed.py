@@ -21,7 +21,7 @@ def handle_obs(obs):
     obs = DataHandler().preprocess_images(obs, feature='birdview', eval=True)
     return obs
 
-def evaluate_policy(env, model, video_path, device, min_eval_steps=3000):
+def evaluate_policy(env, model, video_path, device, min_eval_steps=3001, origin='birdview'):
     model = model.eval()
     t0 = time.time()
     # for i in range(env.num_envs):
@@ -62,10 +62,10 @@ def env_maker():
 
 
 if __name__ == '__main__':
-    diff_bc_video = 'diff_bc_video_fixed_full/'
+    diff_bc_video = 'diff_bc_video_fixed_full_100/'
     os.makedirs(diff_bc_video, exist_ok=True)
 
-    device = 'cuda'
+    device = 'cpu'
     net_type = 'transformer'
     x_shape = (192, 192, 4)
     y_dim = 2
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         nn_model,
         betas=(1e-4, 0.02),
         n_T=20,
-        device='cuda',
+        device=device,
         x_dim=(192, 192, 4),
         y_dim=2,
         drop_prob=0.0,
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     
     # model_path = 'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_749.pkl'
     models = [
-            # 'model_pytorch/fixed/gail_experts_nroutes1_neps1_b842_ep_500.pkl',
+            'model_pytorch/fixed/gail_experts_nroutes1_neps1_b842_ep_500.pkl',
             'model_pytorch/fixed/gail_experts_nroutes1_neps1_63f5_ep_250.pkl',
             'model_pytorch/fixed/gail_experts_nroutes1_neps1_b668_ep_150.pkl',
             'model_pytorch/fixed/gail_experts_nroutes1_neps1_b668_ep_80.pkl',
@@ -101,19 +101,20 @@ if __name__ == '__main__':
             'model_pytorch/fixed/gail_experts_nroutes1_neps1_a51b_ep_1.pkl',
             ]
 
-    # models = {'model_pytorch/gail_experts_nroutes1_neps1_12bf_ep_20.pkl',}
+    # models = ['model_pytorch_multi_full_front/gail_experts_nroutes1_neps1_8d42_ep_20.pkl',]
 
     env = SubprocVecEnv([env_maker])
 
     for model_path in models:
-        model.load_state_dict(torch.load(model_path))
-        for i in range(10):
+        model.load_state_dict(torch.load(model_path, map_location=device))
+        for i in range(100):
             # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
             eval_video_path = diff_bc_video + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
             evaluate_policy(
                 env=env,
                 model=model,
                 video_path=eval_video_path,
-                device=device)
+                device=device,
+                origin='birdview')
             # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
             # object.save_record()
