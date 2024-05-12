@@ -46,7 +46,8 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Birdview-Resnet18", name=self.name)
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Birdview-Resnet18",
+                              name=self.name + '__' + self.get_git_commit_hash()[0:10])
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
         print("5")
@@ -242,8 +243,8 @@ if __name__ == '__main__':
             lrate=0.0001,
             device='cuda', 
             n_hidden=128,
-            batch_size=32,
-            n_T=20,
+            batch_size=512,
+            n_T=50,
             net_type='transformer',
             drop_prob=0.0,
             extra_diffusion_steps=16,
