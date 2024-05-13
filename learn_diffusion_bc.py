@@ -46,7 +46,7 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Birdview-Resnet18",
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Front-Resnet18",
                               name=self.name + '__' + self.get_git_commit_hash()[0:10])
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
@@ -197,8 +197,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch_multi_full_birdview/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_full_birdview/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch_multi_full_front_resnet18_2/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_full_front_resnet18_2/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -258,7 +258,7 @@ if __name__ == '__main__':
             name='gail_experts_nroutes1_neps1',
             param_search=False,
             embedding="Model_cnn_mlp_resnet18",
-            data_type='birdview').main()
+            data_type='front').main()
 
 
 
