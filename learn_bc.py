@@ -47,17 +47,15 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Front-Resnet18",
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Birdview-Behavior Cloning",
                               name=self.name + '__' + self.get_git_commit_hash()[0:10])
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
         print("5")
         x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
         print("6")
-        conv_model = self.create_conv_model(x_dim, y_dim)
+        model = self.create_conv_model(x_dim, y_dim)
         print("7")
-        model = self.create_agent_model(conv_model, x_dim, y_dim)
-        print("8")
         optim = self.create_optimizer(model)
         print("8")
         model = self.train(model, dataload_train, optim)
@@ -115,10 +113,10 @@ class Trainer():
         x_dim = tuple(next(iter(dataset))[0].shape)[1:]
         return x_dim, y_dim
     
-    def create_conv_model(self, x_dim):
+    def create_conv_model(self, x_dim, y_dim):
         cnn_out_dim = 2
         if self.embedding == "Model_cnn_BC":
-            return Model_cnn_bc(x_dim, self.n_hidde, cnn_out_dim).to(self.device)
+            return Model_cnn_BC(x_dim, self.n_hidden, cnn_out_dim).to(self.device)
         else:
             raise NotImplementedError
     
@@ -152,9 +150,11 @@ class Trainer():
             for x_batch, y_batch in pbar:
                 x_batch = x_batch.type(torch.FloatTensor).to(self.device)
                 y_batch = y_batch.type(torch.FloatTensor).to(self.device)
-                loss = model.loss_on_batch(x_batch, y_batch)
-                optim.zero_grad()
+                y_hat = model(x_batch)
+                loss = self.loss_func(y_hat, y_batch)
                 loss.backward()
+                optim.step()
+                optim.zero_grad()
                 loss_ep += loss.detach().item()
                 n_batch += 1
                 pbar.set_description(f"train loss: {loss_ep/n_batch:.4f}")
@@ -182,6 +182,8 @@ class Trainer():
         
         return model
 
+    def loss_func(self, y, y_hat):
+        return torch.nn.MSELoss()(y, y_hat)
 
     def save_model(self, model, ep=''):
         os.makedirs(os.getcwd()+'/model_pytorch_multi_behavior_cloning/'+self.name, exist_ok=True)
@@ -230,7 +232,7 @@ if __name__ == '__main__':
             lrate=0.0001,
             device='cuda', 
             n_hidden=128,
-            batch_size=128,
+            batch_size=10,
             n_T=50,
             net_type='transformer',
             drop_prob=0.0,
@@ -239,12 +241,12 @@ if __name__ == '__main__':
             guide_w=0.0,
             betas=(1e-4, 0.02),
             dataset_path='gail_experts_multi_bruno_3_simples',
-            run_wandb=False,
-            record_run=False,
+            run_wandb=True,
+            record_run=True,
             expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
             name='gail_experts_nroutes1_neps1',
             param_search=False,
-            embedding="Model_cnn_mlp_resnet50",
+            embedding="Model_cnn_BC",
             data_type='birdview').main()
 
 

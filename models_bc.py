@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from torchvision import models
+import torch.nn.functional as F
 from models import ResidualConvBlock
 
 
@@ -25,8 +26,12 @@ class Model_cnn_BC(nn.Module):
         )
         self.imageembed = nn.Sequential(nn.AvgPool2d(8))
 
+        self.fc1 = nn.Linear(4608, 2304)
+        self.fc2 = nn.Linear(2304, 1024)
+        self.fc3 = nn.Linear(1024, 64)
+        self.fc4 = nn.Linear(64, cnn_out_dim)
+
         # cnn_out_dim = self.n_feat * 2  # how many features after flattening -- WARNING, will have to adjust this for diff size input resolution
-        cnn_out_dim = cnn_out_dim
         # it is the flattened size after CNN layers, and average pooling
 
     def forward(self, x):
@@ -37,5 +42,15 @@ class Model_cnn_BC(nn.Module):
         x_embed = self.imageembed(x3)
         # c_embed is [batch size, 128, 1, 1]
         x_embed = x_embed.view(x.shape[0], -1)
+        x_lin1 = self.fc1(x_embed)
+        x_lin1 = F.relu(x_lin1)
+
+        x_lin2 = self.fc2(x_lin1)
+        x_lin2 = F.relu(x_lin2)
+
+        x_lin3 = self.fc3(x_lin2)
+        x_lin3 = F.relu(x_lin3)
+
+        x_lin4 = self.fc4(x_lin3)
         # c_embed is now [batch size, 128]
-        return x_embed
+        return x_lin4
