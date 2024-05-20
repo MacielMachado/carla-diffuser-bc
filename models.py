@@ -942,15 +942,17 @@ class ResidualConvBlock(nn.Module):
             return x
 
 
-class Model_cnn_mlp_resnet18(nn.Module):
-    def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, output_dim=None, cnn_out_dim=4096, origin='birdview'):
-        super(Model_cnn_mlp_resnet18, self).__init__()
+class Model_cnn_mlp_resnet(nn.Module):
+    def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, resnet_depth='18', output_dim=None, cnn_out_dim=4096, origin='birdview'):
+        super(Model_cnn_mlp_resnet, self).__init__()
         self.x_shape = x_shape
         self.n_hidden = n_hidden
         self.y_dim = y_dim
         self.embed_dim = embed_dim
         self.n_feat = 64
         self.net_type = net_type
+        self.resnet_depth = resnet_depth
+
         if origin == 'birdview':
             num_channels = 4
         elif origin == 'front':
@@ -963,7 +965,11 @@ class Model_cnn_mlp_resnet18(nn.Module):
         else:
             self.output_dim = output_dim  # sometimes overwrite, eg for discretised, mean/variance, mixture density models
 
-        self.model = models.resnet18(pretrained=True)
+        if self.resnet_depth == '18':
+            self.model = models.resnet18(pretrained=True) 
+        elif self.resnet_depth == '50':
+            self.model = models.resnet50(pretrained=True)
+
         self.new_conv1 = torch.nn.Conv2d(num_channels, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
         self.num_fc_ftrs = self.model.fc.in_features
         self.new_fc = nn.Linear(self.num_fc_ftrs, cnn_out_dim)

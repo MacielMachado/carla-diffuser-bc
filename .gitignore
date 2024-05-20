@@ -5,6 +5,7 @@ gail_experts_semaphores
 model_pytorch_multi_full/
 model_pytorch_multi_full_front/
 model_pytorch_multi_full_birdview/
+model_pytorch_multi_full_front_resnet18_2/
 ckpt
 outputs
 wandb

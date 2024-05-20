@@ -1,19 +1,191 @@
-import torch.optim as optim
-import numpy as np
-import tqdm
-import torch as th
-from pathlib import Path
-# import # wandb
-import gym
-
+from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet
+from models_bc import Model_cnn_BC
+from data_preprocessing import DataHandler, CarlaCustomDataset
 from expert_dataset import ExpertDataset
-from agent_policy import AgentPolicy
-from carla_gym.envs import EndlessEnv
-from rl_birdview_wrapper import RlBirdviewWrapper
-from data_collect import reward_configs, terminal_configs, obs_configs
-from eval_agent import evaluate_policy
-from stable_baselines3.common.vec_env import SubprocVecEnv
+from torchvision import transforms
+import torch.utils.data as data
+from tqdm import tqdm
+import numpy as np
+import torch
+import wandb
+import gym
+import git
+import os
 
+
+class Trainer():
+    def __init__(self, n_epoch, lrate, device, n_hidden, batch_size, n_T,
+                 net_type, drop_prob, extra_diffusion_steps, embed_dim,
+                 guide_w, betas, dataset_path, run_wandb, record_run,
+                 expert_dataset, data_type, name='', param_search=False,
+                 embedding="Model_cnn_BC"):
+        print("3")
+        self.n_epoch = n_epoch
+        self.lrate = lrate
+        self.device = device
+        self.n_hidden = n_hidden
+        self.batch_size = batch_size
+        self.n_T = n_T
+        self.net_type = net_type
+        self.drop_prob = drop_prob
+        self.extra_diffusion_steps = extra_diffusion_steps
+        self.embed_dim = embed_dim
+        self.guide_w = guide_w
+        self.betas = betas
+        self.dataset_path = dataset_path
+        self.name = name
+        self.param_search = param_search
+        self.run_wandb = run_wandb
+        self.record_rum = record_run
+        self.embedding = embedding
+        self.best_reward = float('-inf')
+        self.patience = 20
+        self.early_stopping_counter = 0
+        self.expert_dataset = expert_dataset
+        self.data_type = data_type
+
+    def main(self):
+        print("4")
+        if self.run_wandb:
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Front-Resnet18",
+                              name=self.name + '__' + self.get_git_commit_hash()[0:10])
+        print("4")
+        dataload_train = self.prepare_dataset(self.expert_dataset)
+        print("5")
+        x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
+        print("6")
+        conv_model = self.create_conv_model(x_dim, y_dim)
+        print("7")
+        model = self.create_agent_model(conv_model, x_dim, y_dim)
+        print("8")
+        optim = self.create_optimizer(model)
+        print("8")
+        model = self.train(model, dataload_train, optim)
+
+    def config_wandb(self, project_name, name):
+        wandb.login(key='69f1a00e3df4080d87a2110307267dd38599de6b')
+        config={
+                "n_epoch": self.n_epoch,
+                "lrate": self.lrate,
+                "device": self.device,
+                "n_hidden": self.n_hidden,
+                "batch_size": self.batch_size,
+                "n_T": self.n_T,
+                "net_type": self.net_type,
+                "drop_prob": self.drop_prob,
+                "extra_diffusion_steps": self.extra_diffusion_steps,
+                "embed_dim": self.embed_dim,
+                "guide_w": self.guide_w,
+                "dataset": self.dataset_path,
+                "model": self.embedding,
+                "commit_hash": self.get_git_commit_hash()
+            }
+        if name != '':
+            return wandb.init(project=project_name, name=name, config=config)
+        return wandb.init(project=project_name, config=config)
+
+    def get_git_commit_hash(self):
+        repo = git.Repo(search_parent_directories=True)
+        return repo.head.object.hexsha
+
+    def prepare_dataset(self, dataset):
+        obs = DataHandler().preprocess_images(dataset, feature=self.data_type, embedding=self.embedding)
+        print("4.1")
+        # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
+        state = np.array([np.array(ele[0]['state']) for ele in dataset])
+        print("4.2")
+        actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
+        print("4.3")
+        dataset = CarlaCustomDataset(obs, actions)
+        print("4.4")
+        dataloader = data.DataLoader(dataset,
+                                     batch_size=self.batch_size,
+                                     shuffle=True)
+        print("4.5")
+        '''
+        The datasets have keys with the following information: birdview,
+        central_rgb, left_rgb, right_rgb, item_idx, done, action, state
+        '''
+        return dataloader
+    
+    def get_x_and_y_dim(self, dataset):
+        '''
+        '''
+        y_dim = tuple(next(iter(dataset))[1].shape)[-1]
+        x_dim = tuple(next(iter(dataset))[0].shape)[1:]
+        return x_dim, y_dim
+    
+    def create_conv_model(self, x_dim):
+        cnn_out_dim = 2
+        if self.embedding == "Model_cnn_BC":
+            return Model_cnn_bc(x_dim, self.n_hidde, cnn_out_dim).to(self.device)
+        else:
+            raise NotImplementedError
+    
+    def create_optimizer(self, model):
+        return torch.optim.Adam(model.parameters(), lr=self.lrate)
+    
+    def create_agent_model(self, conv_model, x_dim, y_dim):
+        return Model_Cond_Diffusion(
+            conv_model,
+            betas=self.betas,
+            n_T = self.n_T,
+            device=self.device,
+            x_dim=x_dim,
+            y_dim=y_dim,
+            drop_prob=self.drop_prob,
+            guide_w=self.guide_w
+        ).to(self.device)
+
+    def decay_lr(self, epoch, lrate):
+        return lrate * ((np.cos((epoch / self.n_epoch) * np.pi) + 1) / 2)
+    
+    def train(self, model, dataload_train, optim):
+        for ep in tqdm(range(self.n_epoch), desc="Epoch"):
+            results_ep = [ep]
+            model.train()
+
+            lr_decay = self.decay_lr(ep, self.lrate)
+            # train loop
+            pbar = tqdm(dataload_train)
+            loss_ep, n_batch = 0, 0
+            for x_batch, y_batch in pbar:
+                x_batch = x_batch.type(torch.FloatTensor).to(self.device)
+                y_batch = y_batch.type(torch.FloatTensor).to(self.device)
+                loss = model.loss_on_batch(x_batch, y_batch)
+                optim.zero_grad()
+                loss.backward()
+                loss_ep += loss.detach().item()
+                n_batch += 1
+                pbar.set_description(f"train loss: {loss_ep/n_batch:.4f}")
+                optim.step()
+
+                with torch.no_grad():
+                    y_hat_batch = model.sample(x_batch)
+                    action_MSE = extract_action_mse(y_batch, y_hat_batch)
+
+                if self.run_wandb:
+                    # log metrics to wandb
+                    wandb.log({"loss": loss_ep/n_batch,
+                                "lr": lr_decay,
+                                "steering_MSE": action_MSE[0],
+                                "acceleration_MSE": action_MSE[1]})
+                        
+                    results_ep.append(loss_ep / n_batch)
+
+            if ep in [1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 749]:
+                name=f'model_novo_ep_{ep}'
+                self.save_model(model, ep)
+
+        if self.run_wandb:
+            wandb.finish()
+        
+        return model
+
+
+    def save_model(self, model, ep=''):
+        os.makedirs(os.getcwd()+'/model_pytorch_multi_behavior_cloning/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_behavior_cloning/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -23,180 +195,59 @@ env_configs = {
 }
 
 
-def learn_bc(policy, device, expert_loader, eval_loader, env, resume_last_train):
-    output_dir = Path('outputs')
-    output_dir.mkdir(parents=True, exist_ok=True)
-    last_checkpoint_path = output_dir / 'checkpoint.txt'
-
-    ckpt_dir = Path('ckpt')
-    ckpt_dir.mkdir(parents=True, exist_ok=True)
-
-    if resume_last_train:
-        with open(last_checkpoint_path, 'r') as f:
-            wb_run_path = f.read()
-        # api = # wandb.Api()
-        # wandb_run = api.run(wb_run_path)
-        # wandb_run_id = # wandb_run.id
-        ckpt_path = (ckpt_dir / 'ckpt_latest.pth').as_posix()
-        saved_variables = th.load(ckpt_path, map_location='cuda')
-        train_kwargs = saved_variables['train_init_kwargs']
-        start_ep = train_kwargs['start_ep']
-        i_steps = train_kwargs['i_steps']
-
-        policy.load_state_dict(saved_variables['policy_state_dict'])
-        # # wandb.init(project='gail-carla2', id=# wandb_run_id, resume='must')
-    # else:
-        # run = # wandb.init(project='gail-carla2', reinit=True)
-        # with open(last_checkpoint_path, 'w') as log_file:
-            # log_file.write(# wandb.run.path)
-        start_ep = 0
-        i_steps = 0
-
-    video_path = Path('video')
-    video_path.mkdir(parents=True, exist_ok=True)
-
-    optimizer = optim.Adam(policy.parameters(), lr=1e-5)
-    episodes = 200
-    ent_weight = 0.01
-    min_eval_loss = np.inf
-    eval_step = int(1e5)
-    steps_last_eval = 0
-
-    for i_episode in tqdm.tqdm(range(start_ep, episodes)):
-        total_loss = 0
-        i_batch = 0
-        policy = policy.train()
-        # Expert dataset
-        for expert_batch in expert_loader:
-            expert_obs_dict, expert_action = expert_batch
-            obs_tensor_dict = {
-                'state': expert_obs_dict['state'].float().to(device),
-                'birdview': expert_obs_dict['birdview'].float().to(device)
-            }
-            expert_action = expert_action.to(device)
-
-            # Get BC loss
-            alogprobs, entropy_loss = policy.evaluate_actions(obs_tensor_dict, expert_action)
-            bcloss = -alogprobs.mean()
-
-            loss = bcloss + ent_weight * entropy_loss
-            total_loss += loss
-            i_batch += 1
-            i_steps += expert_obs_dict['state'].shape[0]
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-        total_eval_loss = 0
-        i_eval_batch = 0
-        for expert_batch in eval_loader:
-            expert_obs_dict, expert_action = expert_batch
-            obs_tensor_dict = {
-                'state': expert_obs_dict['state'].float().to(device),
-                'birdview': expert_obs_dict['birdview'].float().to(device)
-            }
-            expert_action = expert_action.to(device)
-
-            # Get BC loss
-            with th.no_grad():
-                alogprobs, entropy_loss = policy.evaluate_actions(obs_tensor_dict, expert_action)
-            bcloss = -alogprobs.mean()
-
-            eval_loss = bcloss + ent_weight * entropy_loss
-            total_eval_loss += eval_loss
-            i_eval_batch += 1
-        
-        loss = total_loss / i_batch
-        eval_loss = total_eval_loss / i_eval_batch
-        # wandb.log({
-        #     'loss': loss,
-        #     'eval_loss': eval_loss,
-        # }, step=i_steps)
-
-        if i_steps - steps_last_eval > eval_step:
-            eval_video_path = (video_path / f'bc_eval_{i_steps}.mp4').as_posix()
-            avg_ep_stat, avg_route_completion, ep_events = evaluate_policy(env, policy, eval_video_path)
-            env.reset()
-            # wandb.log(avg_ep_stat, step=i_steps)
-            # wandb.log(avg_route_completion, step=i_steps)
-            steps_last_eval = i_steps
-
-        if min_eval_loss > eval_loss:
-            ckpt_path = (ckpt_dir / f'bc_ckpt_{i_episode}_min_eval.pth').as_posix()
-            th.save(
-                {'policy_state_dict': policy.state_dict()},
-               ckpt_path
-            )
-            min_eval_loss = eval_loss
-
-        train_init_kwargs = {
-            'start_ep': i_episode,
-            'i_steps': i_steps
-        } 
-        ckpt_path = (ckpt_dir / 'ckpt_latest.pth').as_posix()
-        th.save({'policy_state_dict': policy.state_dict(),
-                 'train_init_kwargs': train_init_kwargs},
-                ckpt_path)
-        # wandb.save(f'./{ckpt_path}')
-    run = run.finish()
-
-
-def env_maker():
-    env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                    terminal_configs=terminal_configs, host='localhost', port=2000,
-                    seed=2021, no_rendering=True, **env_configs)
-    env = RlBirdviewWrapper(env)
-    return env
+def extract_action_mse(y, y_hat):
+    assert len(y) == len(y_hat)
+    y_diff_pow_2 = torch.pow(y - y_hat, 2)
+    y_diff_sum = torch.sum(y_diff_pow_2, dim=0)/len(y)
+    mse = torch.pow(y_diff_sum, 0.5)
+    return mse
+ 
 
 if __name__ == '__main__':
-    env = SubprocVecEnv([env_maker])  # Configuração do ambiente
-
+    print('1')
     resume_last_train = False
-
     observation_space = {}
     observation_space['birdview'] = gym.spaces.Box(low=0, high=255, shape=(3, 192, 192), dtype=np.uint8)  # Define o tipo de dado que tará uma dimensão
     observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # Define o tipo de dimensão que terá o estado
     observation_space = gym.spaces.Dict(**observation_space)  # Cria um espaço de observação
-
     action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)  # Define o espaço de ação
-
-    # network
-    policy_kwargs = {
-        'observation_space': observation_space,
-        'action_space': action_space,
-        'policy_head_arch': [256, 256],
-        'features_extractor_entry_point': 'torch_layers:XtMaCNN',  # Escolhe o modelo que irá usar
-        'features_extractor_kwargs': {'states_neurons': [256,256]},
-        'distribution_entry_point': 'distributions:BetaDistribution',
-    }
-
     device = 'cuda'
-
-    policy = AgentPolicy(**policy_kwargs)  # Define a arquitetura da política do agente
-    policy.to(device)  # Joga a política para a GPU
-
     batch_size = 24
 
-    gail_train_loader = th.utils.data.DataLoader(
-        ExpertDataset(
-            'gail_experts',
-            n_routes=1,
-            n_eps=1,
-        ),
-        batch_size=batch_size,
-        shuffle=True,
-    )
-    
-    gail_val_loader = th.utils.data.DataLoader(
-        ExpertDataset(
-            'gail_experts',
-            n_routes=1,
-            n_eps=1,
-            route_start=0
-        ),
-        batch_size=batch_size,
-        shuffle=True,
-    )
+    # gail_train_loader = torch.utils.data.DataLoader(
+    #     ExpertDataset('gail_experts', n_routes=1, n_eps=1),
+    #     batch_size=batch_size,
+    #     shuffle=True,
+    # )
 
-    learn_bc(policy, device, gail_train_loader, gail_val_loader, env, resume_last_train)
+    '''
+    The datasets have keys with the following information: birdview,
+    central_rgb, left_rgb, right_rgb, item_idx, done, action, state
+    '''
+    stop  = 1
+    print('2')
+    Trainer(n_epoch=750,
+            lrate=0.0001,
+            device='cuda', 
+            n_hidden=128,
+            batch_size=128,
+            n_T=50,
+            net_type='transformer',
+            drop_prob=0.0,
+            extra_diffusion_steps=16,
+            embed_dim=128,
+            guide_w=0.0,
+            betas=(1e-4, 0.02),
+            dataset_path='gail_experts_multi_bruno_3_simples',
+            run_wandb=False,
+            record_run=False,
+            expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
+            name='gail_experts_nroutes1_neps1',
+            param_search=False,
+            embedding="Model_cnn_mlp_resnet50",
+            data_type='birdview').main()
+
+
+
+
+

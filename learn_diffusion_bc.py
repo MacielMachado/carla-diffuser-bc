@@ -1,4 +1,4 @@
-from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet18
+from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet
 from data_preprocessing import DataHandler, CarlaCustomDataset
 from expert_dataset import ExpertDataset
 from torchvision import transforms
@@ -127,10 +127,10 @@ class Trainer():
                                 embed_dim=self.embed_dim,
                                 net_type=self.net_type,
                                 cnn_out_dim=cnn_out_dim).to(self.device)
-        elif self.embedding == 'Model_cnn_mlp_resnet18':
-            return Model_cnn_mlp_resnet18(x_dim, self.n_hidden, y_dim,
+        elif self.embedding[:-2] == 'Model_cnn_mlp_resnet':
+            return Model_cnn_mlp_resnet(x_dim, self.n_hidden, y_dim,
                                 embed_dim=self.embed_dim,
-                                net_type=self.net_type,
+                                net_type=self.net_type, resnet_depth=self.embedding[-2:],
                                 cnn_out_dim=cnn_out_dim, origin=self.data_type).to(self.device)
         else:
             raise NotImplementedError
@@ -197,8 +197,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch_multi_full_front_resnet18_2/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_full_front_resnet18_2/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch_multi_full_front_resnet50/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_full_front_resnet50/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -214,7 +214,7 @@ def extract_action_mse(y, y_hat):
     y_diff_sum = torch.sum(y_diff_pow_2, dim=0)/len(y)
     mse = torch.pow(y_diff_sum, 0.5)
     return mse
-
+ 
 
 if __name__ == '__main__':
     print('1')
@@ -252,12 +252,12 @@ if __name__ == '__main__':
             guide_w=0.0,
             betas=(1e-4, 0.02),
             dataset_path='gail_experts_multi_bruno_3_simples',
-            run_wandb=True,
-            record_run=True,
+            run_wandb=False,
+            record_run=False,
             expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
             name='gail_experts_nroutes1_neps1',
             param_search=False,
-            embedding="Model_cnn_mlp_resnet18",
+            embedding="Model_cnn_mlp_resnet50",
             data_type='front').main()
 
 

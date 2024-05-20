@@ -73,7 +73,7 @@ class DataHandler():
         canny = cv2.Canny(observation, 50, 150)
         return canny
 
-    def stack_with_previous(self, images_array, num_images=3):
+    def stack_with_previous(self, images_array, num_images=4):
         if len(images_array.shape) == 3:
             images_array = np.expand_dims(images_array, axis=-1)
         batch_size, height, width, channels = images_array.shape
@@ -81,19 +81,9 @@ class DataHandler():
 
         for i in range(batch_size):
             if i < num_images-1:
-                    stacked_images[i, :, :, :] = np.concatenate([
-                    images_array[i, :, :, :],
-                    images_array[i, :, :, :],
-                    images_array[i, :, :, :],
-                    # images_array[i, :, :, :]
-                ], axis=-1)
+                    stacked_images[i, :, :, :] = np.concatenate([images_array[i] for _ in range(num_images)], axis=-1)
             else:
-                stacked_images[i, :, :, :] = np.concatenate([
-                    images_array[i, :, :, :],
-                    images_array[i - 1, :, :, :],
-                    images_array[i - 2, :, :, :],
-                    # images_array[i - 3, :, :, :]
-                ], axis=-1)
+                stacked_images[i, :, :, :] = np.concatenate([images_array[i - j] for j in range(num_images)], axis=-1)
 
         return stacked_images
     
@@ -105,19 +95,19 @@ class DataHandler():
         obs_front = np.transpose(obs_front, (0, 2, 3, 1))
         obs_front = DataHandler().to_greyscale(obs_front)
         obs_front = DataHandler().normalizing(obs_front)
-        obs_front = DataHandler().stack_with_previous(obs_front)
+        obs_front = DataHandler().stack_with_previous(obs_front, num_images=4)
 
         obs_left = images_array['left_rgb'] if eval else np.array([np.array(ele[0]['left_rgb']) for ele in images_array])
         obs_left = np.transpose(obs_left, (0, 2, 3, 1))
         obs_left = DataHandler().to_greyscale(obs_left)
         obs_left = DataHandler().normalizing(obs_left)
-        obs_left = DataHandler().stack_with_previous(obs_left)
+        obs_left = DataHandler().stack_with_previous(obs_left, num_images=4)
 
         obs_right = images_array['right_rgb'] if eval else np.array([np.array(ele[0]['right_rgb']) for ele in images_array])
         obs_right = np.transpose(obs_right, (0, 2, 3, 1))
         obs_right = DataHandler().to_greyscale(obs_right)
         obs_right = DataHandler().normalizing(obs_right)
-        obs_right = DataHandler().stack_with_previous(obs_right)
+        obs_right = DataHandler().stack_with_previous(obs_right, num_images=4)
 
         obs_stack = np.concatenate((obs_left, obs_front, obs_right), axis=3)
         obs_stack_resized = []
@@ -142,7 +132,8 @@ class DataHandler():
         obs = np.transpose(obs, (0, 2, 3, 1))
         obs = DataHandler().to_greyscale(obs)
         obs = DataHandler().normalizing(obs)
-        obs = DataHandler().stack_with_previous(obs)
+        stack_size = 3 if embedding == 'Model_cnn_mlp_resnet18' else 4
+        obs = DataHandler().stack_with_previous(obs, stack_size)
         return self.__resize(obs) if embedding == 'Model_cnn_mlp_resnet18' else obs
     
     def __preprocess_human_images(self, images_array):
