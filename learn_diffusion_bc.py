@@ -186,7 +186,7 @@ class Trainer():
                         
                     results_ep.append(loss_ep / n_batch)
 
-            if ep in [1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 749]:
+            if ep in [1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 750, 850, 950, 1000]:
                 name=f'model_novo_ep_{ep}'
                 self.save_model(model, ep)
 
@@ -197,8 +197,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch_multi_full_front_resnet50/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_full_front_resnet50/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch_fixed_route_full_front_resnet18/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_fixed_route_full_front_resnet18/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -251,13 +251,13 @@ if __name__ == '__main__':
             embed_dim=128,
             guide_w=0.0,
             betas=(1e-4, 0.02),
-            dataset_path='gail_experts_multi_bruno_3_simples',
+            dataset_path='gail_experts_basic',
             run_wandb=False,
             record_run=False,
-            expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
+            expert_dataset=ExpertDataset('gail_experts_basic', n_routes=2, n_eps=10),
             name='gail_experts_nroutes1_neps1',
             param_search=False,
-            embedding="Model_cnn_mlp_resnet50",
+            embedding="Model_cnn_mlp_resnet18",
             data_type='front').main()
 
 
