@@ -46,7 +46,7 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Front-Resnet18",
+            self.config_wandb(project_name="Carla-Diffuser-Fixed-Route-Simples-Front-Resnet18",
                               name=self.name + '__' + self.get_git_commit_hash()[0:10])
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
