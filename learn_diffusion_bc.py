@@ -254,7 +254,7 @@ if __name__ == '__main__':
             dataset_path='gail_experts_basic',
             run_wandb=True,
             record_run=True,
-            expert_dataset=ExpertDataset('gail_experts_basic', n_routes=1, n_eps=10),
+            expert_dataset=ExpertDataset('gail_experts_basic', n_routes=10, n_eps=1),
             name='gail_experts_nroutes1_neps1',
             param_search=False,
             embedding="Model_cnn_mlp_resnet18",
