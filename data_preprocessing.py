@@ -142,12 +142,12 @@ class DataHandler():
         images = DataHandler().stack_with_previous(images)
         return images
     
-    def preprocess_images(self, images_array, feature: str, eval=False, embedding='Model_cnn_mlp'):
-        if feature == 'birdview':
+    def preprocess_images(self, images_array, observation_type: str, eval=False, embedding='Model_cnn_mlp'):
+        if observation_type == 'birdview':
             return self.__preprocess_birdview(images_array, eval, embedding)
-        elif feature == 'human':
+        elif observation_type == 'human':
             return self.__preprocess_human_images(images_array)
-        elif feature == 'front':
+        elif observation_type == 'front':
             return self.__preprocess_front_images(images_array, eval)
         raise NotImplementedError
     

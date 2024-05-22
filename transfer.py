@@ -18,7 +18,7 @@ import copy
 from skimage.transform import resize
 
 dataset = ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10)
-obs = DataHandler().preprocess_images(dataset, feature='front')
+obs = DataHandler().preprocess_images(dataset, observation_type='front')
 actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
 dataset = CarlaCustomDataset(obs, actions)
 print("4.4")

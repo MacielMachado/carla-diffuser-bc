@@ -37,6 +37,9 @@ class RlBirdviewWrapper(gym.Wrapper):
         observation_space = {}
         observation_space['birdview'] = env.observation_space[self._ev_id]['birdview']['masks']
         observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # We create this new observation dimension
+        observation_space['left_rgb'] = env.observation_space[self._ev_id]['left_rgb']['data']
+        observation_space['right_rgb'] = env.observation_space[self._ev_id]['right_rgb']['data']
+        observation_space['central_rgb'] = env.observation_space[self._ev_id]['central_rgb']['data']
 
         env.observation_space = gym.spaces.Dict(**observation_space)
 
@@ -46,7 +49,7 @@ class RlBirdviewWrapper(gym.Wrapper):
 
         self.eval_mode = True
 
-    def reset(self):
+    def reset(self, observation_type='birdview'):
         if self.eval_mode:
             self.env.eval_mode = True
             self.env._task['num_zombie_vehicles'] = eval_num_zombie_vehicles[self.env._carla_map]
@@ -77,7 +80,7 @@ class RlBirdviewWrapper(gym.Wrapper):
             'start_simulation_time': snap_shot.timestamp.elapsed_seconds
         }
 
-        obs = self.process_obs(obs_ma[self._ev_id])
+        obs = self.process_obs(obs_ma[self._ev_id], observation_type=observation_type)
 
         self._render_dict['prev_obs'] = obs
         self._render_dict['prev_im_render'] = obs_ma[self._ev_id]['birdview']['rendered']
@@ -151,7 +154,7 @@ class RlBirdviewWrapper(gym.Wrapper):
         return im
 
     @staticmethod
-    def process_obs(obs):
+    def process_obs(obs, observation_type='birdview'):
         obs_dict = {}
         state_list = []
         state_list.append(obs['control']['throttle'])

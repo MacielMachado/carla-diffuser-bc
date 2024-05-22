@@ -27,7 +27,7 @@ spawn_point = {
 }
 
 def handle_obs(obs):
-    obs = DataHandler().preprocess_images(obs, feature='birdview', eval=True)
+    obs = DataHandler().preprocess_images(obs, observation_type='birdview', eval=True)
     return obs
 
 def evaluate_policy(env, model, video_path, device, min_eval_steps=300):

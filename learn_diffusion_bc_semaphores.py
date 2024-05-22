@@ -82,7 +82,7 @@ class TrainerSemaphores():
         return repo.head.object.hexsha
 
     def prepare_dataset(self, dataset):
-        obs = DataHandler().preprocess_images(dataset, feature='birdview')
+        obs = DataHandler().preprocess_images(dataset, observation_type='birdview')
         # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
         state = np.array([np.array(ele[0]['state']) for ele in dataset])
         actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
