@@ -90,20 +90,34 @@ class DataHandler():
     def stack_with_previous_front(self, images_array, seq):
         pass
 
+    def get_images_array(self, images_array, observation_type):
+        new_list = np.array([])
+        for i in tqdm(range(len(images_array)), desc=f'Analyzing {observation_type} data'):
+            # new_list.append(images_array[i][0][observation_type])
+            if i == 0:
+                new_list = np.expand_dims(np.array(images_array[i][0][observation_type]), axis=0)
+            else:
+                arr = np.expand_dims(np.array(images_array[i][0][observation_type]), axis=0)
+                new_list = np.concatenate((new_list, arr), axis=0)
+        return np.array(new_list)
+
     def __preprocess_front_images(self, images_array, eval):
-        obs_front = images_array['central_rgb'] if eval else np.array([np.array(ele[0]['central_rgb']) for ele in images_array])
+        # obs_front = images_array['central_rgb'] if eval else np.array([np.array(ele[0]['central_rgb']) for ele in images_array])
+        obs_front = images_array['central_rgb'] if eval else self.get_images_array(images_array, 'central_rgb')
         obs_front = np.transpose(obs_front, (0, 2, 3, 1))
         obs_front = DataHandler().to_greyscale(obs_front)
         obs_front = DataHandler().normalizing(obs_front)
         obs_front = DataHandler().stack_with_previous(obs_front, num_images=4)
 
-        obs_left = images_array['left_rgb'] if eval else np.array([np.array(ele[0]['left_rgb']) for ele in images_array])
+        # obs_left = images_array['left_rgb'] if eval else np.array([np.array(ele[0]['left_rgb']) for ele in images_array])
+        obs_left = images_array['left_rgb'] if eval else self.get_images_array(images_array, 'left_rgb')
         obs_left = np.transpose(obs_left, (0, 2, 3, 1))
         obs_left = DataHandler().to_greyscale(obs_left)
         obs_left = DataHandler().normalizing(obs_left)
         obs_left = DataHandler().stack_with_previous(obs_left, num_images=4)
 
-        obs_right = images_array['right_rgb'] if eval else np.array([np.array(ele[0]['right_rgb']) for ele in images_array])
+        # obs_right = images_array['right_rgb'] if eval else np.array([np.array(ele[0]['right_rgb']) for ele in images_array])
+        obs_right = images_array['right_rgb'] if eval else self.get_images_array(images_array, 'right_rgb')
         obs_right = np.transpose(obs_right, (0, 2, 3, 1))
         obs_right = DataHandler().to_greyscale(obs_right)
         obs_right = DataHandler().normalizing(obs_right)
