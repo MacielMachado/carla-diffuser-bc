@@ -46,7 +46,7 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Fixed-Route-Simples-Front-Resnet18",
+            self.config_wandb(project_name="Carla-Diffuser-Fixed-Route-Simples-Front-Resnet",
                               name=self.name + '__' + self.get_git_commit_hash()[0:10])
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
@@ -179,12 +179,15 @@ class Trainer():
 
                 if self.run_wandb:
                     # log metrics to wandb
-                    wandb.log({"loss": loss_ep/n_batch,
+                    wandb.log({
+                                # "loss": loss_ep/n_batch,
+                                "loss": loss_ep/n_batch,
                                 "lr": lr_decay,
                                 "steering_MSE": action_MSE[0],
                                 "acceleration_MSE": action_MSE[1]})
                         
-                    results_ep.append(loss_ep / n_batch)
+                    # results_ep.append(loss_ep / n_batch)
+                    results_ep.append(loss_ep)
 
             if ep in [1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 750, 850, 950, 1000]:
                 name=f'model_novo_ep_{ep}'
@@ -239,11 +242,11 @@ if __name__ == '__main__':
     '''
     stop  = 1
     print('2')
-    Trainer(n_epoch=750,
+    Trainer(n_epoch=1000,
             lrate=0.0001,
             device='cuda', 
-            n_hidden=128,
-            batch_size=128,
+            n_hidden=512,
+            batch_size=32,
             n_T=50,
             net_type='transformer',
             drop_prob=0.0,
@@ -251,13 +254,13 @@ if __name__ == '__main__':
             embed_dim=128,
             guide_w=0.0,
             betas=(1e-4, 0.02),
-            dataset_path='gail_experts_basic',
+            dataset_path='gail_experts_multi_bruno_3_simples',
             run_wandb=True,
             record_run=True,
-            expert_dataset=ExpertDataset('gail_experts_basic', n_routes=10, n_eps=1),
-            name='gail_experts_nroutes1_neps1',
+            expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
+            name='Resnet50_gail_experts_multi_bruno_3_simples_front',
             param_search=False,
-            embedding="Model_cnn_mlp_resnet18",
+            embedding="Model_cnn_mlp_resnet50",
             data_type='front').main()
 
 
