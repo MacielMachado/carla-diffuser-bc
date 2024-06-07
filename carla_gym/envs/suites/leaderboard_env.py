@@ -89,6 +89,7 @@ class LeaderboardEnv(CarlaMultiAgentEnv):
 
         all_tasks = []
         print(len(route_descriptions_dict))
+
         for weather in weathers:
             for route_id, route_description in route_descriptions_dict.items():
                 task = {

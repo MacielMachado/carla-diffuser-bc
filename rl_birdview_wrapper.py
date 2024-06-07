@@ -40,6 +40,7 @@ class RlBirdviewWrapper(gym.Wrapper):
         observation_space['left_rgb'] = env.observation_space[self._ev_id]['left_rgb']['data']
         observation_space['right_rgb'] = env.observation_space[self._ev_id]['right_rgb']['data']
         observation_space['central_rgb'] = env.observation_space[self._ev_id]['central_rgb']['data']
+        observation_space['gnss'] = env.observation_space['hero']['gnss']['gnss']
 
         env.observation_space = gym.spaces.Dict(**observation_space)
 
@@ -110,7 +111,7 @@ class RlBirdviewWrapper(gym.Wrapper):
         info['left_rgb'] = obs['left_rgb']
         info['central_rgb'] = obs['central_rgb']
         info['right_rgb'] = obs['right_rgb']
-
+        info['gnss'] = obs['gnss']
         return obs, reward, done, info
         # return obs, '', '', ''
 
@@ -178,10 +179,13 @@ class RlBirdviewWrapper(gym.Wrapper):
         right_rgb = obs['right_rgb']['data']
         right_rgb = np.transpose(right_rgb, [2, 0, 1])
 
+        gnss = obs['gnss']['gnss']
+
         obs_dict.update({
             'central_rgb': central_rgb,
             'left_rgb': left_rgb,
-            'right_rgb': right_rgb
+            'right_rgb': right_rgb,
+            'gnss': gnss
         })
 
         return obs_dict

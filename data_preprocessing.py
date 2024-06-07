@@ -103,21 +103,21 @@ class DataHandler():
 
     def __preprocess_front_images(self, images_array, eval):
         # obs_front = images_array['central_rgb'] if eval else np.array([np.array(ele[0]['central_rgb']) for ele in images_array])
-        obs_front = images_array['central_rgb'] if eval else self.get_images_array(images_array, 'central_rgb')
+        obs_front = np.expand_dims(images_array['central_rgb'], 0) if eval else self.get_images_array(images_array, 'central_rgb')
         obs_front = np.transpose(obs_front, (0, 2, 3, 1))
         obs_front = DataHandler().to_greyscale(obs_front)
         obs_front = DataHandler().normalizing(obs_front)
         obs_front = DataHandler().stack_with_previous(obs_front, num_images=4)
 
         # obs_left = images_array['left_rgb'] if eval else np.array([np.array(ele[0]['left_rgb']) for ele in images_array])
-        obs_left = images_array['left_rgb'] if eval else self.get_images_array(images_array, 'left_rgb')
+        obs_left = np.expand_dims(images_array['left_rgb'], 0) if eval else self.get_images_array(images_array, 'left_rgb')
         obs_left = np.transpose(obs_left, (0, 2, 3, 1))
         obs_left = DataHandler().to_greyscale(obs_left)
         obs_left = DataHandler().normalizing(obs_left)
         obs_left = DataHandler().stack_with_previous(obs_left, num_images=4)
 
         # obs_right = images_array['right_rgb'] if eval else np.array([np.array(ele[0]['right_rgb']) for ele in images_array])
-        obs_right = images_array['right_rgb'] if eval else self.get_images_array(images_array, 'right_rgb')
+        obs_right = np.expand_dims(images_array['right_rgb'], 0) if eval else self.get_images_array(images_array, 'right_rgb')
         obs_right = np.transpose(obs_right, (0, 2, 3, 1))
         obs_right = DataHandler().to_greyscale(obs_right)
         obs_right = DataHandler().normalizing(obs_right)
@@ -250,6 +250,67 @@ class BirdViewMovieMaker():
 
         print("Video created successfully!")
 
+
+class FrontCameraMovieMakerArray():
+    def __init__(self, video_path, front_array, left_array, right_array, birdview_array):
+        self.video_path = video_path
+        self.front_array = np.array(front_array)
+        self.left_array = np.array(left_array)
+        self.right_array = np.array(right_array)
+        self.birdview_array = np.array(birdview_array)
+
+    def save_record(self):
+        # Define video properties
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Video format (check FourCC codes online)
+        fps = 24  # Frames per second
+        video_path = self.video_path
+
+        central_img = np.zeros((192, self.front_array[0].shape[1], self.front_array[0].shape[2]))
+        central_img[:self.front_array.shape[1], :, :] = self.front_array[0]
+        left_img = np.zeros((192, self.left_array[0].shape[1], self.left_array[0].shape[2]))
+        left_img[:self.left_array.shape[1], :, :] = self.left_array[0]
+        right_img = np.zeros((192, self.right_array[0].shape[1], self.right_array[0].shape[2]))
+        right_img[:self.right_array.shape[1], :, :] = self.right_array[0]
+        birdview_img = self.birdview_array[0]
+
+        height, central_width, channels = central_img.shape
+
+        _, left_width, _ = left_img.shape
+        _, right_width, _ = right_img.shape
+        _, birdview_width, _ = birdview_img.shape
+        width = left_width + central_width + right_width + birdview_width
+        img = np.hstack((left_img, central_img, right_img, birdview_img))
+
+        video = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
+
+        for i in range(len(self.front_array)):
+            central_img_old = self.front_array[i]
+            left_img_old = self.left_array[i]
+            right_img_old = self.right_array
+            birdview_img = self.birdview_array[i]
+
+            # central_img = np.zeros((192, central_img_old.shape[1], central_img_old.shape[2]))
+            # central_img[:central_img_old.shape[0], :, :] = central_img_old
+            # left_img = np.zeros((192, left_img_old.shape[1], left_img_old.shape[2]))
+            # left_img[:left_img_old.shape[0], :, :] = left_img_old
+            # right_img = np.zeros((192, right_img_old.shape[1], right_img_old.shape[2]))
+            # right_img[:right_img_old.shape[0], :, :] = right_img_old
+
+            central_img = np.zeros((192, self.front_array[i].shape[1], self.front_array[i].shape[2]))
+            central_img[:self.front_array.shape[1], :, :] = self.front_array[i]
+            left_img = np.zeros((192, self.left_array[i].shape[1], self.left_array[i].shape[2]))
+            left_img[:self.left_array.shape[1], :, :] = self.left_array[i]
+            right_img = np.zeros((192, self.right_array[i].shape[1], self.right_array[i].shape[2]))
+            right_img[:self.right_array.shape[1], :, :] = self.right_array[i]
+            birdview_img = self.birdview_array[i]
+
+            img = np.hstack((left_img, central_img, right_img, birdview_img))
+            video.write(cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_BGR2RGB))
+
+        video.release()
+        cv2.destroyAllWindows()
+
+        print("Video created successfully")
 
 class FrontCameraMovieMaker():
     def __init__(self, path, name_index=''):

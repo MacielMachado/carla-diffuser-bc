@@ -5,7 +5,7 @@ import tqdm
 
 from PIL import Image
 from pathlib import Path
-
+from carla_gym.envs import EndlessEnv, EndlessFixedSpawnEnv
 from carla_gym.envs import LeaderboardEnv
 from carla_gym.core.task_actor.scenario_actor.agents.constant_speed_agent import ConstantSpeedAgent
 from carla_gym.core.task_actor.scenario_actor.agents.basic_agent import BasicAgent
@@ -105,12 +105,36 @@ obs_configs = {
     }
 }
 
+spawn_point = {
+    'pitch':360.0,
+    'roll':0.0,
+    'x':150.6903991699219,
+    'y':194.78451538085938,
+    'yaw':179.83230590820312,
+    'z':0.0
+}
+
+
 if __name__ == '__main__':
     env = LeaderboardEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                         terminal_configs=terminal_configs, host="localhost", port=2021,
+                         terminal_configs=terminal_configs, host="localhost", port=2001,
                          seed=2021, no_rendering=False, **env_configs)
+
+    # env_configs = {
+    # 'carla_map': 'Town01',
+    # 'num_zombie_vehicles': [0, 150],
+    # 'num_zombie_walkers': [0, 300],
+    # 'weather_group': 'dynamic_1.0'
+    # }
+
+    # env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+    #             terminal_configs=terminal_configs, host='localhost', port=2001,
+    #             seed=np.random.randint(1, 3001), 
+    #             no_rendering=True, **env_configs, spawn_point=spawn_point)
+
+
     env = RlBirdviewWrapper(env)
-    expert_file_dir = Path('gail_experts_town01_multi_bruno_3_full/')
+    expert_file_dir = Path('gail_experts_town01_multi_bruno_3_full_LIXO_8/')
     expert_file_dir.mkdir(parents=True, exist_ok=True)
     # obs_metrics = ['control', 'vel_xy', 'linear_speed', 'vec', 'traj', 'cmd', 'command', 'state']
     for route_id in tqdm.tqdm(range(34)):
