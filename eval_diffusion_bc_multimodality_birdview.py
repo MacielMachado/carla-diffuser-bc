@@ -49,6 +49,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
     list_render_left = []
     list_render_right = []
     list_render_birdview = []
+    list_gnss = []
 
     while n_step < max_eval_steps and env_done == False:
         if architecture == 'diffusion':
@@ -64,6 +65,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
             list_render_right.append(np.transpose(obs_clean['right_rgb'], (1,2,0)))
             list_render_left.append(np.transpose(obs_clean['left_rgb'], (1,2,0)))
             list_render_birdview.append(np.transpose(obs_clean['birdview'], (1,2,0)))
+            list_gnss.append(info['gnss'])
         else:
             list_render.append(env.render(mode='rgb_array'))
         n_step += 1
@@ -80,6 +82,8 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
                                                 left_array=list_render_left,
                                                 right_array=list_render_right,
                                                 birdview_array=list_render_birdview)
+        gnss_path = video_path[:-3]+'txt'
+        np.savetxt(gnss_path, list_gnss)
         movie_maker.save_record()
 
     if observation_type != 'front':
@@ -249,7 +253,7 @@ if __name__ == '__main__':
     # env = env_maker_multimodality
     for model_path in models:
         model.load_state_dict(torch.load(model_path))
-        for i in range(10):
+        for i in range(100):
             # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
             eval_video_path = diff_bc_video + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
             evaluate_policy(
