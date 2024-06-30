@@ -9,6 +9,7 @@
 from carla_gym import CARLA_GYM_ROOT_DIR
 from carla_gym.carla_multi_agent_env import CarlaMultiAgentEnv
 from carla_gym.utils import config_utils
+import random
 import json
 
 
@@ -125,6 +126,8 @@ class EndlessFixedSpawnEnv(CarlaMultiAgentEnv):
                 } if 'scenario_actors' in actor_configs_dict else {}
             }
             all_tasks.append(task)
+        spawn_point['x'] += random.uniform(-2, 2)
+        spawn_point['y'] += random.uniform(0, 1)
         all_tasks[0]['ego_vehicles'] = {**all_tasks[0]['ego_vehicles'], **{'spawn_point':spawn_point}}
 
         return all_tasks

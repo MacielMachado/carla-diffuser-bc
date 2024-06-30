@@ -5,7 +5,8 @@ import os
 from gym.wrappers.monitoring.video_recorder import ImageEncoder
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from rl_birdview_wrapper import RlBirdviewWrapper
-from carla_gym.envs import EndlessEnv, EndlessFixedSpawnEnv, LeaderboardEnv
+# from carla_gym.envs import EndlessEnv, EndlessFixedSpawnEnv, LeaderboardEnv
+from carla_gym.envs import EndlessFixedSpawnEnv
 from models import Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet
 from data_collect import reward_configs, terminal_configs, obs_configs
 from data_preprocessing import DataHandler, FrontCameraMovieMakerArray
@@ -55,7 +56,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
         if architecture == 'diffusion':
             actions = model.sample(torch.tensor(obs).float().to(device)).to(device)[0]
         elif architecture == 'mse':
-            actions = model(torch.tensor(obs).float().to(device)).to(device)
+            actions = model(torch.tensor(obs).float().to(device)).to(device)[0]
         obs_clean, reward, done, info = env.step(np.array(actions.detach().cpu()))
         obs = handle_obs(obs_clean, observation_type)
         
@@ -131,7 +132,9 @@ def env_maker_multimodality():
 
 if __name__ == '__main__':
     diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
-    diff_bc_video = 'diff_bc_video_(diffuser)/front/multi_resnet18_complete_camera/'
+    diff_bc_video = 'diff_bc_video_(diffuser)/birdview/teste_3/'
+
+    diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
     os.makedirs(diff_bc_video, exist_ok=True)
 
     device = 'cuda'
@@ -152,26 +155,26 @@ if __name__ == '__main__':
     #     cnn_out_dim=4096).to(device)
     
     x_shape=(224, 224, 12)
-    nn_model = Model_cnn_mlp_resnet(
-        x_shape=x_shape,
-        n_hidden=n_hidden,
-        y_dim=y_dim,
-        embed_dim=embed_dim,
-        net_type=net_type,
-        origin=observation_type,
-        cnn_out_dim=4608,
-        resnet_depth='18'
-    )
+    # nn_model = Model_cnn_mlp_resnet(
+    #     x_shape=x_shape,
+    #     n_hidden=n_hidden,
+    #     y_dim=y_dim,
+    #     embed_dim=embed_dim,
+    #     net_type=net_type,
+    #     origin=observation_type,
+    #     cnn_out_dim=4608,
+    #     resnet_depth='18'
+    # )
 
-    model = Model_Cond_Diffusion(
-        nn_model,
-        betas=(1e-4, 0.02),
-        n_T=50,
-        device=device,
-        x_dim=x_shape,
-        y_dim=2,
-        drop_prob=0.0,
-        guide_w=0.0,)
+    # model = Model_Cond_Diffusion(
+    #     nn_model,
+    #     betas=(1e-4, 0.02),
+    #     n_T=50,
+    #     device=device,
+    #     x_dim=x_shape,
+    #     y_dim=2,
+    #     drop_prob=0.0,
+    #     guide_w=0.0,)
     
     # model_path = 'model_pytorch/multi/gail_experts_semaphores_nroutes1_neps1_c4c3_ep_749.pkl'
     models = [
@@ -219,7 +222,7 @@ if __name__ == '__main__':
     #     'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_600.pkl',
     #     'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_749.pkl',
     #     ]
-    # model = Model_cnn_BC(x_shape=(192, 192, 4), n_hidden=128, cnn_out_dim=2).to(device)
+    
     env_configs = {
     'carla_map': 'Town01',
     'weather_group': 'dynamic_1.0',
@@ -231,11 +234,40 @@ if __name__ == '__main__':
     #                     seed=2021, no_rendering=False, **env_configs)
     # env = RlBirdviewWrapper(env)
 
+
+
+
+
+
+    models = [
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_1.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_20.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_30.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_40.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_50.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_60.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_70.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_80.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_90.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_100.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_120.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_150.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_200.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_250.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_300.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_350.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_400.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_500.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_600.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_749.pkl',
+        ]
+
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                        terminal_configs=terminal_configs, host="localhost", port=2001,
+                        terminal_configs=terminal_configs, host="localhost", port=2020,
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point)
     env = RlBirdviewWrapper(env)
-
+    
+    model = Model_cnn_BC(x_shape=(192, 192, 4), n_hidden=128, cnn_out_dim=2).to(device)
 
     # env_configs = {
     #     'carla_map': 'Town01',
@@ -253,7 +285,7 @@ if __name__ == '__main__':
     # env = env_maker_multimodality
     for model_path in models:
         model.load_state_dict(torch.load(model_path))
-        for i in range(100):
+        for i in range(12, 100):
             # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
             eval_video_path = diff_bc_video + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
             evaluate_policy(
@@ -263,6 +295,6 @@ if __name__ == '__main__':
                 device=device,
                 observation_type=observation_type,
                 max_eval_steps=300,
-                architecture='diffusion')
+                architecture='mse')
             # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
             # object.save_record()

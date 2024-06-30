@@ -1,5 +1,7 @@
 .venv
+.venv2
 video
+diff_bc_video_multi_5/
 model_pytorch_fixed_route_full_front_resnet18/
 gail_experts_basic
 gail_experts_semaphores

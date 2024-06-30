@@ -142,7 +142,7 @@ class DataHandler():
         return np.array(obs_resized)
 
     def __preprocess_birdview(self, images_array, eval=False, embedding='Model_cnn_mlp'):
-        obs = images_array['birdview'] if eval else np.array([np.array(ele[0]['birdview']) for ele in images_array])
+        obs = np.expand_dims(images_array['birdview'], 0) if eval else np.array([np.array(ele[0]['birdview']) for ele in images_array])
         obs = np.transpose(obs, (0, 2, 3, 1))
         obs = DataHandler().to_greyscale(obs)
         obs = DataHandler().normalizing(obs)
@@ -377,7 +377,7 @@ class FrontCameraMovieMaker():
         cv2.destroyAllWindows()
 
         print("Video created successfully")
-
+ 
 
 if __name__ == '__main__':
 
