@@ -60,7 +60,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
         obs_clean, reward, done, info = env.step(np.array(actions.detach().cpu()))
         obs = handle_obs(obs_clean, observation_type)
         
-        if observation_type == 'front':
+        if True:
             list_render.append(np.transpose(obs_clean['central_rgb'], (1,2,0)))
             list_render_front.append(np.transpose(obs_clean['central_rgb'], (1,2,0)))
             list_render_right.append(np.transpose(obs_clean['right_rgb'], (1,2,0)))
@@ -77,7 +77,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
         for i in np.where(done)[0]:
             break
 
-    if observation_type == 'front':
+    if True:
         movie_maker = FrontCameraMovieMakerArray(video_path=video_path,
                                                 front_array=list_render_front,
                                                 left_array=list_render_left,
@@ -132,14 +132,14 @@ def env_maker_multimodality():
 
 if __name__ == '__main__':
     diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
-    diff_bc_video = 'diff_bc_video_(diffuser)/birdview/teste_3/'
+    diff_bc_video = 'diff_bc_video_(not_diffuser)/birdview/teste_3/'
 
-    diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
+    # diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
     os.makedirs(diff_bc_video, exist_ok=True)
 
     device = 'cuda'
     net_type = 'transformer'
-    observation_type = 'front'
+    observation_type = 'birdview'
 
     x_shape = (192, 192, 4)
     y_dim = 2
@@ -240,26 +240,26 @@ if __name__ == '__main__':
 
 
     models = [
-        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_1.pkl',
-        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_20.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_1.pkl',
+        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_20.pkl',
         'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_30.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_40.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_50.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_60.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_70.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_80.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_90.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_100.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_120.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_150.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_200.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_250.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_300.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_350.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_400.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_500.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_600.pkl',
-        'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_749.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_40.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_50.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_60.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_70.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_80.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_90.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_100.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_120.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_150.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_200.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_250.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_300.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_350.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_400.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_500.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_600.pkl',
+        # 'model_pytorch_multi_behavior_cloning/gail_experts_nroutes1_neps1_ce06_ep_749.pkl',
         ]
 
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
@@ -285,7 +285,7 @@ if __name__ == '__main__':
     # env = env_maker_multimodality
     for model_path in models:
         model.load_state_dict(torch.load(model_path))
-        for i in range(12, 100):
+        for i in range(0, 100):
             # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
             eval_video_path = diff_bc_video + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
             evaluate_policy(
