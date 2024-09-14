@@ -1,7 +1,6 @@
 from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet
 from data_preprocessing import DataHandler, CarlaCustomDataset
 from expert_dataset import ExpertDataset
-from torchvision import transforms
 import torch.utils.data as data
 from tqdm import tqdm
 import numpy as np
@@ -46,7 +45,7 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Fixed-Route-Simples-Front-Resnet50",
+            self.config_wandb(project_name="Carla-Diffuser-Fixed-Route-Simples-Birdview-No-Trajectory",
                               name=self.name + '__' + self.get_git_commit_hash()[0:10])
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
@@ -200,8 +199,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch_fixed_route_full_front_resnet50_diff_bc/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_fixed_route_full_front_resnet50_diff_bc/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Fixed_No_Trajectory_01/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Fixed_No_Trajectory_01/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -246,7 +245,7 @@ if __name__ == '__main__':
             lrate=0.0001,
             device='cuda', 
             n_hidden=128,
-            batch_size=8,
+            batch_size=16,
             n_T=20,
             net_type='transformer',
             drop_prob=0.0,
@@ -254,14 +253,14 @@ if __name__ == '__main__':
             embed_dim=128,
             guide_w=0.0,
             betas=(1e-4, 0.02),
-            dataset_path='gail_experts_multi_bruno_3_simples',
+            dataset_path='data_collection/town01_fixed_route_without_trajectory',
             run_wandb=True,
             record_run=True,
-            expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
-            name='Resnet50_gail_experts_multi_bruno_3_simples_front',
+            expert_dataset=ExpertDataset('data_collection/town01_fixed_route_without_trajectory', n_routes=10, n_eps=1),
+            name='town01_fixed_route_without_trajectory_birdview',
             param_search=False,
-            embedding="Model_cnn_mlp_resnet50",
-            data_type='front').main()
+            embedding="Model_cnn_mlp",
+            data_type='birdview').main()
 
 
 
