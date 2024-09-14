@@ -16,7 +16,7 @@ class Trainer():
                  net_type, drop_prob, extra_diffusion_steps, embed_dim,
                  guide_w, betas, dataset_path, run_wandb, record_run,
                  expert_dataset, data_type, name='', param_search=False,
-                 embedding="Model_cnn_mlp"):
+                 embedding="Model_cnn_mlp", iteration=None):
         print("3")
         self.n_epoch = n_epoch
         self.lrate = lrate
@@ -41,6 +41,7 @@ class Trainer():
         self.early_stopping_counter = 0
         self.expert_dataset = expert_dataset
         self.data_type = data_type
+        self.iteration = iteration
 
     def main(self):
         print("4")
@@ -199,8 +200,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Fixed_No_Trajectory_01/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Fixed_No_Trajectory_01/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -241,26 +242,28 @@ if __name__ == '__main__':
     '''
     stop  = 1
     print('2')
-    Trainer(n_epoch=1000,
-            lrate=0.0001,
-            device='cuda', 
-            n_hidden=128,
-            batch_size=16,
-            n_T=20,
-            net_type='transformer',
-            drop_prob=0.0,
-            extra_diffusion_steps=16,
-            embed_dim=128,
-            guide_w=0.0,
-            betas=(1e-4, 0.02),
-            dataset_path='data_collection/town01_fixed_route_without_trajectory',
-            run_wandb=True,
-            record_run=True,
-            expert_dataset=ExpertDataset('data_collection/town01_fixed_route_without_trajectory', n_routes=10, n_eps=1),
-            name='town01_fixed_route_without_trajectory_birdview',
-            param_search=False,
-            embedding="Model_cnn_mlp",
-            data_type='birdview').main()
+    for i in range(5):
+        Trainer(n_epoch=1000,
+                lrate=0.0001,
+                device='cuda', 
+                n_hidden=128,
+                batch_size=16,
+                n_T=20,
+                net_type='transformer',
+                drop_prob=0.0,
+                extra_diffusion_steps=16,
+                embed_dim=128,
+                guide_w=0.0,
+                betas=(1e-4, 0.02),
+                dataset_path='data_collection/town01_fixed_route_without_trajectory',
+                run_wandb=True,
+                record_run=True,
+                expert_dataset=ExpertDataset('data_collection/town01_fixed_route_without_trajectory', n_routes=10, n_eps=1),
+                name='town01_fixed_route_without_trajectory_birdview',
+                param_search=False,
+                embedding="Model_cnn_mlp",
+                data_type='birdview',
+                iteration=i).main()
 
 
 
