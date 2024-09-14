@@ -1,3 +1,5 @@
+data_collection/
+diff_bc_video_(diffuser)/
 .venv
 .venv2
 video
@@ -10,6 +12,7 @@ model_pytorch_multi_full_front/
 model_pytorch_multi_full_birdview/
 model_pytorch_multi_full_front_resnet18_2/
 model_pytorch_multi_behavior_cloning/
+model_pytorch_fixed_route_full_front_resnet50_diff_bc/
 ckpt
 outputs
 wandb

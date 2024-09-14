@@ -54,3 +54,41 @@ class Model_cnn_BC(nn.Module):
         x_lin4 = self.fc4(x_lin3)
         # c_embed is now [batch size, 128]
         return x_lin4
+
+
+class Model_cnn_BC_resnet(nn.Module):
+    def __init__(self, x_shape, n_hidden, cnn_out_dim=2, resnet_depth="18", origin="birdview"):
+        super(Model_cnn_BC_resnet, self).__init__()
+
+        self.x_shape = x_shape
+        self.n_hidden = n_hidden
+        self.n_feat = 64
+        self.resnet_depth = resnet_depth
+
+        if origin == 'birdview':
+            num_channels = 4
+        elif origin == 'front':
+            num_channels = 12
+        else:
+            raise NotImplementedError
+
+        if self.resnet_depth == '18':
+            self.model = models.resnet18(pretrained=True) 
+        elif self.resnet_depth == '50':
+            self.model = models.resnet50(pretrained=True)
+
+        weights = self.model.conv1.weight
+        if origin == 'front':
+            weights = torch.cat([weights] * 4, dim=1)
+
+        self.new_conv1 = torch.nn.Conv2d(num_channels, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+        self.num_fc_ftrs = self.model.fc.in_features
+        self.new_fc = nn.Linear(self.num_fc_ftrs, cnn_out_dim)
+
+        self.model.conv1 = self.new_conv1
+        self.model.conv1.weight = torch.nn.Parameter(weights)
+        self.model.fc = self.new_fc
+
+    def forward(self, x):
+        x = x.permute(0, 3, 2, 1)
+        return self.model(x)

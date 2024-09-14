@@ -1,5 +1,5 @@
 from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet
-from models_bc import Model_cnn_BC
+from models_bc import Model_cnn_BC, Model_cnn_BC_resnet
 from data_preprocessing import DataHandler, CarlaCustomDataset
 from expert_dataset import ExpertDataset
 from torchvision import transforms
@@ -47,7 +47,7 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multimodality-Simples-Birdview-Behavior Cloning",
+            self.config_wandb(project_name="Carla-Multimodality-Simples-Front-Behavior-Cloning-Resnet50",
                               name=self.name + '__' + self.get_git_commit_hash()[0:10])
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
@@ -90,7 +90,7 @@ class Trainer():
         obs = DataHandler().preprocess_images(dataset, observation_type=self.data_type, embedding=self.embedding)
         print("4.1")
         # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
-        state = np.array([np.array(ele[0]['state']) for ele in dataset])
+        # state = np.array([np.array(ele[0]['state']) for ele in dataset])
         print("4.2")
         actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
         print("4.3")
@@ -117,6 +117,10 @@ class Trainer():
         cnn_out_dim = 2
         if self.embedding == "Model_cnn_BC":
             return Model_cnn_BC(x_dim, self.n_hidden, cnn_out_dim).to(self.device)
+        elif self.embedding[:-2] == 'Model_cnn_BC_resnet':
+            return Model_cnn_BC_resnet( x_dim, self.n_hidden, cnn_out_dim=y_dim,
+                                        resnet_depth=self.embedding[-2:],
+                                        origin=self.data_type).to(self.device)
         else:
             raise NotImplementedError
     
@@ -186,8 +190,8 @@ class Trainer():
         return torch.nn.MSELoss()(y, y_hat)
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch_multi_behavior_cloning/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_multi_behavior_cloning/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/BC_Multi_Simple_05/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/BC_Multi_Simple_05/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -232,7 +236,7 @@ if __name__ == '__main__':
             lrate=0.0001,
             device='cuda', 
             n_hidden=128,
-            batch_size=10,
+            batch_size=16,
             n_T=50,
             net_type='transformer',
             drop_prob=0.0,
@@ -242,9 +246,9 @@ if __name__ == '__main__':
             betas=(1e-4, 0.02),
             dataset_path='gail_experts_multi_bruno_3_simples',
             run_wandb=False,
-            record_run=False,
+            record_run=True,
             expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
-            name='gail_experts_nroutes1_neps1',
+            name='Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC',
             param_search=False,
             embedding="Model_cnn_BC",
             data_type='birdview').main()

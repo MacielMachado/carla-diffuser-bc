@@ -42,6 +42,13 @@ class RlBirdviewWrapper(gym.Wrapper):
         observation_space['central_rgb'] = env.observation_space[self._ev_id]['central_rgb']['data']
         observation_space['gnss'] = env.observation_space['hero']['gnss']['gnss']
 
+        # observation_space['birdview'] = env.observation_space['birdview']
+        # observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # We create this new observation dimension
+        # observation_space['left_rgb'] = env.observation_space['left_rgb']
+        # observation_space['right_rgb'] = env.observation_space['right_rgb']
+        # observation_space['central_rgb'] = env.observation_space['central_rgb']
+        # observation_space['gnss'] = env.observation_space['gnss']
+
         env.observation_space = gym.spaces.Dict(**observation_space)
 
         env.action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)  # Define action dimensionality
@@ -112,6 +119,17 @@ class RlBirdviewWrapper(gym.Wrapper):
         info['central_rgb'] = obs['central_rgb']
         info['right_rgb'] = obs['right_rgb']
         info['gnss'] = obs['gnss']
+
+        info['collisions_layout'] = info_ma['collisions_layout']
+        info['collisions_vehicle'] = info_ma['collisions_vehicle']
+        info['collisions_pedestrian'] = info_ma['collisions_pedestrian']
+        info['collisions_others'] = info_ma['collisions_others']
+        info['route_deviation'] = info_ma['route_deviation']
+        info['wrong_lane'] = info_ma['wrong_lane']
+        info['outside_lane'] = info_ma['outside_lane']
+        info['run_red_light'] = info_ma['run_red_light']
+        info['encounter_stop'] = info_ma['encounter_stop']
+        info['stop_infraction'] = info_ma['stop_infraction']
         return obs, reward, done, info
         # return obs, '', '', ''
 

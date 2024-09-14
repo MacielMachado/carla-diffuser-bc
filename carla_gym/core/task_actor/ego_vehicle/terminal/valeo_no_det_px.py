@@ -102,6 +102,13 @@ class ValeoNoDetPx(object):
         ]
         terminal_debug = {
             'exploration_suggest': exploration_suggest,
-            'debug_texts': debug_texts
+            'debug_texts': debug_texts,
+            'c_blocked': c_blocked,
+            'c_lat_dist': c_lat_dist,
+            'c_collision': c_collision,
+            'c_collision_px': c_collision_px,
+            'timeout': timeout,
+            'lat_dist': lat_dist,
+            'thresh_lat_dist': thresh_lat_dist
         }
         return done, timeout, terminal_reward, terminal_debug

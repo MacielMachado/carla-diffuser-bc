@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 export PYTHONPATH=$PYTHONPATH:./api_carla/9.10/PythonAPI/carla/

@@ -1,6 +1,7 @@
 from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion
 from data_preprocessing import DataHandler, CarlaCustomDataset
 from expert_dataset import ExpertDataset
+from models_bc import Model_cnn_BC
 import torch.utils.data as data
 from tqdm import tqdm
 import numpy as np
@@ -44,7 +45,7 @@ class TrainerSemaphores():
 
     def main(self):
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multi",
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality",
                               name=self.name)
         dataload_train = self.prepare_dataset(self.expert_dataset)
         x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
@@ -195,8 +196,8 @@ class TrainerSemaphores():
         return model
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/multi/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/multi/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_06/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_06/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 
 def extract_action_mse(y, y_hat):
@@ -238,7 +239,7 @@ if __name__ == '__main__':
         lrate=0.0001,
         device='cuda', 
         n_hidden=128,
-        batch_size=32,
+        batch_size=16,
         n_T=20,
         net_type='transformer',
         drop_prob=0.0,
@@ -246,10 +247,10 @@ if __name__ == '__main__':
         embed_dim=128,
         guide_w=0.0,
         betas=(1e-4, 0.02),
-        dataset_path='gail_experts_multi',
-        run_wandb=False,
-        record_run=False,
-        expert_dataset=ExpertDataset('gail_experts_multi', n_routes=1, n_eps=1, semaphore=False),
-        name='gail_experts_semaphores_nroutes1_neps1',
+        dataset_path='gail_experts_multi_bruno_3_simples',
+        run_wandb=True,
+        record_run=True,
+        expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10, semaphore=False),
+        name='gail_experts_nroutes1_neps1',
         param_search=False,
         embedding="Model_cnn_mlp",).main()

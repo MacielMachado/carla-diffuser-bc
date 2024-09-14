@@ -99,6 +99,9 @@ class DataHandler():
             else:
                 arr = np.expand_dims(np.array(images_array[i][0][observation_type]), axis=0)
                 new_list = np.concatenate((new_list, arr), axis=0)
+            # if i > 5:
+            #     return np.array(new_list)
+
         return np.array(new_list)
 
     def __preprocess_front_images(self, images_array, eval):
@@ -381,7 +384,7 @@ class FrontCameraMovieMaker():
 
 if __name__ == '__main__':
 
-    path='gail_experts_multi_bruno_3_simples/'
+    path='data_collection/town01_fixed_route_without_trajectory/'
     # os.makedirs(path, exist_ok=False)
     for i in range(len(os.listdir(path))):
         if os.listdir(path)[i][-4:] != '.mp4':

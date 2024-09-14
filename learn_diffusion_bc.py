@@ -46,7 +46,7 @@ class Trainer():
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Fixed-Route-Simples-Front-Resnet",
+            self.config_wandb(project_name="Carla-Diffuser-Fixed-Route-Simples-Front-Resnet50",
                               name=self.name + '__' + self.get_git_commit_hash()[0:10])
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
@@ -91,7 +91,7 @@ class Trainer():
         obs = DataHandler().preprocess_images(dataset, observation_type=self.data_type, embedding=self.embedding)
         print("4.1")
         # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
-        state = np.array([np.array(ele[0]['state']) for ele in dataset])
+        # state = np.array([np.array(ele[0]['state']) for ele in dataset])
         print("4.2")
         actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
         print("4.3")
@@ -200,8 +200,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch_fixed_route_full_front_resnet18_diff_bc/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_fixed_route_full_front_resnet18_diff_bc/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch_fixed_route_full_front_resnet50_diff_bc/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch_fixed_route_full_front_resnet50_diff_bc/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -245,9 +245,9 @@ if __name__ == '__main__':
     Trainer(n_epoch=1000,
             lrate=0.0001,
             device='cuda', 
-            n_hidden=512,
-            batch_size=32,
-            n_T=50,
+            n_hidden=128,
+            batch_size=8,
+            n_T=20,
             net_type='transformer',
             drop_prob=0.0,
             extra_diffusion_steps=16,
@@ -255,8 +255,8 @@ if __name__ == '__main__':
             guide_w=0.0,
             betas=(1e-4, 0.02),
             dataset_path='gail_experts_multi_bruno_3_simples',
-            run_wandb=False,
-            record_run=False,
+            run_wandb=True,
+            record_run=True,
             expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
             name='Resnet50_gail_experts_multi_bruno_3_simples_front',
             param_search=False,

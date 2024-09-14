@@ -116,6 +116,22 @@ class EgoVehicleHandler(object):
             info_dict[ev_id]['timeout'] = timeout
             info_dict[ev_id]['reward_debug'] = reward_debug
             info_dict[ev_id]['terminal_debug'] = terminal_debug
+            info_dict['c_blocked'] = terminal_debug['c_blocked']
+            info_dict['c_lat_dist'] = terminal_debug['c_lat_dist']
+            info_dict['c_collision'] = terminal_debug['c_collision']
+            info_dict['c_collision_px'] = terminal_debug['c_collision_px']
+            info_dict['lat_dist'] = terminal_debug['lat_dist']
+            info_dict['thresh_lat_dist'] = terminal_debug['thresh_lat_dist']
+            info_dict['collisions_layout'] = False
+            info_dict['collisions_vehicle'] = False
+            info_dict['collisions_pedestrian'] = False
+            info_dict['collisions_others'] = False
+            info_dict['route_deviation'] = False
+            info_dict['wrong_lane'] = False
+            info_dict['outside_lane'] = False
+            info_dict['run_red_light'] = False
+            info_dict['encounter_stop'] = False
+            info_dict['stop_infraction'] = False
 
             # accumulate into buffers
             self.reward_buffers[ev_id].append(reward)
@@ -123,30 +139,40 @@ class EgoVehicleHandler(object):
             if info['collision']:
                 if info['collision']['collision_type'] == 0:
                     self.info_buffers[ev_id]['collisions_layout'].append(info['collision'])
+                    info_dict['collisions_layout'] = True
                 elif info['collision']['collision_type'] == 1:
                     self.info_buffers[ev_id]['collisions_vehicle'].append(info['collision'])
+                    info_dict['collisions_vehicle'] = True
                 elif info['collision']['collision_type'] == 2:
                     self.info_buffers[ev_id]['collisions_pedestrian'].append(info['collision'])
+                    info_dict['collisions_pedestrian'] = True
                 else:
                     self.info_buffers[ev_id]['collisions_others'].append(info['collision'])
+                    info_dict['collisions_others'] = True
             if info['run_red_light']:
                 self.info_buffers[ev_id]['red_light'].append(info['run_red_light'])
+                info_dict['run_red_light'] = True
             if info['encounter_light']:
                 self.info_buffers[ev_id]['encounter_light'].append(info['encounter_light'])
             if info['run_stop_sign']:
                 if info['run_stop_sign']['event'] == 'encounter':
                     self.info_buffers[ev_id]['encounter_stop'].append(info['run_stop_sign'])
+                    info_dict['encounter_stop'] = True
                 elif info['run_stop_sign']['event'] == 'run':
                     self.info_buffers[ev_id]['stop_infraction'].append(info['run_stop_sign'])
+                    info_dict['stop_infraction'] = True
             if info['route_deviation']:
                 self.info_buffers[ev_id]['route_dev'].append(info['route_deviation'])
+                info_dict['route_deviation'] = True
             if info['blocked']:
                 self.info_buffers[ev_id]['vehicle_blocked'].append(info['blocked'])
             if info['outside_route_lane']:
                 if info['outside_route_lane']['outside_lane']:
                     self.info_buffers[ev_id]['outside_lane'].append(info['outside_route_lane'])
+                    info_dict['outside_lane'] = True
                 if info['outside_route_lane']['wrong_lane']:
                     self.info_buffers[ev_id]['wrong_lane'].append(info['outside_route_lane'])
+                    info_dict['wrong_lane'] = True
             # save episode summary
             if done:
                 info_dict[ev_id]['episode_event'] = self.info_buffers[ev_id]
@@ -217,7 +243,7 @@ class EgoVehicleHandler(object):
                     'stop_passed': n_encounter_stop-n_stop_infraction,
                     'encounter_stop': n_encounter_stop,
                     'route_dev': len(self.info_buffers[ev_id]['route_dev']) / completed_length,
-                    'vehicle_blocked': len(self.info_buffers[ev_id]['vehicle_blocked']) / completed_length
+                    'vehicle_blocked': len(self.info_buffers[ev_id]['vehicle_blocked']) / completed_length,
                 }
 
         done_dict['__all__'] = all(done for obs_id, done in done_dict.items())
