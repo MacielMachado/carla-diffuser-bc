@@ -18,7 +18,7 @@ class Trainer():
                  net_type, drop_prob, extra_diffusion_steps, embed_dim,
                  guide_w, betas, dataset_path, run_wandb, record_run,
                  expert_dataset, data_type, name='', param_search=False,
-                 embedding="Model_cnn_BC"):
+                 embedding="Model_cnn_BC", iteration=None):
         print("3")
         self.n_epoch = n_epoch
         self.lrate = lrate
@@ -43,11 +43,12 @@ class Trainer():
         self.early_stopping_counter = 0
         self.expert_dataset = expert_dataset
         self.data_type = data_type
+        self.iteration = iteration
 
     def main(self):
         print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Multimodality-Simples-Front-Behavior-Cloning-Resnet50",
+            self.config_wandb(project_name="Carla-Diffuser-Fixed-Route-Simples-Birdview-No-Trajectory",
                               name=self.name + '__' + self.get_git_commit_hash()[0:10])
         print("4")
         dataload_train = self.prepare_dataset(self.expert_dataset)
@@ -177,7 +178,7 @@ class Trainer():
                         
                     results_ep.append(loss_ep / n_batch)
 
-            if ep in [1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 749]:
+            if ep in [1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 750, 850, 950, 1000]:
                 name=f'model_novo_ep_{ep}'
                 self.save_model(model, ep)
 
@@ -190,8 +191,8 @@ class Trainer():
         return torch.nn.MSELoss()(y, y_hat)
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/BC_Multi_Simple_05/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/BC_Multi_Simple_05/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -232,26 +233,28 @@ if __name__ == '__main__':
     '''
     stop  = 1
     print('2')
-    Trainer(n_epoch=750,
-            lrate=0.0001,
-            device='cuda', 
-            n_hidden=128,
-            batch_size=16,
-            n_T=50,
-            net_type='transformer',
-            drop_prob=0.0,
-            extra_diffusion_steps=16,
-            embed_dim=128,
-            guide_w=0.0,
-            betas=(1e-4, 0.02),
-            dataset_path='gail_experts_multi_bruno_3_simples',
-            run_wandb=False,
-            record_run=True,
-            expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10),
-            name='Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC',
-            param_search=False,
-            embedding="Model_cnn_BC",
-            data_type='birdview').main()
+    for i in range(5):
+        Trainer(n_epoch=1000,
+                lrate=0.0001,
+                device='cuda', 
+                n_hidden=128,
+                batch_size=16,
+                n_T=50,
+                net_type='transformer',
+                drop_prob=0.0,
+                extra_diffusion_steps=16,
+                embed_dim=128,
+                guide_w=0.0,
+                betas=(1e-4, 0.02),
+                dataset_path='data_collection/town01_fixed_route_without_trajectory',
+                run_wandb=False,
+                record_run=True,
+                expert_dataset=ExpertDataset('data_collection/town01_fixed_route_without_trajectory', n_routes=10, n_eps=1),
+                name='town01_fixed_route_without_trajectory_birdview',
+                param_search=False,
+                embedding="Model_cnn_BC",
+                data_type='birdview',
+                iteration=i).main()
 
 
 

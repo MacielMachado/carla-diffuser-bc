@@ -3,6 +3,7 @@ import cv2
 import math
 import torch
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from skimage.transform import resize
@@ -382,7 +383,63 @@ class FrontCameraMovieMaker():
         print("Video created successfully")
  
 
+class ActionsHistogram():
+    def __init__(self):
+        pass
+
+    def main(self, path):
+        actions = self.load_data(path)
+        fig = self.gerar_histogramas(list(actions))
+        self.save_fig(fig, path)
+
+    @staticmethod
+    def load_data(path):
+        path = os.path.join(path, 'episode.json')
+        return pd.read_json(path)['actions'].values
+    
+    def gerar_histogramas(self, actions):
+        coluna_a = [sublista[0] for sublista in actions]
+        coluna_b = [sublista[1] for sublista in actions]
+        
+        fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+
+        axs[0].hist(coluna_a, bins=10, color='blue', alpha=0.7)
+        axs[0].set_title('Acceleration')
+        # axs[0].set_xlabel('Valores de A')
+        # axs[0].set_ylabel('Frequência')
+
+        axs[0].set_xlim([0, 1])
+        axs[0].set_ylim([0, 3500])
+
+        axs[1].hist(coluna_b, bins=10, color='green', alpha=0.7)
+        axs[1].set_title('Steering')
+        # axs[1].set_xlabel('Valores de B')
+        # axs[1].set_ylabel('Frequência')
+
+        axs[1].set_xlim([-1, 1])
+        axs[1].set_ylim([0, 3500])
+
+        plt.tight_layout()
+        plt.show()
+        
+        return fig
+    
+    def save_fig(self, fig, path_to_save):
+        if not os.path.exists(path_to_save):
+            os.makedirs(path_to_save)
+
+        file_path = os.path.join(path_to_save, "histograms.png")
+        fig.savefig(file_path)
+
+
 if __name__ == '__main__':
+
+    for i in range(10):
+        path = os.path.join('data_collection/town01_fixed_route_without_trajectory', f'route_0{i}', 'ep_00')
+        ActionsHistogram().main(path)
+
+
+
 
     path='data_collection/town01_fixed_route_without_trajectory/'
     # os.makedirs(path, exist_ok=False)

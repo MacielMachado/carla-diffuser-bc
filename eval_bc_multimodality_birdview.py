@@ -32,6 +32,16 @@ spawn_point = {
 }
 
 
+spawn_point_action_histogram = {
+    'pitch':360.0,
+    'roll':0.0,
+    'x':110.6903991699219,
+    'y':194.78451538085938,
+    'yaw':179.83230590820312,
+    'z':0.0
+}
+
+
 def handle_obs(obs, observation_type):
     obs = DataHandler().preprocess_images(obs, observation_type=observation_type , eval=True)
     return obs
@@ -55,6 +65,9 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
     list_render_right = []
     list_render_birdview = []
     list_gnss = []
+    ep_dict = {}
+    ep_dict['actions'] = []
+    ep_dict['state'] = []
 
     # while n_step < max_eval_steps and env_done == False:
     while n_step < max_eval_steps:
@@ -85,6 +98,8 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
             list_render_left.append(np.transpose(obs_clean['left_rgb'], (1,2,0)))
             list_render_birdview.append(np.transpose(obs_clean['birdview'], (1,2,0)))
             list_gnss.append(info['gnss'])
+            ep_dict['state'].append(np.transpose(obs_clean['birdview'], (1,2,0)))
+            ep_dict['actions'].append([actions[0].item(), actions[1].item()])
         else:
             list_render.append(env.render(mode='rgb_array'))
         n_step += 1
@@ -106,11 +121,14 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
 
         gnss_path = video_path[:-3]+'txt'
         route_completion_data_path = video_path[:-3]+'csv'
+        actions_observation_path = video_path[:-3]+'json'
 
         route_info = pd.concat([route_completion_buffer, route_infraction_total], axis=1)
         route_info.to_csv(route_completion_data_path, index=False)
 
         np.savetxt(gnss_path, list_gnss)
+        ep_df = pd.DataFrame(ep_dict)
+        ep_df.to_json(actions_observation_path)
 
     # if observation_type != 'front':
     #     encoder = ImageEncoder(video_path, list_render[0].shape, 30, 30)
@@ -162,12 +180,12 @@ if __name__ == '__main__':
     diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
     diff_bc_video = 'diff_bc_video_(not_diffuser)/birdview/teste_3/'
     diff_bc_video = 'diff_bc_video_(diffuser)/front/resnet18/teste/'
-    diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples/'
+    diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions/'
 
     # diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
     os.makedirs(diff_bc_video, exist_ok=True)
 
-    device = 'cuda'
+    device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -405,7 +423,7 @@ if __name__ == '__main__':
         'model_pytorch/BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
     ]
 
-    device = 'cuda'
+    device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -418,7 +436,7 @@ if __name__ == '__main__':
 
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
                         terminal_configs=terminal_configs, host="localhost", port=2020,
-                        seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point)
+                        seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
     # -----------------------------------------------------------------------------------------
 
@@ -426,7 +444,7 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load(model_path))
         for i in range(0, 10):
             # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
-            diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_2/'
+            diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions/'
             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
             os.makedirs(diff_bc_video_2, exist_ok=True)
             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
@@ -436,7 +454,7 @@ if __name__ == '__main__':
                 video_path=eval_video_path,
                 device=device,
                 observation_type=observation_type,
-                max_eval_steps=300,
+                max_eval_steps=200,
                 architecture='mse',
                 movie=False)
             # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
