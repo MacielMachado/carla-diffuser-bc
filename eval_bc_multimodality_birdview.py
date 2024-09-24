@@ -423,6 +423,33 @@ if __name__ == '__main__':
         'model_pytorch/BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
     ]
 
+
+    models = [
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_1.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_20.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_30.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_40.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_50.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_60.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_70.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_80.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_90.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_100.pkl',
+
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_120.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_150.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_200.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_250.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_300.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_350.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_400.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_500.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_600.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_750.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_850.pkl',
+        'model_pytorch/BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_11a6_ep_950.pkl',
+    ]
+
     device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
@@ -444,7 +471,7 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load(model_path))
         for i in range(0, 10):
             # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
-            diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions/'
+            diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions_with_fixed_route/'
             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
             os.makedirs(diff_bc_video_2, exist_ok=True)
             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'

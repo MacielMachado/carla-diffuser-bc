@@ -409,7 +409,7 @@ class ActionsHistogram():
         # axs[0].set_ylabel('Frequência')
 
         axs[0].set_xlim([0, 1])
-        axs[0].set_ylim([0, 3500])
+        axs[0].set_ylim([0, 500])
 
         axs[1].hist(coluna_b, bins=10, color='green', alpha=0.7)
         axs[1].set_title('Steering')
@@ -417,7 +417,7 @@ class ActionsHistogram():
         # axs[1].set_ylabel('Frequência')
 
         axs[1].set_xlim([-1, 1])
-        axs[1].set_ylim([0, 3500])
+        axs[1].set_ylim([0, 500])
 
         plt.tight_layout()
         plt.show()
@@ -434,26 +434,27 @@ class ActionsHistogram():
 
 if __name__ == '__main__':
 
-    for i in range(10):
-        path = os.path.join('data_collection/town01_fixed_route_without_trajectory', f'route_0{i}', 'ep_00')
-        ActionsHistogram().main(path)
+    for i in range(2):
+        for j in range(10):
+            path = os.path.join('data_collection/town01_multimodality_t_intersection_simples', f'route_0{i}', f'ep_0{j}')
+            ActionsHistogram().main(path)
 
 
 
 
-    path='data_collection/town01_fixed_route_without_trajectory/'
-    # os.makedirs(path, exist_ok=False)
-    for i in range(len(os.listdir(path))):
-        if os.listdir(path)[i][-4:] != '.mp4':
-            if i < 10:
-                index_str = "0"+str(i)
-            else:
-                index_str = str(i)
-        for j in range(len(os.listdir(path + f'route_{index_str}/'))):
-            if os.listdir(path)[i][-4:] != '.mp4':
-                route_path = path + f'route_{index_str}/ep_0{j}' 
-                object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
-                object.save_record()
+    # path='data_collection/town01_fixed_route_without_trajectory/'
+    # # os.makedirs(path, exist_ok=False)
+    # for i in range(len(os.listdir(path))):
+    #     if os.listdir(path)[i][-4:] != '.mp4':
+    #         if i < 10:
+    #             index_str = "0"+str(i)
+    #         else:
+    #             index_str = str(i)
+    #     for j in range(len(os.listdir(path + f'route_{index_str}/'))):
+    #         if os.listdir(path)[i][-4:] != '.mp4':
+    #             route_path = path + f'route_{index_str}/ep_0{j}' 
+    #             object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
+    #             object.save_record()
 
     # path='gail_experts_multi_sempahore/'
     # for i in range(len(os.listdir(path))):
