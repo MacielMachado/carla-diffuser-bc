@@ -420,7 +420,7 @@ class Model_Cond_Diffusion(nn.Module):
         self.y_dim = y_dim
         self.guide_w = guide_w
 
-    def loss_on_batch(self, x_batch, y_batch):
+    def loss_on_batch(self, x_batch, y_batch, speed=None):
         _ts = torch.randint(1, self.n_T + 1, (y_batch.shape[0], 1)).to(self.device)
 
         # dropout context with some probability
@@ -433,7 +433,10 @@ class Model_Cond_Diffusion(nn.Module):
         y_t = self.sqrtab[_ts] * y_batch + self.sqrtmab[_ts] * noise
 
         # use nn model to predict noise
-        noise_pred_batch = self.nn_model(y_t, x_batch, _ts / self.n_T, context_mask)
+        if speed != None:
+            noise_pred_batch = self.nn_model(y_t, x_batch, speed, _ts / self.n_T, context_mask)    
+        else:
+            noise_pred_batch = self.nn_model(y_t, x_batch, _ts / self.n_T, context_mask)
         # noise_pred_batch = self.nn_model(y_batch, x_batch, _ts / self.n_T, context_mask)
 
         # return mse between predicted and true noise
@@ -1067,6 +1070,88 @@ class Model_cnn_mlp(nn.Module):
 
         if x_embed is None:
             x_embed = self.embed_context(x)
+        else:
+            # otherwise, we already extracted x_embed
+            # e.g. outside of sampling loop
+            pass
+
+        return self.nn_downstream(y, x_embed, t, context_mask)
+
+    def embed_context(self, x):
+        x = x.permute(0, 3, 2, 1)
+        x1 = self.conv_down1(x)
+        x3 = self.conv_down3(x1)  # [batch_size, 128, 35, 18]
+        # c3 is [batch size, 128, 4, 4]
+        x_embed = self.imageembed(x3)
+        # c_embed is [batch size, 128, 1, 1]
+        x_embed = x_embed.view(x.shape[0], -1)
+        # c_embed is now [batch size, 128]
+        return x_embed
+
+class Model_cnn_mlp_speed(nn.Module):
+    def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, output_dim=None, cnn_out_dim=1152, use_velocity=True):
+        super(Model_cnn_mlp_speed, self).__init__()
+
+        self.x_shape = x_shape
+        self.n_hidden = n_hidden
+        self.y_dim = y_dim
+        self.embed_dim = embed_dim
+        self.n_feat = 64
+        self.net_type = net_type
+        self.use_velocity = use_velocity
+
+        if output_dim is None:
+            self.output_dim = y_dim  # by default, just output size of action space
+        else:
+            self.output_dim = output_dim  # sometimes overwrite, eg for discretised, mean/variance, mixture density models
+
+        # set up CNN for image
+        self.conv_down1 = nn.Sequential(
+            ResidualConvBlock(self.x_shape[-1], self.n_feat, is_res=True),
+            nn.MaxPool2d(2),
+        )
+        self.conv_down3 = nn.Sequential(
+            ResidualConvBlock(self.n_feat, self.n_feat * 2, is_res=True),
+            nn.MaxPool2d(2),
+        )
+        self.imageembed = nn.Sequential(nn.AvgPool2d(8))
+
+        self.imageembed_reduction = nn.Sequential(
+            nn.Linear(6272, 2048),
+            nn.GELU(),
+            nn.Linear(2048, 1024),
+            nn.GELU(),
+            nn.Linear(1024, 512),
+            nn.GELU()
+        )
+
+        # cnn_out_dim = self.n_feat * 2  # how many features after flattening -- WARNING, will have to adjust this for diff size input resolution
+        cnn_out_dim = cnn_out_dim
+        # it is the flattened size after CNN layers, and average pooling
+
+        # then once have flattened vector out of CNN, just feed into previous Model_mlp_diff_embed
+        self.nn_downstream = Model_mlp_diff_embed(
+            cnn_out_dim,
+            self.n_hidden,
+            self.y_dim,
+            self.embed_dim,
+            self.output_dim,
+            is_dropout=False,
+            is_batch=False,
+            activation="relu",
+            net_type=self.net_type,
+            use_prev=False,
+        )
+
+    def forward(self, y, x, speed, t, context_mask, x_embed=None):
+        # torch expects batch_size, channels, height, width
+        # but we feed in batch_size, height, width, channels
+
+        if x_embed is None:
+            x_embed = self.embed_context(x)
+            if self.use_velocity:
+                x_embed_reducted = self.imageembed_reduction(x_embed)
+                x_embed = torch.cat((x_embed_reducted, speed), dim=1)
         else:
             # otherwise, we already extracted x_embed
             # e.g. outside of sampling loop

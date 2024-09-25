@@ -41,6 +41,8 @@ class RlBirdviewWrapper(gym.Wrapper):
         observation_space['right_rgb'] = env.observation_space[self._ev_id]['right_rgb']['data']
         observation_space['central_rgb'] = env.observation_space[self._ev_id]['central_rgb']['data']
         observation_space['gnss'] = env.observation_space['hero']['gnss']['gnss']
+        observation_space['speed'] = env.observation_space['hero']['speed']
+        observation_space['velocity'] = env.observation_space['hero']['velocity']
 
         # observation_space['birdview'] = env.observation_space['birdview']
         # observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # We create this new observation dimension
@@ -181,6 +183,8 @@ class RlBirdviewWrapper(gym.Wrapper):
         state_list.append(obs['control']['brake'])
         state_list.append(obs['control']['gear']/5.0)
         state_list.append(obs['velocity']['vel_xy'])
+        state_list.append(obs['speed']['speed'])
+        state_list.append(obs['speed']['forward_speed'])
         obs_dict['state'] = np.concatenate(state_list)
 
         birdview = obs['birdview']['masks']
@@ -199,11 +203,16 @@ class RlBirdviewWrapper(gym.Wrapper):
 
         gnss = obs['gnss']['gnss']
 
+        speed = obs['speed']['speed'].item()
+        forward_speed = obs['speed']['forward_speed'].item()
+
         obs_dict.update({
             'central_rgb': central_rgb,
             'left_rgb': left_rgb,
             'right_rgb': right_rgb,
-            'gnss': gnss
+            'gnss': gnss,
+            'speed': speed,
+            'forward_speed': forward_speed
         })
 
         return obs_dict

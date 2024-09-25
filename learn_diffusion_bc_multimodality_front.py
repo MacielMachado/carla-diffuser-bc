@@ -1,5 +1,5 @@
-from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion
-from data_preprocessing import DataHandler, CarlaCustomDataset
+from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_speed
+from data_preprocessing import DataHandler, CarlaCustomDataset, CarlaCustomDatasetSpeed
 from expert_dataset import ExpertDataset
 import torch.utils.data as data
 from tqdm import tqdm
@@ -17,7 +17,7 @@ class TrainerSemaphores():
                  net_type, drop_prob, extra_diffusion_steps, embed_dim,
                  guide_w, betas, dataset_path, run_wandb, record_run,
                  expert_dataset, name='', param_search=False,
-                 embedding="Model_cnn_mlp"):
+                 embedding="Model_cnn_mlp", observation_type="birdview", use_velocity=False):
 
         self.n_epoch = n_epoch
         self.lrate = lrate
@@ -41,10 +41,12 @@ class TrainerSemaphores():
         self.patience = 20
         self.early_stopping_counter = 0
         self.expert_dataset = expert_dataset
+        self.observation_type = observation_type
+        self.use_velocity = use_velocity
 
     def main(self):
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multi",
+            self.config_wandb(project_name="Carla-Diffuser-Multi-Front-Speed",
                               name=self.name)
         dataload_train = self.prepare_dataset(self.expert_dataset)
         x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
@@ -82,11 +84,16 @@ class TrainerSemaphores():
         return repo.head.object.hexsha
 
     def prepare_dataset(self, dataset):
-        obs = DataHandler().preprocess_images(dataset, observation_type='birdview')
         # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
         state = np.array([np.array(ele[0]['state']) for ele in dataset])
         actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
-        dataset = CarlaCustomDataset(obs, actions)
+        # speed = state[:5,-2:]
+        speed = state[:,-2:]
+        obs = DataHandler().preprocess_images(dataset, observation_type=self.observation_type, stack_with_previous=not self.use_velocity)
+        if self.use_velocity:
+            dataset = CarlaCustomDatasetSpeed(obs, actions, speed)
+        else:
+            dataset = CarlaCustomDataset(obs, actions)
         dataloader = data.DataLoader(dataset,
                                      batch_size=self.batch_size,
                                      shuffle=True)
@@ -122,6 +129,9 @@ class TrainerSemaphores():
     
     def create_conv_model(self, x_dim, y_dim):
         cnn_out_dim = 4608
+        if self.use_velocity:
+            cnn_out_dim = 512 + 2
+
         if self.embedding == "Model_cnn_bc":
             return Model_cnn_bc(self.n_hidden, y_dim,
                                 embed_dim=self.embed_dim,
@@ -131,6 +141,11 @@ class TrainerSemaphores():
                                 embed_dim=self.embed_dim,
                                 net_type=self.net_type,
                                 cnn_out_dim=cnn_out_dim).to(self.device)
+        elif self.embedding == "Model_cnn_mlp_speed":
+            return Model_cnn_mlp_speed(x_dim, self.n_hidden, y_dim,
+                                embed_dim=self.embed_dim,
+                                net_type=self.net_type,
+                                cnn_out_dim=cnn_out_dim, use_velocity=self.use_velocity).to(self.device)
         else:
             raise NotImplementedError
     
@@ -161,10 +176,11 @@ class TrainerSemaphores():
             # train loop
             pbar = tqdm(dataload_train)
             loss_ep, n_batch = 0, 0
-            for x_batch, y_batch in pbar:
-                x_batch = x_batch.type(torch.FloatTensor).to(self.device)
-                y_batch = y_batch.type(torch.FloatTensor).to(self.device)
-                loss = model.loss_on_batch(x_batch, y_batch)
+            for batch in pbar:
+                x_batch = batch[0].type(torch.FloatTensor).to(self.device)
+                y_batch = batch[1].type(torch.FloatTensor).to(self.device)
+                if self.use_velocity: vel_batch = batch[2].type(torch.FloatTensor).to(self.device)
+                loss = model.loss_on_batch(x_batch, y_batch, vel_batch)
                 optim.zero_grad()
                 loss.backward()
                 loss_ep += loss.detach().item()
@@ -246,10 +262,12 @@ if __name__ == '__main__':
         embed_dim=128,
         guide_w=0.0,
         betas=(1e-4, 0.02),
-        dataset_path='gail_experts_multi_bruno_3_simples',
+        dataset_path='data_collection/town01_multimodality_t_intersection_simples',
         run_wandb=True,
         record_run=True,
-        expert_dataset=ExpertDataset('gail_experts_multi_bruno_3_simples', n_routes=2, n_eps=10, semaphore=False),
-        name='gail_experts_semaphores_nroutes1_neps1',
+        expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
+        name='town01_fixed_route_without_trajectory_front_speed',
         param_search=False,
-        embedding="Model_cnn_mlp",).main()
+        embedding="Model_cnn_mlp_speed",
+        observation_type='front',
+        use_velocity=True).main()

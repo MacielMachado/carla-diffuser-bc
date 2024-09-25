@@ -94,6 +94,7 @@ class DataHandler():
     def get_images_array(self, images_array, observation_type):
         new_list = np.array([])
         for i in tqdm(range(len(images_array)), desc=f'Analyzing {observation_type} data'):
+        # for i in tqdm(range(5), desc=f'Analyzing {observation_type} data'):
             # new_list.append(images_array[i][0][observation_type])
             if i == 0:
                 new_list = np.expand_dims(np.array(images_array[i][0][observation_type]), axis=0)
@@ -105,27 +106,33 @@ class DataHandler():
 
         return np.array(new_list)
 
-    def __preprocess_front_images(self, images_array, eval):
+    def __preprocess_front_images(self, images_array, eval, stack_with_previous=True):
         # obs_front = images_array['central_rgb'] if eval else np.array([np.array(ele[0]['central_rgb']) for ele in images_array])
         obs_front = np.expand_dims(images_array['central_rgb'], 0) if eval else self.get_images_array(images_array, 'central_rgb')
         obs_front = np.transpose(obs_front, (0, 2, 3, 1))
         obs_front = DataHandler().to_greyscale(obs_front)
         obs_front = DataHandler().normalizing(obs_front)
-        obs_front = DataHandler().stack_with_previous(obs_front, num_images=4)
 
         # obs_left = images_array['left_rgb'] if eval else np.array([np.array(ele[0]['left_rgb']) for ele in images_array])
         obs_left = np.expand_dims(images_array['left_rgb'], 0) if eval else self.get_images_array(images_array, 'left_rgb')
         obs_left = np.transpose(obs_left, (0, 2, 3, 1))
         obs_left = DataHandler().to_greyscale(obs_left)
         obs_left = DataHandler().normalizing(obs_left)
-        obs_left = DataHandler().stack_with_previous(obs_left, num_images=4)
 
         # obs_right = images_array['right_rgb'] if eval else np.array([np.array(ele[0]['right_rgb']) for ele in images_array])
         obs_right = np.expand_dims(images_array['right_rgb'], 0) if eval else self.get_images_array(images_array, 'right_rgb')
         obs_right = np.transpose(obs_right, (0, 2, 3, 1))
         obs_right = DataHandler().to_greyscale(obs_right)
         obs_right = DataHandler().normalizing(obs_right)
-        obs_right = DataHandler().stack_with_previous(obs_right, num_images=4)
+        
+        if stack_with_previous:
+            obs_front = DataHandler().stack_with_previous(obs_front, num_images=4)
+            obs_left = DataHandler().stack_with_previous(obs_left, num_images=4)
+            obs_right = DataHandler().stack_with_previous(obs_right, num_images=4)
+        else:
+            obs_front = np.expand_dims(obs_front, -1)
+            obs_left = np.expand_dims(obs_left, -1)
+            obs_right = np.expand_dims(obs_right, -1)
 
         obs_stack = np.concatenate((obs_left, obs_front, obs_right), axis=3)
         obs_stack_resized = []
@@ -160,13 +167,13 @@ class DataHandler():
         images = DataHandler().stack_with_previous(images)
         return images
     
-    def preprocess_images(self, images_array, observation_type: str, eval=False, embedding='Model_cnn_mlp'):
+    def preprocess_images(self, images_array, observation_type: str, eval=False, embedding='Model_cnn_mlp', stack_with_previous=True):
         if observation_type == 'birdview':
             return self.__preprocess_birdview(images_array, eval, embedding)
         elif observation_type == 'human':
             return self.__preprocess_human_images(images_array)
         elif observation_type == 'front':
-            return self.__preprocess_front_images(images_array, eval)
+            return self.__preprocess_front_images(images_array, eval, stack_with_previous)
         raise NotImplementedError
     
     def preprocess_actions(self, actions_array, origin):
@@ -193,6 +200,19 @@ class CarlaCustomDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         return torch.from_numpy(self.obs[index]), torch.from_numpy(self.actions[index])
+
+
+class CarlaCustomDatasetSpeed(torch.utils.data.Dataset):
+    def __init__(self, obs, actions, speed):
+        self.obs = obs
+        self.actions = actions
+        self.speed = speed
+
+    def __len__(self):
+        return len(self.obs)
+
+    def __getitem__(self, index):
+        return torch.from_numpy(self.obs[index]), torch.from_numpy(self.actions[index]), torch.from_numpy(self.speed[index])
 
 
 class DatasetHandler():
