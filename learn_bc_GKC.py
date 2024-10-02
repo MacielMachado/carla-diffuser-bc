@@ -266,7 +266,7 @@ if __name__ == '__main__':
     TrainerSemaphores(
         n_epoch=750,
         lrate=0.0001,
-        device='cuda', 
+        device='cpu', 
         n_hidden=128,
         batch_size=32,
         n_T=20,
