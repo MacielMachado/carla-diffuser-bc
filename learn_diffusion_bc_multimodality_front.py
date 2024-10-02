@@ -212,7 +212,7 @@ class TrainerSemaphores():
                         
                     results_ep.append(loss_ep / n_batch)
 
-            if ep in [1, 20, 40, 80, 150, 250, 500, 600, 749]:
+            if ep in [1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 750, 850, 950, 1000]:
                 name=f'model_novo_ep_{ep}'
                 self.save_model(model, ep)
 
@@ -277,8 +277,8 @@ if __name__ == '__main__':
         run_wandb=True,
         record_run=True,
         expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
-        name='town01_fixed_route_without_trajectory_front_speed',
+        name='town01_multi_without_trajectory_birdview_GKC_speed',
         param_search=False,
         embedding="Model_cnn_mlp_GKC",
-        observation_type='front',
+        observation_type='birdview',
         use_velocity=True).main()

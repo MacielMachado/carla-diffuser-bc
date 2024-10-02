@@ -155,10 +155,10 @@ class DataHandler():
     def __preprocess_birdview(self, images_array, eval=False, embedding='Model_cnn_mlp'):
         obs = np.expand_dims(images_array['birdview'], 0) if eval else np.array([np.array(ele[0]['birdview']) for ele in images_array])
         obs = np.transpose(obs, (0, 2, 3, 1))
-        obs = DataHandler().to_greyscale(obs)
+        # obs = DataHandler().to_greyscale(obs)
         obs = DataHandler().normalizing(obs)
-        stack_size = 3 if embedding == 'Model_cnn_mlp_resnet18' else 4
-        obs = DataHandler().stack_with_previous(obs, stack_size)
+        # stack_size = 3 if embedding == 'Model_cnn_mlp_resnet18' else 4
+        # obs = DataHandler().stack_with_previous(obs, stack_size)
         return self.__resize(obs) if embedding == 'Model_cnn_mlp_resnet18' else obs
     
     def __preprocess_human_images(self, images_array):

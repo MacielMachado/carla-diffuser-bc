@@ -1,6 +1,5 @@
-from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet
 from models_bc import Model_cnn_BC, Model_cnn_BC_resnet, Model_cnn_GKC
-from data_preprocessing import DataHandler, CarlaCustomDataset
+from data_preprocessing import DataHandler, CarlaCustomDataset, CarlaCustomDatasetSpeed
 from expert_dataset import ExpertDataset
 from torchvision import transforms
 import torch.utils.data as data
@@ -13,13 +12,13 @@ import git
 import os
 
 
-class Trainer():
+class TrainerSemaphores():
     def __init__(self, n_epoch, lrate, device, n_hidden, batch_size, n_T,
                  net_type, drop_prob, extra_diffusion_steps, embed_dim,
                  guide_w, betas, dataset_path, run_wandb, record_run,
-                 expert_dataset, data_type, name='', param_search=False,
-                 embedding="Model_cnn_BC", iteration=None):
-        print("3")
+                 expert_dataset, name='', param_search=False,
+                 embedding="Model_cnn_mlp", observation_type="birdview", use_velocity=False):
+
         self.n_epoch = n_epoch
         self.lrate = lrate
         self.device = device
@@ -42,27 +41,21 @@ class Trainer():
         self.patience = 20
         self.early_stopping_counter = 0
         self.expert_dataset = expert_dataset
-        self.data_type = data_type
-        self.iteration = iteration
+        self.observation_type = observation_type
+        self.use_velocity = use_velocity
 
     def main(self):
-        print("4")
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Fixed-Route-Simples-Birdview-No-Trajectory",
-                              name=self.name + '__' + self.get_git_commit_hash()[0:10])
-        print("4")
+            self.config_wandb(project_name="Carla-Diffuser-Multi-Front-Speed",
+                              name=self.name)
         dataload_train = self.prepare_dataset(self.expert_dataset)
-        print("5")
         x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
-        print("6")
         model = self.create_conv_model(x_dim, y_dim)
-        print("7")
         optim = self.create_optimizer(model)
-        print("8")
         model = self.train(model, dataload_train, optim)
 
     def config_wandb(self, project_name, name):
-        wandb.login(key='69f1a00e3df4080d87a2110307267dd38599de6b')
+        wandb.login(key='9bcc371f01af2fc8ddab2c3ad226caad57dc4ac5')
         config={
                 "n_epoch": self.n_epoch,
                 "lrate": self.lrate,
@@ -86,26 +79,50 @@ class Trainer():
     def get_git_commit_hash(self):
         repo = git.Repo(search_parent_directories=True)
         return repo.head.object.hexsha
+        repo = git.Repo(search_parent_directories=True)
+        return repo.head.object.hexsha
 
     def prepare_dataset(self, dataset):
-        obs = DataHandler().preprocess_images(dataset, observation_type=self.data_type, embedding=self.embedding)
-        print("4.1")
-        # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
-        # state = np.array([np.array(ele[0]['state']) for ele in dataset])
-        print("4.2")
-        actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
-        print("4.3")
-        dataset = CarlaCustomDataset(obs, actions)
-        print("4.4")
+        # Actions
+        actions = np.array([np.array(ele[0]['actions']) for index, ele in enumerate(dataset)])
+        # Previous Actions
+        previous_actions = np.empty_like(actions)
+        previous_actions[:-1], previous_actions[-1] = actions[1:], actions[-1] 
+        # Observation
+        state = np.array([np.array(ele[0]['state']) for index, ele in enumerate(dataset)])
+        # Speed
+        # speed = state[:5,-2:]
+        speed = state[:,-2:]
+        obs = DataHandler().preprocess_images(dataset, observation_type=self.observation_type, stack_with_previous=not self.use_velocity)
+        if self.use_velocity:
+            dataset = CarlaCustomDatasetSpeed(obs, actions, speed, previous_actions)
+        else:
+            dataset = CarlaCustomDataset(obs, actions)
         dataloader = data.DataLoader(dataset,
                                      batch_size=self.batch_size,
                                      shuffle=True)
-        print("4.5")
         '''
         The datasets have keys with the following information: birdview,
         central_rgb, left_rgb, right_rgb, item_idx, done, action, state
         '''
         return dataloader
+    
+        # obs_path = self.expert_dataset+'all_observations.pth'
+        # obs = np.array(torch.load(obs_path))
+        # obs = np.transpose(obs, (0,1,3,4,2))
+        # obs = DataHandler().preprocess_images(obs, feature='front')
+        # # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
+        # state = np.array([np.array(ele[0]['state']) for ele in dataset])
+        # actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
+        # dataset = CarlaCustomDataset(obs, actions)
+        # dataloader = data.DataLoader(dataset,
+        #                              batch_size=self.batch_size,
+        #                              shuffle=True)
+        # '''
+        # The datasets have keys with the following information: birdview,
+        # central_rgb, left_rgb, right_rgb, item_idx, done, action, state
+        # '''
+        # return dataloader
     
     def get_x_and_y_dim(self, dataset):
         '''
@@ -115,15 +132,29 @@ class Trainer():
         return x_dim, y_dim
     
     def create_conv_model(self, x_dim, y_dim):
-        cnn_out_dim = 2
-        if self.embedding == "Model_cnn_BC":
-            return Model_cnn_BC(x_dim, self.n_hidden, cnn_out_dim).to(self.device)
-        elif self.embedding[:-2] == 'Model_cnn_BC_resnet':
-            return Model_cnn_BC_resnet( x_dim, self.n_hidden, cnn_out_dim=y_dim,
-                                        resnet_depth=self.embedding[-2:],
-                                        origin=self.data_type).to(self.device)
-        elif self.embedding == "Model_cnn_GKC":
-            return Model_cnn_GKC()
+        cnn_out_dim = 4608
+        if self.use_velocity:
+            cnn_out_dim = 512 + 2
+
+        if self.embedding == "Model_cnn_bc":
+            return Model_cnn_bc(self.n_hidden, y_dim,
+                                embed_dim=self.embed_dim,
+                                net_type=self.net_type).to(self.device)
+        elif self.embedding == "Model_cnn_mlp":
+            return Model_cnn_mlp(x_dim, self.n_hidden, y_dim,
+                                embed_dim=self.embed_dim,
+                                net_type=self.net_type,
+                                cnn_out_dim=cnn_out_dim).to(self.device)
+        elif self.embedding == "Model_cnn_mlp_speed":
+            return Model_cnn_mlp_speed(x_dim, self.n_hidden, y_dim,
+                                embed_dim=self.embed_dim,
+                                net_type=self.net_type,
+                                cnn_out_dim=cnn_out_dim,
+                                use_velocity=self.use_velocity).to(self.device)
+        elif self.embedding == "Model_cnn_mlp_GKC":
+            return Model_cnn_GKC(x_dim, y_dim, self.embed_dim,
+                                 self.net_type,
+                                 embed_n_hidden=self.n_hidden).to(self.device)
         else:
             raise NotImplementedError
     
@@ -154,21 +185,22 @@ class Trainer():
             # train loop
             pbar = tqdm(dataload_train)
             loss_ep, n_batch = 0, 0
-            for x_batch, y_batch in pbar:
-                x_batch = x_batch.type(torch.FloatTensor).to(self.device)
-                y_batch = y_batch.type(torch.FloatTensor).to(self.device)
-                y_hat = model(x_batch)
+            for batch in pbar:
+                x_batch = batch[0].type(torch.FloatTensor).to(self.device)
+                y_batch = batch[1].type(torch.FloatTensor).to(self.device)
+                speed = batch[2].type(torch.FloatTensor).to(self.device) if self.use_velocity else None
+                previous_actions = batch[3].type(torch.FloatTensor).to(self.device) if self.use_velocity else None
+                y_hat = model(x_batch, speed, previous_actions)
                 loss = self.loss_func(y_hat, y_batch)
-                loss.backward()
-                optim.step()
                 optim.zero_grad()
+                loss.backward()
                 loss_ep += loss.detach().item()
                 n_batch += 1
                 pbar.set_description(f"train loss: {loss_ep/n_batch:.4f}")
                 optim.step()
 
                 with torch.no_grad():
-                    y_hat_batch = model(x_batch)
+                    y_hat_batch = model(x_batch, speed, previous_actions)
                     action_MSE = extract_action_mse(y_batch, y_hat_batch)
 
                 if self.run_wandb:
@@ -193,15 +225,8 @@ class Trainer():
         return torch.nn.MSELoss()(y, y_hat)
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
-
-env_configs = {
-    'carla_map': 'Town01',
-    'num_zombie_vehicles': [0, 150],
-    'num_zombie_walkers': [0, 300],
-    'weather_group': 'dynamic_1.0'
-}
+        os.makedirs(os.getcwd()+'/model_pytorch/multi/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/multi/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 
 def extract_action_mse(y, y_hat):
@@ -210,10 +235,9 @@ def extract_action_mse(y, y_hat):
     y_diff_sum = torch.sum(y_diff_pow_2, dim=0)/len(y)
     mse = torch.pow(y_diff_sum, 0.5)
     return mse
- 
+
 
 if __name__ == '__main__':
-    print('1')
     resume_last_train = False
     observation_space = {}
     observation_space['birdview'] = gym.spaces.Box(low=0, high=255, shape=(3, 192, 192), dtype=np.uint8)  # Define o tipo de dado que tará uma dimensão
@@ -223,40 +247,45 @@ if __name__ == '__main__':
     device = 'cuda'
     batch_size = 24
 
-    # gail_train_loader = torch.utils.data.DataLoader(
-    #     ExpertDataset('gail_experts', n_routes=1, n_eps=1),
-    #     batch_size=batch_size,
-    #     shuffle=True,
-    # )
-
     '''
     The datasets have keys with the following information: birdview,
     central_rgb, left_rgb, right_rgb, item_idx, done, action, state
     '''
     stop  = 1
-    print('2')
-    for i in range(5):
-        Trainer(n_epoch=1000,
-                lrate=0.0001,
-                device='cuda', 
-                n_hidden=128,
-                batch_size=16,
-                n_T=50,
-                net_type='transformer',
-                drop_prob=0.0,
-                extra_diffusion_steps=16,
-                embed_dim=128,
-                guide_w=0.0,
-                betas=(1e-4, 0.02),
-                dataset_path='data_collection/town01_fixed_route_without_trajectory',
-                run_wandb=False,
-                record_run=True,
-                expert_dataset=ExpertDataset('data_collection/town01_fixed_route_without_trajectory', n_routes=10, n_eps=1),
-                name='town01_fixed_route_without_trajectory_birdview',
-                param_search=False,
-                embedding="Model_cnn_GKC",
-                data_type='birdview',
-                iteration=i).main()
+
+    # Dataset
+    dataset_path = "/home/casa/projects/bruno/carla-diffuser-bc/bet_data_release/carla/"
+    # obs = torch.load("/home/casa/projects/bruno/carla-diffuser-bc/bet_data_release/carla/all_observations.pth")
+    # actions = torch.load("/home/casa/projects/bruno/carla-diffuser-bc/bet_data_release/carla/all_actions_pm1.pth")
+    # seq = torch.load("/home/casa/projects/bruno/carla-diffuser-bc/bet_data_release/carla/seq_lengths.pth")
+
+    # zero_index = np.where(np.array(seq) == 0)
+    # obs = [np.array(ele[0:max_index, :, :, :]) for ele, max_index in zip(obs, seq)]
+    # actions = [np.array(ele[0:max_index, :, :, :]) for ele, max_index in zip(actions, seq)]
+
+    TrainerSemaphores(
+        n_epoch=750,
+        lrate=0.0001,
+        device='cuda', 
+        n_hidden=128,
+        batch_size=32,
+        n_T=20,
+        net_type='transformer',
+        drop_prob=0.0,
+        extra_diffusion_steps=16,
+        embed_dim=128,
+        guide_w=0.0,
+        betas=(1e-4, 0.02),
+        dataset_path='data_collection/town01_multimodality_t_intersection_simples',
+        run_wandb=True,
+        record_run=True,
+        expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
+        name='town01_multi_without_trajectory_birdview_GKC_speed',
+        param_search=False,
+        embedding="Model_cnn_mlp_GKC",
+        observation_type='birdview',
+        use_velocity=True).main()
+
 
 
 

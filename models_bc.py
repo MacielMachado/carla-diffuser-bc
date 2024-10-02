@@ -95,14 +95,17 @@ class Model_cnn_BC_resnet(nn.Module):
 
 
 class Model_cnn_GKC(nn.Module):
-    def __init__(self, x_shape, y_dim, embed_dim, net_type, observation_space, features_dim=256, states_neurons=[256], output_dim=None, cnn_out_dim=1152):
+    def __init__(self, x_shape, y_dim, embed_dim, net_type, observation_space=None, features_dim=256, states_neurons=[256], output_dim=None, cnn_out_dim=1152, embed_n_hidden=128):
         super(Model_cnn_GKC, self).__init__()
 
         self.x_shape = x_shape
+        self.x_shape = (192, 192, 3)
         self.y_dim = y_dim
         self.embed_dim = embed_dim
         self.n_feat = 64
         self.net_type = net_type
+        self.embed_n_hidden = embed_n_hidden
+
 
         self.cnn = nn.Sequential(
             nn.Conv2d(self.x_shape[-1], 8, kernel_size=5, stride=2),
@@ -122,12 +125,13 @@ class Model_cnn_GKC(nn.Module):
 
         # Compute shape by doing one forward pass
         with torch.no_grad():
-            n_flatten = self.cnn(torch.as_tensor(observation_space['birdview'].sample()[None]).float()).shape[1]
+            example = np.random.rand(*self.x_shape)
+            n_flatten = self.cnn(torch.as_tensor(np.expand_dims(np.transpose(example, (2,0,1)), axis=0)).float()).shape[1]
 
         self.linear = nn.Sequential(nn.Linear(n_flatten+states_neurons[-1], 512), nn.ReLU(),
                                     nn.Linear(512, features_dim), nn.ReLU())
 
-        states_neurons = [observation_space['state'].shape[0]] + states_neurons
+        states_neurons = [y_dim*2] + states_neurons
         self.state_linear = []
         for i in range(len(states_neurons)-1):
             self.state_linear.append(nn.Linear(states_neurons[i], states_neurons[i+1]))
@@ -136,15 +140,29 @@ class Model_cnn_GKC(nn.Module):
 
         self.apply(self._weights_init)
 
+        self.head = nn.Sequential(nn.Linear(features_dim, features_dim), nn.ReLU(),
+                                  nn.Linear(features_dim, features_dim), nn.ReLU(),
+                                  nn.Linear(features_dim, 2), nn.ReLU(),)
+
     @staticmethod
     def _weights_init(m):
         if isinstance(m, nn.Conv2d):
             nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
             nn.init.constant_(m.bias, 0.1)
 
-    def forward(self, birdview, state):
-        x = self.cnn(birdview)
-        latent_state = self.state_linear(state)
+    def forward(self, x, speed, previous_action):
+        x_embed = self.embed_context(x, speed, previous_action)
+
+        return x_embed
+
+    def embed_context(self, x, speed, previous_action):
+        x = torch.nn.functional.interpolate(x.permute(0, 3, 1, 2), size=(192, 192), mode='bilinear', align_corners=False).permute(0, 2, 3, 1)
+        x = x.permute(0, 3, 2, 1)
+   
+        x = self.cnn(x)
+        latent_state = self.state_linear(torch.cat((speed, previous_action), dim=1))
 
         x = torch.cat((x, latent_state), dim=1)
         x = self.linear(x)
+        x_embed = self.head(x)
+        return x_embed
