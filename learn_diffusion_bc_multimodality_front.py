@@ -1,4 +1,4 @@
-from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_speed
+from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_speed, Model_cnn_GKC
 from data_preprocessing import DataHandler, CarlaCustomDataset, CarlaCustomDatasetSpeed
 from expert_dataset import ExpertDataset
 import torch.utils.data as data
@@ -84,14 +84,19 @@ class TrainerSemaphores():
         return repo.head.object.hexsha
 
     def prepare_dataset(self, dataset):
-        # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
-        state = np.array([np.array(ele[0]['state']) for ele in dataset])
-        actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
+        # Actions
+        actions = np.array([np.array(ele[0]['actions']) for index, ele in enumerate(dataset)])
+        # Previous Actions
+        previous_actions = np.empty_like(actions)
+        previous_actions[:-1], previous_actions[-1] = actions[1:], actions[-1] 
+        # Observation
+        state = np.array([np.array(ele[0]['state']) for index, ele in enumerate(dataset)])
+        # Speed
         # speed = state[:5,-2:]
         speed = state[:,-2:]
         obs = DataHandler().preprocess_images(dataset, observation_type=self.observation_type, stack_with_previous=not self.use_velocity)
         if self.use_velocity:
-            dataset = CarlaCustomDatasetSpeed(obs, actions, speed)
+            dataset = CarlaCustomDatasetSpeed(obs, actions, speed, previous_actions)
         else:
             dataset = CarlaCustomDataset(obs, actions)
         dataloader = data.DataLoader(dataset,
@@ -145,7 +150,12 @@ class TrainerSemaphores():
             return Model_cnn_mlp_speed(x_dim, self.n_hidden, y_dim,
                                 embed_dim=self.embed_dim,
                                 net_type=self.net_type,
-                                cnn_out_dim=cnn_out_dim, use_velocity=self.use_velocity).to(self.device)
+                                cnn_out_dim=cnn_out_dim,
+                                use_velocity=self.use_velocity).to(self.device)
+        elif self.embedding == "Model_cnn_mlp_GKC":
+            return Model_cnn_GKC(x_dim, y_dim, self.embed_dim,
+                                 self.net_type,
+                                 embed_n_hidden=self.n_hidden).to(self.device)
         else:
             raise NotImplementedError
     
@@ -179,8 +189,9 @@ class TrainerSemaphores():
             for batch in pbar:
                 x_batch = batch[0].type(torch.FloatTensor).to(self.device)
                 y_batch = batch[1].type(torch.FloatTensor).to(self.device)
-                if self.use_velocity: vel_batch = batch[2].type(torch.FloatTensor).to(self.device)
-                loss = model.loss_on_batch(x_batch, y_batch, vel_batch)
+                speed = batch[2].type(torch.FloatTensor).to(self.device) if self.use_velocity else None
+                previous_actions = batch[3].type(torch.FloatTensor).to(self.device) if self.use_velocity else None
+                loss = model.loss_on_batch(x_batch, y_batch, speed, previous_actions)
                 optim.zero_grad()
                 loss.backward()
                 loss_ep += loss.detach().item()
@@ -189,7 +200,7 @@ class TrainerSemaphores():
                 optim.step()
 
                 with torch.no_grad():
-                    y_hat_batch = model.sample(x_batch)
+                    y_hat_batch = model.sample(x_batch, speed=speed, previous_actions=previous_actions)
                     action_MSE = extract_action_mse(y_batch, y_hat_batch)
 
                 if self.run_wandb:
@@ -268,6 +279,6 @@ if __name__ == '__main__':
         expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
         name='town01_fixed_route_without_trajectory_front_speed',
         param_search=False,
-        embedding="Model_cnn_mlp_speed",
+        embedding="Model_cnn_mlp_GKC",
         observation_type='front',
         use_velocity=True).main()

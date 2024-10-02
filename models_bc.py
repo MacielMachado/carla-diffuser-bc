@@ -92,3 +92,59 @@ class Model_cnn_BC_resnet(nn.Module):
     def forward(self, x):
         x = x.permute(0, 3, 2, 1)
         return self.model(x)
+
+
+class Model_cnn_GKC(nn.Module):
+    def __init__(self, x_shape, y_dim, embed_dim, net_type, observation_space, features_dim=256, states_neurons=[256], output_dim=None, cnn_out_dim=1152):
+        super(Model_cnn_GKC, self).__init__()
+
+        self.x_shape = x_shape
+        self.y_dim = y_dim
+        self.embed_dim = embed_dim
+        self.n_feat = 64
+        self.net_type = net_type
+
+        self.cnn = nn.Sequential(
+            nn.Conv2d(self.x_shape[-1], 8, kernel_size=5, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(8, 16, kernel_size=5, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(16, 32, kernel_size=5, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(128, 256, kernel_size=3, stride=1),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+
+        # Compute shape by doing one forward pass
+        with torch.no_grad():
+            n_flatten = self.cnn(torch.as_tensor(observation_space['birdview'].sample()[None]).float()).shape[1]
+
+        self.linear = nn.Sequential(nn.Linear(n_flatten+states_neurons[-1], 512), nn.ReLU(),
+                                    nn.Linear(512, features_dim), nn.ReLU())
+
+        states_neurons = [observation_space['state'].shape[0]] + states_neurons
+        self.state_linear = []
+        for i in range(len(states_neurons)-1):
+            self.state_linear.append(nn.Linear(states_neurons[i], states_neurons[i+1]))
+            self.state_linear.append(nn.ReLU())
+        self.state_linear = nn.Sequential(*self.state_linear)
+
+        self.apply(self._weights_init)
+
+    @staticmethod
+    def _weights_init(m):
+        if isinstance(m, nn.Conv2d):
+            nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
+            nn.init.constant_(m.bias, 0.1)
+
+    def forward(self, birdview, state):
+        x = self.cnn(birdview)
+        latent_state = self.state_linear(state)
+
+        x = torch.cat((x, latent_state), dim=1)
+        x = self.linear(x)

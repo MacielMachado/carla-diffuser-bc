@@ -93,8 +93,8 @@ class DataHandler():
 
     def get_images_array(self, images_array, observation_type):
         new_list = np.array([])
-        for i in tqdm(range(len(images_array)), desc=f'Analyzing {observation_type} data'):
-        # for i in tqdm(range(5), desc=f'Analyzing {observation_type} data'):
+        # for i in tqdm(range(len(images_array)), desc=f'Analyzing {observation_type} data'):
+        for i in tqdm(range(5), desc=f'Analyzing {observation_type} data'):
             # new_list.append(images_array[i][0][observation_type])
             if i == 0:
                 new_list = np.expand_dims(np.array(images_array[i][0][observation_type]), axis=0)
@@ -203,16 +203,20 @@ class CarlaCustomDataset(torch.utils.data.Dataset):
 
 
 class CarlaCustomDatasetSpeed(torch.utils.data.Dataset):
-    def __init__(self, obs, actions, speed):
+    def __init__(self, obs, actions, speed, previous_actions):
         self.obs = obs
         self.actions = actions
         self.speed = speed
+        self.previous_actions = previous_actions
 
     def __len__(self):
         return len(self.obs)
 
     def __getitem__(self, index):
-        return torch.from_numpy(self.obs[index]), torch.from_numpy(self.actions[index]), torch.from_numpy(self.speed[index])
+        return torch.from_numpy(self.obs[index]), \
+               torch.from_numpy(self.actions[index]), \
+               torch.from_numpy(self.speed[index]), \
+               torch.from_numpy(self.previous_actions[index])
 
 
 class DatasetHandler():

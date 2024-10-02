@@ -1,6 +1,8 @@
 from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet
+from models_bc import Model_cnn_BC, Model_cnn_BC_resnet, Model_cnn_GKC
 from data_preprocessing import DataHandler, CarlaCustomDataset
 from expert_dataset import ExpertDataset
+from torchvision import transforms
 import torch.utils.data as data
 from tqdm import tqdm
 import numpy as np
@@ -16,7 +18,7 @@ class Trainer():
                  net_type, drop_prob, extra_diffusion_steps, embed_dim,
                  guide_w, betas, dataset_path, run_wandb, record_run,
                  expert_dataset, data_type, name='', param_search=False,
-                 embedding="Model_cnn_mlp", iteration=None):
+                 embedding="Model_cnn_BC", iteration=None):
         print("3")
         self.n_epoch = n_epoch
         self.lrate = lrate
@@ -53,10 +55,8 @@ class Trainer():
         print("5")
         x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
         print("6")
-        conv_model = self.create_conv_model(x_dim, y_dim)
+        model = self.create_conv_model(x_dim, y_dim)
         print("7")
-        model = self.create_agent_model(conv_model, x_dim, y_dim)
-        print("8")
         optim = self.create_optimizer(model)
         print("8")
         model = self.train(model, dataload_train, optim)
@@ -115,23 +115,15 @@ class Trainer():
         return x_dim, y_dim
     
     def create_conv_model(self, x_dim, y_dim):
-        cnn_out_dim = 4608
-        # cnn_out_dim = 4096
-        # cnn_out_dim = 4
-        if self.embedding == "Model_cnn_bc":
-            return Model_cnn_bc(self.n_hidden, y_dim,
-                                embed_dim=self.embed_dim,
-                                net_type=self.net_type).to(self.device)
-        elif self.embedding == "Model_cnn_mlp":
-            return Model_cnn_mlp(x_dim, self.n_hidden, y_dim,
-                                embed_dim=self.embed_dim,
-                                net_type=self.net_type,
-                                cnn_out_dim=cnn_out_dim).to(self.device)
-        elif self.embedding[:-2] == 'Model_cnn_mlp_resnet':
-            return Model_cnn_mlp_resnet(x_dim, self.n_hidden, y_dim,
-                                embed_dim=self.embed_dim,
-                                net_type=self.net_type, resnet_depth=self.embedding[-2:],
-                                cnn_out_dim=cnn_out_dim, origin=self.data_type).to(self.device)
+        cnn_out_dim = 2
+        if self.embedding == "Model_cnn_BC":
+            return Model_cnn_BC(x_dim, self.n_hidden, cnn_out_dim).to(self.device)
+        elif self.embedding[:-2] == 'Model_cnn_BC_resnet':
+            return Model_cnn_BC_resnet( x_dim, self.n_hidden, cnn_out_dim=y_dim,
+                                        resnet_depth=self.embedding[-2:],
+                                        origin=self.data_type).to(self.device)
+        elif self.embedding == "Model_cnn_GKC":
+            return Model_cnn_GKC()
         else:
             raise NotImplementedError
     
@@ -165,29 +157,28 @@ class Trainer():
             for x_batch, y_batch in pbar:
                 x_batch = x_batch.type(torch.FloatTensor).to(self.device)
                 y_batch = y_batch.type(torch.FloatTensor).to(self.device)
-                loss = model.loss_on_batch(x_batch, y_batch)
-                optim.zero_grad()
+                y_hat = model(x_batch)
+                loss = self.loss_func(y_hat, y_batch)
                 loss.backward()
+                optim.step()
+                optim.zero_grad()
                 loss_ep += loss.detach().item()
                 n_batch += 1
                 pbar.set_description(f"train loss: {loss_ep/n_batch:.4f}")
                 optim.step()
 
                 with torch.no_grad():
-                    y_hat_batch = model.sample(x_batch)
+                    y_hat_batch = model(x_batch)
                     action_MSE = extract_action_mse(y_batch, y_hat_batch)
 
                 if self.run_wandb:
                     # log metrics to wandb
-                    wandb.log({
-                                # "loss": loss_ep/n_batch,
-                                "loss": loss_ep/n_batch,
+                    wandb.log({"loss": loss_ep/n_batch,
                                 "lr": lr_decay,
                                 "steering_MSE": action_MSE[0],
                                 "acceleration_MSE": action_MSE[1]})
                         
-                    # results_ep.append(loss_ep / n_batch)
-                    results_ep.append(loss_ep)
+                    results_ep.append(loss_ep / n_batch)
 
             if ep in [1, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300, 350, 400, 500, 600, 750, 850, 950, 1000]:
                 name=f'model_novo_ep_{ep}'
@@ -198,10 +189,12 @@ class Trainer():
         
         return model
 
+    def loss_func(self, y, y_hat):
+        return torch.nn.MSELoss()(y, y_hat)
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -248,7 +241,7 @@ if __name__ == '__main__':
                 device='cuda', 
                 n_hidden=128,
                 batch_size=16,
-                n_T=20,
+                n_T=50,
                 net_type='transformer',
                 drop_prob=0.0,
                 extra_diffusion_steps=16,
@@ -257,12 +250,12 @@ if __name__ == '__main__':
                 betas=(1e-4, 0.02),
                 dataset_path='data_collection/town01_fixed_route_without_trajectory',
                 run_wandb=False,
-                record_run=False,
+                record_run=True,
                 expert_dataset=ExpertDataset('data_collection/town01_fixed_route_without_trajectory', n_routes=10, n_eps=1),
                 name='town01_fixed_route_without_trajectory_birdview',
                 param_search=False,
-                embedding="Model_cnn_mlp",
-                data_type='front',
+                embedding="Model_cnn_GKC",
+                data_type='birdview',
                 iteration=i).main()
 
 

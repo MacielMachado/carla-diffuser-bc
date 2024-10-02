@@ -420,7 +420,7 @@ class Model_Cond_Diffusion(nn.Module):
         self.y_dim = y_dim
         self.guide_w = guide_w
 
-    def loss_on_batch(self, x_batch, y_batch, speed=None):
+    def loss_on_batch(self, x_batch, y_batch, speed=None, previou_action=None):
         _ts = torch.randint(1, self.n_T + 1, (y_batch.shape[0], 1)).to(self.device)
 
         # dropout context with some probability
@@ -434,7 +434,7 @@ class Model_Cond_Diffusion(nn.Module):
 
         # use nn model to predict noise
         if speed != None:
-            noise_pred_batch = self.nn_model(y_t, x_batch, speed, _ts / self.n_T, context_mask)    
+            noise_pred_batch = self.nn_model(y_t, x_batch, speed, previou_action, _ts / self.n_T, context_mask)    
         else:
             noise_pred_batch = self.nn_model(y_t, x_batch, _ts / self.n_T, context_mask)
         # noise_pred_batch = self.nn_model(y_batch, x_batch, _ts / self.n_T, context_mask)
@@ -442,7 +442,7 @@ class Model_Cond_Diffusion(nn.Module):
         # return mse between predicted and true noise
         return self.loss_mse(noise, noise_pred_batch)
 
-    def sample(self, x_batch, return_y_trace=False, extract_embedding=False):
+    def sample(self, x_batch, return_y_trace=False, extract_embedding=False, speed=None, previous_actions=None):
         # also use this as a shortcut to avoid doubling batch when guide_w is zero
         is_zero = False
         if self.guide_w > -1e-3 and self.guide_w < 1e-3:
@@ -489,8 +489,11 @@ class Model_Cond_Diffusion(nn.Module):
             # split predictions and compute weighting
             if extract_embedding:
                 eps = self.nn_model(y_i, x_batch, t_is, context_mask, x_embed)
-            else:
-                eps = self.nn_model(y_i, x_batch, t_is, context_mask)
+            else:            
+                if speed != None: 
+                    eps = self.nn_model(y_i, x_batch, speed, previous_actions, t_is, context_mask)  
+                else:
+                    eps = self.nn_model(y_i, x_batch, t_is, context_mask)
             if not is_zero:
                 eps1 = eps[:n_sample]
                 eps2 = eps[n_sample:]
@@ -1088,6 +1091,131 @@ class Model_cnn_mlp(nn.Module):
         # c_embed is now [batch size, 128]
         return x_embed
 
+class Model_cnn_GKC(nn.Module):
+    def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, observation_space, features_dim=256, states_neurons=[256], output_dim=None, cnn_out_dim=1152):
+        super(Model_cnn_mlp, self).__init__()
+
+        self.x_shape = x_shape
+        self.n_hidden = n_hidden
+        self.y_dim = y_dim
+        self.embed_dim = embed_dim
+        self.n_feat = 64
+        self.net_type = net_type
+
+        self.cnn = nn.Sequential(
+            nn.Conv2d(self.x_shape[-1], 8, kernel_size=5, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(8, 16, kernel_size=5, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(16, 32, kernel_size=5, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(128, 256, kernel_size=3, stride=1),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+
+        # Compute shape by doing one forward pass
+        with torch.no_grad():
+            n_flatten = self.cnn(torch.as_tensor(observation_space['birdview'].sample()[None]).float()).shape[1]
+
+        self.linear = nn.Sequential(nn.Linear(n_flatten+states_neurons[-1], 512), nn.ReLU(),
+                                    nn.Linear(512, features_dim), nn.ReLU())
+
+        states_neurons = [observation_space['state'].shape[0]] + states_neurons
+        self.state_linear = []
+        for i in range(len(states_neurons)-1):
+            self.state_linear.append(nn.Linear(states_neurons[i], states_neurons[i+1]))
+            self.state_linear.append(nn.ReLU())
+        self.state_linear = nn.Sequential(*self.state_linear)
+
+        self.apply(self._weights_init)
+
+    @staticmethod
+    def _weights_init(m):
+        if isinstance(m, nn.Conv2d):
+            nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
+            nn.init.constant_(m.bias, 0.1)
+
+    def forward(self, birdview, state):
+        x = self.cnn(birdview)
+        latent_state = self.state_linear(state)
+
+        x = torch.cat((x, latent_state), dim=1)
+        x = self.linear(x)
+        return x
+
+
+
+    #     if output_dim is None:
+    #         self.output_dim = y_dim  # by default, just output size of action space
+    #     else:
+    #         self.output_dim = output_dim  # sometimes overwrite, eg for discretised, mean/variance, mixture density models
+
+    #     # set up CNN for image
+    #     self.conv_down1 = nn.Sequential(
+    #         ResidualConvBlock(self.x_shape[-1], self.n_feat, is_res=True),
+    #         nn.MaxPool2d(2),
+    #     )
+    #     self.conv_down3 = nn.Sequential(
+    #         ResidualConvBlock(self.n_feat, self.n_feat * 2, is_res=True),
+    #         nn.MaxPool2d(2),
+    #     )
+    #     self.imageembed = nn.Sequential(nn.AvgPool2d(8))
+
+    #     # cnn_out_dim = self.n_feat * 2  # how many features after flattening -- WARNING, will have to adjust this for diff size input resolution
+    #     cnn_out_dim = cnn_out_dim
+    #     # it is the flattened size after CNN layers, and average pooling
+
+    #     # then once have flattened vector out of CNN, just feed into previous Model_mlp_diff_embed
+    #     self.nn_downstream = Model_mlp_diff_embed(
+    #         cnn_out_dim,
+    #         self.n_hidden,
+    #         self.y_dim,
+    #         self.embed_dim,
+    #         self.output_dim,
+    #         is_dropout=False,
+    #         is_batch=False,
+    #         activation="relu",
+    #         net_type=self.net_type,
+    #         use_prev=False,
+    #     )
+
+    # def forward(self, birdview, state):
+    #     x = self.cnn(birdview)
+    #     latent_state = self.state_linear(state)
+
+    #     x = torch.cat((x, latent_state), dim=1)
+    #     x = self.linear(x)
+    #     return x
+
+    # def forward(self, y, x, t, context_mask, x_embed=None):
+    #     # torch expects batch_size, channels, height, width
+    #     # but we feed in batch_size, height, width, channels
+
+    #     if x_embed is None:
+    #         x_embed = self.embed_context(x)
+    #     else:
+    #         # otherwise, we already extracted x_embed
+    #         # e.g. outside of sampling loop
+    #         pass
+
+    #     return self.nn_downstream(y, x_embed, t, context_mask)
+
+    # def embed_context(self, x):
+    #     x = x.permute(0, 3, 2, 1)
+    #     x1 = self.conv_down1(x)
+    #     x3 = self.conv_down3(x1)  # [batch_size, 128, 35, 18]
+    #     # c3 is [batch size, 128, 4, 4]
+    #     x_embed = self.imageembed(x3)
+    #     # c_embed is [batch size, 128, 1, 1]
+    #     x_embed = x_embed.view(x.shape[0], -1)
+    #     # c_embed is now [batch size, 128]
+    #     return x_embed
+
 class Model_cnn_mlp_speed(nn.Module):
     def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, output_dim=None, cnn_out_dim=1152, use_velocity=True):
         super(Model_cnn_mlp_speed, self).__init__()
@@ -1363,6 +1491,100 @@ class Model_Cond_EBM(nn.Module):
 
         return y_output
 
+
+class Model_cnn_GKC(nn.Module):
+    def __init__(self, x_shape, y_dim, embed_dim, net_type, observation_space=None, features_dim=256, states_neurons=[256], output_dim=None, cnn_out_dim=1152, embed_n_hidden=128):
+        super(Model_cnn_GKC, self).__init__()
+
+        self.x_shape = x_shape
+        self.x_shape = (192, 192, 3)
+        self.y_dim = y_dim
+        self.embed_dim = embed_dim
+        self.n_feat = 64
+        self.net_type = net_type
+        self.embed_n_hidden = embed_n_hidden
+
+
+        self.cnn = nn.Sequential(
+            nn.Conv2d(self.x_shape[-1], 8, kernel_size=5, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(8, 16, kernel_size=5, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(16, 32, kernel_size=5, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2),
+            nn.ReLU(),
+            nn.Conv2d(128, 256, kernel_size=3, stride=1),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+
+        # Compute shape by doing one forward pass
+        with torch.no_grad():
+            example = np.random.rand(*self.x_shape)
+            n_flatten = self.cnn(torch.as_tensor(np.expand_dims(np.transpose(example, (2,0,1)), axis=0)).float()).shape[1]
+
+        self.linear = nn.Sequential(nn.Linear(n_flatten+states_neurons[-1], 512), nn.ReLU(),
+                                    nn.Linear(512, features_dim), nn.ReLU())
+
+        states_neurons = [y_dim*2] + states_neurons
+        self.state_linear = []
+        for i in range(len(states_neurons)-1):
+            self.state_linear.append(nn.Linear(states_neurons[i], states_neurons[i+1]))
+            self.state_linear.append(nn.ReLU())
+        self.state_linear = nn.Sequential(*self.state_linear)
+
+        self.apply(self._weights_init)
+
+        self.head = nn.Sequential(nn.Linear(features_dim, features_dim), nn.ReLU(),
+                                  nn.Linear(features_dim, features_dim), nn.ReLU(),
+                                  nn.Linear(features_dim, features_dim), nn.ReLU(),)
+
+        self.nn_downstream = Model_mlp_diff_embed(
+            features_dim,
+            self.embed_dim,
+            self.y_dim,
+            self.embed_n_hidden,
+            self.y_dim,
+            is_dropout=False,
+            is_batch=False,
+            activation="relu",
+            net_type=self.net_type,
+            use_prev=False,
+        )
+
+    @staticmethod
+    def _weights_init(m):
+        if isinstance(m, nn.Conv2d):
+            nn.init.xavier_uniform_(m.weight, gain=nn.init.calculate_gain('relu'))
+            nn.init.constant_(m.bias, 0.1)
+
+    def forward(self, y, x, speed, previous_action, t, context_mask, x_embed=None):
+        if x_embed is None:
+            x_embed = self.embed_context(x, speed, previous_action)
+        else:
+            # otherwise, we already extracted x_embed
+            # e.g. outside of sampling loop
+            pass
+
+        return self.nn_downstream(y, x_embed, t, context_mask)
+
+    def embed_context(self, x, speed, previous_action):
+        x = torch.nn.functional.interpolate(x.permute(0, 3, 1, 2), size=(192, 192), mode='bilinear', align_corners=False).permute(0, 2, 3, 1)
+        x = x.permute(0, 3, 2, 1)
+   
+        x = self.cnn(x)
+        latent_state = self.state_linear(torch.cat((speed, previous_action), dim=1))
+
+        x = torch.cat((x, latent_state), dim=1)
+        x = self.linear(x)
+        x_embed = self.head(x)
+        # c_embed is [batch size, 128, 1, 1]
+        # x_embed = x_embed.view(x.shape[0], -1)
+        # c_embed is now [batch size, 128]
+        return x_embed
 
 class Model_cnn_bc(nn.Module):
     def __init__(self, n_hidden, y_dim, embed_dim, net_type, output_dim=None,
