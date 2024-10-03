@@ -222,8 +222,8 @@ class TrainerSemaphores():
         return model
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/multi/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/multi/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/multi/Diffusion_BC/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/multi/Diffusion_BC/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 
 def extract_action_mse(y, y_hat):
@@ -277,7 +277,7 @@ if __name__ == '__main__':
         run_wandb=True,
         record_run=True,
         expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
-        name='town01_multi_without_trajectory_birdview_GKC_speed',
+        name='town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed',
         param_search=False,
         embedding="Model_cnn_mlp_GKC",
         observation_type='birdview',
