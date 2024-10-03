@@ -230,8 +230,8 @@ class TrainerSemaphores():
         return model
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/multi/Diffusion_BC/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/multi/Diffusion_BC/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 
 def extract_action_mse(y, y_hat):

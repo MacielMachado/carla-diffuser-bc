@@ -93,7 +93,13 @@ class TrainerSemaphores():
         # Speed
         # speed = state[:5,-2:]
         speed = state[:,-2:]
-        obs = DataHandler().preprocess_images(dataset, observation_type=self.observation_type, stack_with_previous=not self.use_velocity)
+        obs = DataHandler().preprocess_images(
+            dataset,
+            observation_type=self.observation_type,
+            stack_with_previous=not self.use_velocity,
+            use_velocity=self.use_velocity,
+            use_greyscale=False)
+        
         if self.use_velocity:
             dataset = CarlaCustomDatasetSpeed(obs, actions, speed, previous_actions)
         else:
@@ -225,8 +231,8 @@ class TrainerSemaphores():
         return torch.nn.MSELoss()(y, y_hat)
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/multi/BC/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/multi/BC/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/multi/BC/BC_Multi_GKC/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/multi/BC/BC_Multi_GKC/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 
 def extract_action_mse(y, y_hat):

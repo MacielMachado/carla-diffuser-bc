@@ -12,10 +12,7 @@ import pandas as pd
 import torch as th
 import tqdm
 
-from rl_birdview.models.ppo_policy import PpoPolicy
-from rl_train import get_obs_configs, get_env_wrapper_configs
 from carla_gym.envs import LeaderboardEnv
-from rl_birdview.utils.rl_birdview_wrapper import RlBirdviewWrapper
 import carla_gym.utils.transforms as trans_utils
 
 CAMERA_FOV = 90.0
@@ -490,13 +487,13 @@ def evaluate_agent(ckpt_path):
     ep_df.to_json(eval_file_dir / 'eval.json')
 
 
-if __name__ == '__main__':
-    # ckpt_dir = pathlib.Path('ckpt')
-    # ckpt_list = [ckpt_file for ckpt_file in ckpt_dir.iterdir() if ckpt_file.stem!='ckpt_latest']
-    # ckpt_list.sort(key=lambda ckpt_file: int(ckpt_file.stem.split('_')[1]))
-    # ckpt_idx = 0
-    # for _ in range(12):
-    #     evaluate_agent(ckpt_list[ckpt_idx])
-    #     ckpt_idx += 4
-    ckpt_file = pathlib.Path('/home/casa/projects/paper_results/hgail/ckpt/ckpt_1351680.pth')
-    evaluate_agent(ckpt_file)
+# if __name__ == '__main__':
+#     # ckpt_dir = pathlib.Path('ckpt')
+#     # ckpt_list = [ckpt_file for ckpt_file in ckpt_dir.iterdir() if ckpt_file.stem!='ckpt_latest']
+#     # ckpt_list.sort(key=lambda ckpt_file: int(ckpt_file.stem.split('_')[1]))
+#     # ckpt_idx = 0
+#     # for _ in range(12):
+#     #     evaluate_agent(ckpt_list[ckpt_idx])
+#     #     ckpt_idx += 4
+#     ckpt_file = pathlib.Path('/home/casa/projects/paper_results/hgail/ckpt/ckpt_1351680.pth')
+#     evaluate_agent(ckpt_file)
