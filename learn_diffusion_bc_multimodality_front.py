@@ -17,7 +17,8 @@ class TrainerSemaphores():
                  net_type, drop_prob, extra_diffusion_steps, embed_dim,
                  guide_w, betas, dataset_path, run_wandb, record_run,
                  expert_dataset, name='', param_search=False,
-                 embedding="Model_cnn_mlp", observation_type="birdview", use_velocity=False):
+                 embedding="Model_cnn_mlp", observation_type="birdview",
+                 use_velocity=False, use_greyscale=True):
 
         self.n_epoch = n_epoch
         self.lrate = lrate
@@ -43,6 +44,7 @@ class TrainerSemaphores():
         self.expert_dataset = expert_dataset
         self.observation_type = observation_type
         self.use_velocity = use_velocity
+        self.use_greyscale = use_greyscale
 
     def main(self):
         if self.run_wandb:
@@ -94,7 +96,13 @@ class TrainerSemaphores():
         # Speed
         # speed = state[:5,-2:]
         speed = state[:,-2:]
-        obs = DataHandler().preprocess_images(dataset, observation_type=self.observation_type, stack_with_previous=not self.use_velocity)
+        obs = DataHandler().preprocess_images(
+            dataset,
+            observation_type=self.observation_type,
+            stack_with_previous=not self.use_velocity,
+            use_velocity=self.use_velocity,
+            use_greyscale=self.use_greyscale)
+
         if self.use_velocity:
             dataset = CarlaCustomDatasetSpeed(obs, actions, speed, previous_actions)
         else:
