@@ -289,4 +289,5 @@ if __name__ == '__main__':
         param_search=False,
         embedding="Model_cnn_mlp_GKC",
         observation_type='birdview',
-        use_velocity=True).main()
+        use_velocity=True,
+        use_greyscale=False).main()
