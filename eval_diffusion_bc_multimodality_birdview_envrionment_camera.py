@@ -13,6 +13,8 @@ from data_collect import reward_configs, terminal_configs, obs_configs
 from data_preprocessing import DataHandler, FrontCameraMovieMakerArray
 from models_bc import Model_cnn_BC
 from data_visualization import Camera
+import carla
+
 
 env_configs = {
     'carla_map': 'Town01',
@@ -69,6 +71,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
     ep_dict = {}
     ep_dict['actions'] = []
     ep_dict['state'] = []
+    fixed_camera = Camera(env.get_world())
 
     # while n_step < max_eval_steps and env_done == False:
     while n_step < max_eval_steps:
@@ -76,7 +79,15 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
             actions = model.sample(torch.tensor(obs).float().to(device)).to(device)[0]
         elif architecture == 'mse':
             actions = model(torch.tensor(obs).float().to(device)).to(device)[0]
+        acc, steer = actions.detach().numpy().astype(np.float64)
+        control = carla.VehicleControl(throttle=acc, steer=steer)
+        driver_control = {'hero': control}
+        
         obs_clean, reward, done, info = env.step(np.array(actions.detach().cpu()))
+        fixed_img = fixed_camera.get()
+
+
+
 
         new_row = pd.DataFrame([info['route_completion']])
         route_completion_buffer = pd.concat([route_completion_buffer, new_row], ignore_index=True)

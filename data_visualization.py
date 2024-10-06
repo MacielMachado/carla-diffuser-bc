@@ -23,7 +23,7 @@ FIXED_CAMERA_Y = 198.314697265625
 FIXED_TRAJ_RADIUS = 51.98500061035156
 
 class Camera(object):
-    def __init__(self, world, w, h, fov, x, y, z, pitch, yaw):
+    def __init__(self, world, w=IMAGE_SIZE, h=IMAGE_SIZE, fov=CAMERA_FOV, x=FIXED_CAMERA_X, y=FIXED_CAMERA_Y, z=CAMERA_Z, pitch=-90, yaw=0):
         bp_library = world.get_blueprint_library()
         camera_bp = bp_library.find('sensor.camera.rgb')
         camera_bp.set_attribute('image_size_x', str(w))

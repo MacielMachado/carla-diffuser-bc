@@ -58,6 +58,10 @@ class RlBirdviewWrapper(gym.Wrapper):
         super(RlBirdviewWrapper, self).__init__(env)
 
         self.eval_mode = True
+        self.env_world = env
+
+    def get_world(self):
+        return self.env_world._world
 
     def reset(self, observation_type='birdview'):
         if self.eval_mode:

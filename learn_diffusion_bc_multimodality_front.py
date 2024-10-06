@@ -95,7 +95,7 @@ class TrainerSemaphores():
         state = np.array([np.array(ele[0]['state']) for index, ele in enumerate(dataset)])
         # Speed
         # speed = state[:5,-2:]
-        speed = state[:,-2:]
+        speed = state[:,[4,5]]
         obs = DataHandler().preprocess_images(
             dataset,
             observation_type=self.observation_type,
