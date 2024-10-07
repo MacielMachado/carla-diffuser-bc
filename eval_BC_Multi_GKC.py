@@ -8,10 +8,10 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 from rl_birdview_wrapper import RlBirdviewWrapper
 # from carla_gym.envs import EndlessEnv, EndlessFixedSpawnEnv, LeaderboardEnv
 from carla_gym.envs import EndlessFixedSpawnEnv
-from models import Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet, Model_cnn_GKC
 from data_collect import reward_configs, terminal_configs, obs_configs
 from data_preprocessing import DataHandler, FrontCameraMovieMakerArray
 from models_bc import Model_cnn_BC
+from models_bc import Model_cnn_BC, Model_cnn_BC_resnet, Model_cnn_GKC
 
 env_configs = {
     'carla_map': 'Town01',
@@ -84,8 +84,12 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
             actions = model.sample(torch.tensor(obs).float().to(device),
                                    speed=torch.tensor([speed]).float().to(device),
                                    previous_actions=previous_actions.float().to(device)).to(device)[0]
+
         elif architecture == 'mse':
-            actions = model(torch.tensor(obs).float().to(device)).to(device)[0]
+            actions = model(torch.tensor(obs).float().to(device),
+                            speed=torch.tensor([speed]).float().to(device),
+                            previous_action=previous_actions.float().to(device)).to(device)[0]
+
         obs_clean, reward, done, info = env.step(np.array(actions.detach().cpu()))
         
         speed = obs_clean['state'][[4,5]]
@@ -345,44 +349,6 @@ if __name__ == '__main__':
     # env = RlBirdviewWrapper(env)
     
     # model = Model_cnn_BC(x_shape=(192, 192, 4), n_hidden=128, cnn_out_dim=2).to(device)
-    
-    observation_type = 'front'
-    x_shape = (224, 224, 12)
-    nn_model = Model_cnn_mlp_resnet(
-        x_shape=x_shape,
-        n_hidden=128,
-        y_dim=2,
-        embed_dim=128,
-        net_type='transformer',
-        origin='front',
-        cnn_out_dim=4608,
-        resnet_depth='50'
-    ).to(device)
-
-    model = Model_Cond_Diffusion(
-        nn_model,
-        betas=(1e-4, 0.02),
-        n_T=20,
-        device=device,
-        x_dim=x_shape,
-        y_dim=2,
-        drop_prob=0.0,
-        guide_w=0.0,)
-
-    # env_configs = {
-    #     'carla_map': 'Town01',
-    #     'num_zombie_vehicles': [0, 150],
-    #     'num_zombie_walkers': [0, 300],
-    #     'weather_group': 'dynamic_1.0'
-    #     }
-
-    # env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-    #                 terminal_configs=terminal_configs, host='localhost', port=2001,
-    #                 seed=np.random.randint(1, 3001), 
-    #                 no_rendering=True, **env_configs, spawn_point=spawn_point)
-    # env = RlBirdviewWrapper(env)
-    # env = SubprocVecEnv([env])
-    # env = env_maker_multimodality
 
     # -----------------------------------------------------------------------------------------
     models = [
@@ -438,28 +404,28 @@ if __name__ == '__main__':
     ]
 
     models = [
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_1.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_20.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_30.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_40.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_50.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_60.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_70.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_80.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_90.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_100.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_120.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_150.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_200.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_250.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_300.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_350.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_400.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_500.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_600.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_1.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_20.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_30.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_40.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_50.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_60.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_70.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_80.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_90.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_100.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_120.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_150.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_200.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_250.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_300.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_350.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_400.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_500.pkl',
+        'model_pytorch/multi/BC/BC_Multi_GKC/town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_600.pkl',
     ]
 
-    device = 'cuda'
+    device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -468,25 +434,15 @@ if __name__ == '__main__':
     embed_dim = 128
     n_hidden = 128
 
-    nn_model = Model_cnn_GKC(
+    model = Model_cnn_GKC(
         x_shape,
         y_dim,
         embed_dim=embed_dim,
         net_type=net_type,
         embed_n_hidden=128).to(device)
 
-    model = Model_Cond_Diffusion(
-        nn_model,
-        betas=(1e-4, 0.02),
-        n_T=20,
-        device=device,
-        x_dim=x_shape,
-        y_dim=2,
-        drop_prob=0.0,
-        guide_w=0.0,)
-
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                        terminal_configs=terminal_configs, host="localhost", port=2020,
+                        terminal_configs=terminal_configs, host="localhost", port=2000,
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
     # -----------------------------------------------------------------------------------------
@@ -505,7 +461,7 @@ if __name__ == '__main__':
                 device=device,
                 observation_type=observation_type,
                 max_eval_steps=200,
-                architecture='diffusion',
+                architecture='mse',
                 movie=False,
                 use_velocity=True,
                 use_greyscale=False,)

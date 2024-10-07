@@ -175,7 +175,7 @@ def env_maker_multimodality():
         }
 
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                    terminal_configs=terminal_configs, host='localhost', port=2001,
+                    terminal_configs=terminal_configs, host='localhost', port=2005,
                     seed=np.random.randint(1, 3001), 
                     no_rendering=True, **env_configs, spawn_point=spawn_point)
     env = RlBirdviewWrapper(env)
