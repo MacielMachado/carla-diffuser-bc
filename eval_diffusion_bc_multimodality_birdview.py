@@ -46,7 +46,7 @@ def handle_obs(obs, observation_type):
     obs = DataHandler().preprocess_images(obs, observation_type=observation_type , eval=True)
     return obs
 
-def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observation_type='birdview',  architecture='diffusion', movie=True):
+def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observation_type='birdview',  architecture='diffusion', movie=True, extra_steps=0):
     model = model.eval()
     t0 = time.time()
     # for i in range(env.num_envs):
@@ -72,7 +72,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
     # while n_step < max_eval_steps and env_done == False:
     while n_step < max_eval_steps:
         if architecture == 'diffusion':
-            actions = model.sample(torch.tensor(obs).float().to(device)).to(device)[0]
+            actions = model.sample_extra(torch.tensor(obs).float().to(device), extra_steps=extra_steps).to(device)[0]
         elif architecture == 'mse':
             actions = model(torch.tensor(obs).float().to(device)).to(device)[0]
         obs_clean, reward, done, info = env.step(np.array(actions.detach().cpu()))
@@ -491,6 +491,7 @@ if __name__ == '__main__':
                 observation_type=observation_type,
                 max_eval_steps=200,
                 architecture='diffusion',
-                movie=False)
+                movie=False,
+                extra_steps=32)
             # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
             # object.save_record()

@@ -109,9 +109,9 @@ def process_files(path_to_data_folder):
                 # Extrair M do nome da subpasta
                 folder_name = os.path.basename(root)
                 
-                if folder_name.startswith('BC_Fixed_No_Trajectory_'):
+                if folder_name.startswith('BC'):
                     BC = 0
-                elif folder_name.startswith('Diffusion_BC_Fixed_No_Trajectory_'):
+                elif folder_name.startswith('Diffusion_BC'):
                     BC = 1
                 else:
                     continue
@@ -126,10 +126,12 @@ def process_files(path_to_data_folder):
                 Ep = int(parts[-1].replace('.csv', ''))  # Valor após o último '_'
                 
                 # Achar o arquivo .txt correspondente (mesmo Ech e Ep)
-                txt_file_name_1 = f"town01_fixed_route_without_trajectory_birdview_5bbd_ep_{Ech}_{Ep}.txt"
+                # txt_file_name_1 = f"town01_fixed_route_without_trajectory_birdview_5bbd_ep_{Ech}_{Ep}.txt"
+                txt_file_name_1 = f"town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_{Ech}_{Ep}.txt"
                 txt_file_path_1 = os.path.join(root, txt_file_name_1)
 
-                txt_file_name_2 = f"town01_fixed_route_without_trajectory_birdview_11a6_ep_{Ech}_{Ep}.txt"
+                # txt_file_name_2 = f"town01_fixed_route_without_trajectory_birdview_11a6_ep_{Ech}_{Ep}.txt"
+                txt_file_name_2 = f"town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_{Ech}_{Ep}.txt"
                 txt_file_path_2 = os.path.join(root, txt_file_name_2)
                 
                 # if not os.path.exists(txt_file_path_1) or not os.path.exists(txt_file_path_2):
@@ -392,7 +394,8 @@ if __name__ == '__main__':
     # data = np.load(path_to_data_folder + '/data.npy', allow_pickle=True)
     # plot_histograms_by_bc_ech(data)
 
-    path_to_data_folder = "diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions_with_fixed_route"
+    # path_to_data_folder = "diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions_with_fixed_route"
+    path_to_data_folder = "diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_GKC"
     output_file = path_to_data_folder + '/data.npy'
     result = process_files(path_to_data_folder)
     np.save(output_file, result)

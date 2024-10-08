@@ -125,13 +125,13 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
             break
 
     if True:
-        # if movie:
-        #     movie_maker = FrontCameraMovieMakerArray(video_path=video_path,
-        #                                             front_array=list_render_front,
-        #                                             left_array=list_render_left,
-        #                                             right_array=list_render_right,
-        #                                             birdview_array=list_render_birdview)
-        #     movie_maker.save_record()
+        if movie:
+            movie_maker = FrontCameraMovieMakerArray(video_path=video_path,
+                                                    front_array=list_render_front,
+                                                    left_array=list_render_left,
+                                                    right_array=list_render_right,
+                                                    birdview_array=list_render_birdview)
+            movie_maker.save_record()
 
         gnss_path = video_path[:-3]+'txt'
         route_completion_data_path = video_path[:-3]+'csv'
@@ -438,28 +438,28 @@ if __name__ == '__main__':
     ]
 
     models = [
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_1.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_20.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_30.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_40.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_50.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_60.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_70.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_80.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_90.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_100.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_120.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_150.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_200.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_250.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_300.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_350.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_400.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_500.pkl',
-        'model_pytorch/multi/Diffusion_BC/Diffusion_BC_Multi_GKC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_600.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_1.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_20.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_30.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_40.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_50.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_60.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_70.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_80.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_90.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_100.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_120.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_150.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_200.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_250.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_300.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_350.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_400.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_500.pkl',
+        'model_pytorch/multi/Diffusion_BC/town01_Diff_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_600.pkl',
     ]
 
-    device = 'cuda'
+    device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -487,15 +487,16 @@ if __name__ == '__main__':
 
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
                         terminal_configs=terminal_configs, host="localhost", port=2020,
-                        seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
+                        seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point)
     env = RlBirdviewWrapper(env)
     # -----------------------------------------------------------------------------------------
     for model_path in models:
         model.load_state_dict(torch.load(model_path))
         for i in range(0, 10):
             # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
-            diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_GKC/'
-            diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+            diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_GKC/Diffusion_BC_Multi_GKC_01/'
+            # diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+            diff_bc_video_2 = diff_bc_video
             os.makedirs(diff_bc_video_2, exist_ok=True)
             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
             evaluate_policy(
@@ -504,9 +505,9 @@ if __name__ == '__main__':
                 video_path=eval_video_path,
                 device=device,
                 observation_type=observation_type,
-                max_eval_steps=200,
+                max_eval_steps=300,
                 architecture='diffusion',
-                movie=False,
+                movie=True,
                 use_velocity=True,
                 use_greyscale=False,)
             # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
