@@ -479,7 +479,7 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load(model_path))
         for i in range(0, 10):
             # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
-            diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions_with_fixed_route/'
+            diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions_with_fixed_route_32_extra_steps/'
             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
             os.makedirs(diff_bc_video_2, exist_ok=True)
             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
