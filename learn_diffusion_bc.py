@@ -248,7 +248,7 @@ if __name__ == '__main__':
                 device='cuda', 
                 n_hidden=128,
                 batch_size=256,
-                n_T=20,
+                n_T=50,
                 net_type='transformer',
                 drop_prob=0.0,
                 extra_diffusion_steps=16,
