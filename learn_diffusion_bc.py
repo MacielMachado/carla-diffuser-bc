@@ -200,8 +200,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/Resnet18_T50/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Resnet18_T50/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
