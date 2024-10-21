@@ -200,8 +200,8 @@ class Trainer():
 
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_0'+str(self.iteration)+'/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
 
 env_configs = {
     'carla_map': 'Town01',
@@ -243,11 +243,11 @@ if __name__ == '__main__':
     stop  = 1
     print('2')
     for i in range(5):
-        Trainer(n_epoch=1000,
+        Trainer(n_epoch=750,
                 lrate=0.0001,
                 device='cuda', 
                 n_hidden=128,
-                batch_size=16,
+                batch_size=256,
                 n_T=20,
                 net_type='transformer',
                 drop_prob=0.0,
@@ -255,14 +255,14 @@ if __name__ == '__main__':
                 embed_dim=128,
                 guide_w=0.0,
                 betas=(1e-4, 0.02),
-                dataset_path='data_collection/town01_fixed_route_without_trajectory',
+                dataset_path='data_collection/town01_multimodality_t_intersection_simples',
                 run_wandb=False,
                 record_run=False,
-                expert_dataset=ExpertDataset('data_collection/town01_fixed_route_without_trajectory', n_routes=10, n_eps=1),
+                expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=1),
                 name='town01_fixed_route_without_trajectory_birdview',
                 param_search=False,
-                embedding="Model_cnn_mlp",
-                data_type='front',
+                embedding="Model_cnn_mlp_resnet18",
+                data_type='birdview',
                 iteration=i).main()
 
 

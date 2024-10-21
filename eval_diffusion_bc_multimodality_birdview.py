@@ -448,7 +448,7 @@ if __name__ == '__main__':
     #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_400.pkl',
     # ]
 
-    device = 'cuda'
+    device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -480,7 +480,7 @@ if __name__ == '__main__':
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
     # -----------------------------------------------------------------------------------------
-    extra_steps_list = [32]
+    extra_steps_list = [8]
     # extra_steps_list = [0]
     for extra_steps in extra_steps_list:
         for model_path in models:
@@ -498,9 +498,9 @@ if __name__ == '__main__':
                     video_path=eval_video_path,
                     device=device,
                     observation_type=observation_type,
-                    max_eval_steps=200,
+                    max_eval_steps=3000,
                     architecture='diffusion',
                     movie=True,
-                    extra_steps=32)
+                    extra_steps=extra_steps)
             # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
             # object.save_record()
