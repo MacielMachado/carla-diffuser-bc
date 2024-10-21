@@ -127,7 +127,7 @@ def process_files(path_to_data_folder):
                 
                 # Achar o arquivo .txt correspondente (mesmo Ech e Ep)
                 # txt_file_name_1 = f"town01_fixed_route_without_trajectory_birdview_5bbd_ep_{Ech}_{Ep}.txt"
-                txt_file_name_1 = f"town01_BC_multi_without_trajectory_birdview_GKC_speed_e1d8_ep_{Ech}_{Ep}.txt"
+                txt_file_name_1 = f"town01_fixed_route_without_trajectory_birdview_5bbd_ep_{Ech}_{Ep}.txt"
                 txt_file_path_1 = os.path.join(root, txt_file_name_1)
 
                 # txt_file_name_2 = f"town01_fixed_route_without_trajectory_birdview_11a6_ep_{Ech}_{Ep}.txt"
@@ -395,7 +395,8 @@ if __name__ == '__main__':
     # plot_histograms_by_bc_ech(data)
 
     # path_to_data_folder = "diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions_with_fixed_route"
-    path_to_data_folder = "diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_GKC"
+    # path_to_data_folder = "diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_GKC"
+    path_to_data_folder = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions_with_fixed_route_32_extra_steps'
     output_file = path_to_data_folder + '/data.npy'
     result = process_files(path_to_data_folder)
     np.save(output_file, result)

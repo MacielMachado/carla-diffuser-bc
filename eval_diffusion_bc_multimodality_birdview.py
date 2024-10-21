@@ -111,13 +111,13 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
             break
 
     if True:
-        # if movie:
-        #     movie_maker = FrontCameraMovieMakerArray(video_path=video_path,
-        #                                             front_array=list_render_front,
-        #                                             left_array=list_render_left,
-        #                                             right_array=list_render_right,
-        #                                             birdview_array=list_render_birdview)
-        #     movie_maker.save_record()
+        if movie:
+            movie_maker = FrontCameraMovieMakerArray(video_path=video_path,
+                                                    front_array=list_render_front,
+                                                    left_array=list_render_left,
+                                                    right_array=list_render_right,
+                                                    birdview_array=list_render_birdview)
+            movie_maker.save_record()
 
         gnss_path = video_path[:-3]+'txt'
         route_completion_data_path = video_path[:-3]+'csv'
@@ -168,10 +168,15 @@ def env_maker_multimodality():
         'weather_group': 'dynamic_1.0'
         }
 
+    # env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+    #                 terminal_configs=terminal_configs, host='localhost', port=2001,
+    #                 seed=np.random.randint(1, 3001), 
+    #                 no_rendering=True, **env_configs, spawn_point=spawn_point)
+
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
                     terminal_configs=terminal_configs, host='localhost', port=2001,
                     seed=np.random.randint(1, 3001), 
-                    no_rendering=True, **env_configs, spawn_point=spawn_point)
+                    no_rendering=True, **env_configs)
     env = RlBirdviewWrapper(env)
     return env
 
@@ -185,7 +190,7 @@ if __name__ == '__main__':
     # diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
     os.makedirs(diff_bc_video, exist_ok=True)
 
-    device = 'cuda'
+    device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -372,78 +377,78 @@ if __name__ == '__main__':
 
     # -----------------------------------------------------------------------------------------
     models = [
-        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
         'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
         'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
 
-        'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
         'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
         'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
 
-        'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
         'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
         'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
         
-        'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
         'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
         'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
         
-        'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
         'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
-        'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
         'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
     ]
 
-    models = [
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_1.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_20.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_30.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_40.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_50.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_60.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_70.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_80.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_90.pkl',
+    # models = [
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_1.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_20.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_30.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_40.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_50.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_60.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_70.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_80.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_90.pkl',
 
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_100.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_120.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_150.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_200.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_300.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_350.pkl',
-        'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_400.pkl',
-    ]
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_100.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_120.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_150.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_200.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_300.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_350.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_400.pkl',
+    # ]
 
-    device = 'cpu'
+    device = 'cuda'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -475,23 +480,27 @@ if __name__ == '__main__':
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
     # -----------------------------------------------------------------------------------------
-    for model_path in models:
-        model.load_state_dict(torch.load(model_path))
-        for i in range(0, 10):
-            # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
-            diff_bc_video = 'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_with_actions_with_fixed_route_32_extra_steps/'
-            diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
-            os.makedirs(diff_bc_video_2, exist_ok=True)
-            eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
-            evaluate_policy(
-                env=env,
-                model=model.to(device),
-                video_path=eval_video_path,
-                device=device,
-                observation_type=observation_type,
-                max_eval_steps=200,
-                architecture='diffusion',
-                movie=False,
-                extra_steps=32)
+    extra_steps_list = [32]
+    # extra_steps_list = [0]
+    for extra_steps in extra_steps_list:
+        for model_path in models:
+            model.load_state_dict(torch.load(model_path))
+            for i in range(0, 10):
+                # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/free_world/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
+                diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+                os.makedirs(diff_bc_video_2, exist_ok=True)
+                eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
+                evaluate_policy(
+                    env=env,
+                    model=model.to(device),
+                    video_path=eval_video_path,
+                    device=device,
+                    observation_type=observation_type,
+                    max_eval_steps=200,
+                    architecture='diffusion',
+                    movie=True,
+                    extra_steps=32)
             # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
             # object.save_record()
