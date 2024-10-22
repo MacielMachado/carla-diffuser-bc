@@ -449,25 +449,25 @@ if __name__ == '__main__':
     # ]
 
     models = [
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_1.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_20.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_30.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_40.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_50.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_60.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_70.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_80.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_90.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_100.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_120.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_150.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_200.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_250.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_300.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_350.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_400.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_500.pkl'
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_600.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_1.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_20.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_30.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_40.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_50.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_60.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_70.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_80.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_90.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_100.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_120.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_150.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_200.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_250.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_300.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_350.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_400.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_500.pkl',
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_600.pkl',
     ]
 
     device = 'cpu'
