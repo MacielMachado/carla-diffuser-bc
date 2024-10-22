@@ -42,16 +42,16 @@ spawn_point_action_histogram = {
 }
 
 
-def handle_obs(obs, observation_type):
-    obs = DataHandler().preprocess_images(obs, observation_type=observation_type , eval=True)
+def handle_obs(obs, observation_type, embedding):
+    obs = DataHandler().preprocess_images(obs, observation_type=observation_type , eval=True, embedding=embedding)
     return obs
 
-def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observation_type='birdview',  architecture='diffusion', movie=True, extra_steps=0):
+def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observation_type='birdview',  architecture='diffusion', movie=True, extra_steps=0, embedding=Model_cnn_mlp):
     model = model.eval()
     t0 = time.time()
     # for i in range(env.num_envs):
     #     env.set_attr('eval_mode', True, indices=1)
-    obs = handle_obs(env.reset(), observation_type)
+    obs = handle_obs(env.reset(), observation_type, embedding=embedding)
     n_step = 0
     env_done = False
     list_render = []
@@ -89,7 +89,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
 
         route_infraction_total = pd.concat([route_infraction, route_infraction_2], axis=1)
 
-        obs = handle_obs(obs_clean, observation_type)
+        obs = handle_obs(obs_clean, observation_type, embedding)
         
         if True:
             list_render.append(np.transpose(obs_clean['central_rgb'], (1,2,0)))
@@ -536,6 +536,7 @@ if __name__ == '__main__':
                     max_eval_steps=200,
                     architecture='diffusion',
                     movie=True,
-                    extra_steps=extra_steps)
+                    extra_steps=extra_steps,
+                    embedding='Model_cnn_mlp_resnet18')
             # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
             # object.save_record()
