@@ -487,15 +487,15 @@ if __name__ == '__main__':
     #     net_type=net_type,
     #     cnn_out_dim=4608).to(device)
 
-    nn_model = Model_cnn_mlp(
-        x_shape,
-        n_hidden,
-        y_dim,
-        embed_dim=embed_dim,
-        net_type=net_type,
-        cnn_out_dim=4608).to(device)
+    # nn_model = Model_cnn_mlp(
+    #     x_shape,
+    #     n_hidden,
+    #     y_dim,
+    #     embed_dim=embed_dim,
+    #     net_type=net_type,
+    #     cnn_out_dim=4608).to(device)
     
-    Model_cnn_mlp_resnet(x_shape, n_hidden, y_dim,
+    nn_model = Model_cnn_mlp_resnet(x_shape, n_hidden, y_dim,
                          embed_dim=embed_dim,
                          net_type=net_type, resnet_depth='18',
                          cnn_out_dim=4608, origin='birdview').to(device)
