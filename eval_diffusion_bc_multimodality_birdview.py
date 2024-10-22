@@ -448,6 +448,28 @@ if __name__ == '__main__':
     #     # 'model_pytorch/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_5bbd_ep_400.pkl',
     # ]
 
+    models = [
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_1.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_20.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_30.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_40.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_50.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_60.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_70.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_80.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_90.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_100.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_120.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_150.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_200.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_250.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_300.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_350.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_400.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_500.pkl'
+        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_600.pkl'
+    ]
+
     device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
@@ -457,6 +479,14 @@ if __name__ == '__main__':
     embed_dim = 128
     n_hidden = 128
 
+    # nn_model = Model_cnn_mlp(
+    #     x_shape,
+    #     n_hidden,
+    #     y_dim,
+    #     embed_dim=embed_dim,
+    #     net_type=net_type,
+    #     cnn_out_dim=4608).to(device)
+
     nn_model = Model_cnn_mlp(
         x_shape,
         n_hidden,
@@ -464,6 +494,11 @@ if __name__ == '__main__':
         embed_dim=embed_dim,
         net_type=net_type,
         cnn_out_dim=4608).to(device)
+    
+    Model_cnn_mlp_resnet(x_shape, n_hidden, y_dim,
+                         embed_dim=embed_dim,
+                         net_type=net_type, resnet_depth='18',
+                         cnn_out_dim=4608, origin='birdview').to(device)
 
     model = Model_Cond_Diffusion(
         nn_model,
@@ -488,7 +523,7 @@ if __name__ == '__main__':
             for i in range(0, 10):
                 # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
                 diff_bc_video = f'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/free_world/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/resnet_18/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
@@ -498,7 +533,7 @@ if __name__ == '__main__':
                     video_path=eval_video_path,
                     device=device,
                     observation_type=observation_type,
-                    max_eval_steps=3000,
+                    max_eval_steps=200,
                     architecture='diffusion',
                     movie=True,
                     extra_steps=extra_steps)
