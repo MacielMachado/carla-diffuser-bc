@@ -449,28 +449,85 @@ if __name__ == '__main__':
     # ]
 
     models = [
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_1.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_20.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_30.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_40.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_50.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_60.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_70.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_80.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_90.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_100.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_120.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_150.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_200.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_250.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_300.pkl',
-        'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_350.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_1.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_20.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_30.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_40.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_50.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_60.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_70.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_80.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_90.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_100.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_120.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_150.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_200.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_250.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_300.pkl',
+        # 'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_350.pkl',
         'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_400.pkl',
         'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_500.pkl',
         'model_pytorch/Resnet18/Diffusion_BC_Fixed_No_Trajectory_00/town01_fixed_route_without_trajectory_birdview_b9e1_ep_600.pkl',
     ]
 
-    device = 'cpu'
+
+
+
+
+    models = [
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
+
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
+
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
+        
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_04/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
+        
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_1.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_600.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_05/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_749.pkl',
+    ]
+
+
+    device = 'cuda'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -487,18 +544,18 @@ if __name__ == '__main__':
     #     net_type=net_type,
     #     cnn_out_dim=4608).to(device)
 
-    # nn_model = Model_cnn_mlp(
-    #     x_shape,
-    #     n_hidden,
-    #     y_dim,
-    #     embed_dim=embed_dim,
-    #     net_type=net_type,
-    #     cnn_out_dim=4608).to(device)
+    nn_model = Model_cnn_mlp(
+        x_shape,
+        n_hidden,
+        y_dim,
+        embed_dim=embed_dim,
+        net_type=net_type,
+        cnn_out_dim=4608).to(device)
     
-    nn_model = Model_cnn_mlp_resnet(x_shape, n_hidden, y_dim,
-                         embed_dim=embed_dim,
-                         net_type=net_type, resnet_depth='18',
-                         cnn_out_dim=4608, origin='birdview').to(device)
+    # nn_model = Model_cnn_mlp_resnet(x_shape, n_hidden, y_dim,
+    #                      embed_dim=embed_dim,
+    #                      net_type=net_type, resnet_depth='18',
+    #                      cnn_out_dim=4608, origin='birdview').to(device)
 
     model = Model_Cond_Diffusion(
         nn_model,
@@ -511,7 +568,7 @@ if __name__ == '__main__':
         guide_w=0.0,)
 
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                        terminal_configs=terminal_configs, host="localhost", port=2000,
+                        terminal_configs=terminal_configs, host="localhost", port=2020,
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
     # -----------------------------------------------------------------------------------------
@@ -520,10 +577,10 @@ if __name__ == '__main__':
     for extra_steps in extra_steps_list:
         for model_path in models:
             model.load_state_dict(torch.load(model_path))
-            for i in range(0, 10):
+            for i in range(0, 1):
                 # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/resnet_18/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
+                diff_bc_video = f'test/diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
+                diff_bc_video = f'test/diff_bc_video_(diffuser)/birdview/resnet_18/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
@@ -537,6 +594,6 @@ if __name__ == '__main__':
                     architecture='diffusion',
                     movie=True,
                     extra_steps=extra_steps,
-                    embedding='Model_cnn_mlp_resnet18')
+                    embedding='Model_cnn_mlp')
             # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
             # object.save_record()

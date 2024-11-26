@@ -158,7 +158,8 @@ class DataHandler():
         if use_greyscale: obs = DataHandler().to_greyscale(obs)
         obs = DataHandler().normalizing(obs)
         if not use_velocity:
-            stack_size = 3 if embedding == 'Model_cnn_mlp_resnet18' else 4
+            # stack_size = 3 if embedding == 'Model_cnn_mlp_resnet18' else 4
+            stack_size = 4
             obs = DataHandler().stack_with_previous(obs, stack_size)
         return self.__resize(obs) if embedding == 'Model_cnn_mlp_resnet18' else obs
     

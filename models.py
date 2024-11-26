@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from torchvision import models
+import torch.nn.functional as F
 
 
 class Model_mlp_mse(nn.Module):
@@ -434,13 +435,16 @@ class Model_Cond_Diffusion(nn.Module):
 
         # use nn model to predict noise
         if speed != None:
-            noise_pred_batch = self.nn_model(y_t, x_batch, speed, previou_action, _ts / self.n_T, context_mask)    
+            noise_pred_batch, std_bc_action = self.nn_model(y_t, x_batch, speed, previou_action, _ts / self.n_T, context_mask)    
         else:
-            noise_pred_batch = self.nn_model(y_t, x_batch, _ts / self.n_T, context_mask)
+            noise_pred_batch, std_bc_action = self.nn_model(y_t, x_batch, _ts / self.n_T, context_mask)
         # noise_pred_batch = self.nn_model(y_batch, x_batch, _ts / self.n_T, context_mask)
 
         # return mse between predicted and true noise
-        return self.loss_mse(noise, noise_pred_batch)
+        if std_bc_action != None:
+            return self.loss_mse(noise, noise_pred_batch), self.loss_mse(std_bc_action, y_batch)
+        else:
+            return self.loss_mse(noise, noise_pred_batch), None
 
     def sample(self, x_batch, return_y_trace=False, extract_embedding=False, speed=None, previous_actions=None):
         # also use this as a shortcut to avoid doubling batch when guide_w is zero
@@ -491,9 +495,9 @@ class Model_Cond_Diffusion(nn.Module):
                 eps = self.nn_model(y_i, x_batch, t_is, context_mask, x_embed)
             else:            
                 if speed != None: 
-                    eps = self.nn_model(y_i, x_batch, speed, previous_actions, t_is, context_mask)  
+                    eps, _ = self.nn_model(y_i, x_batch, speed, previous_actions, t_is, context_mask)  
                 else:
-                    eps = self.nn_model(y_i, x_batch, t_is, context_mask)
+                    eps, _ = self.nn_model(y_i, x_batch, t_is, context_mask)
             if not is_zero:
                 eps1 = eps[:n_sample]
                 eps2 = eps[n_sample:]
@@ -1000,16 +1004,59 @@ class Model_cnn_mlp_resnet(nn.Module):
             use_prev=False,
         )
 
+
+        self.resnet = models.resnet18(pretrained=True)
+        self.resnet = nn.Sequential(*list(self.resnet.children())[:-2]) 
+        self.additional_convs = nn.Sequential(
+            nn.Conv2d(in_channels=2048, out_channels=1024, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=1024, out_channels=512, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.AdaptiveAvgPool2d((1, 1))
+        )
+        self.fc = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+            nn.ReLU()
+        )
+
     def forward(self, y, x, t, context_mask, x_embed=None):
         # torch expects batch_size, channels, height, width
         # but we feed in batch_size, height, width, channels
 
-        if x_embed is None:
-            x_embed = self.embed_context(x)
-        else:
-            # otherwise, we already extracted x_embed
-            # e.g. outside of sampling loop
-            pass
+        mean = torch.tensor([0.485, 0.456, 0.406], device=x.device).view(1, 1, 1, 3)  # Média
+        std = torch.tensor([0.229, 0.224, 0.225], device=x.device).view(1, 1, 1, 3)    # Desvio Padrão
+        
+        frame_1 = (x[:,:,:,0:3] - mean) / std
+        frame_1 = frame_1.permute(0, 3, 2, 1)
+        embedded_frame_1 = self.resnet(frame_1)
+
+        frame_2 = (x[:,:,:,3:6] - mean) / std
+        frame_2 = frame_2.permute(0, 3, 2, 1)
+        embedded_frame_2 = self.resnet(frame_2)
+
+        frame_3 = (x[:,:,:,6:9] - mean) / std
+        frame_3 = frame_3.permute(0, 3, 2, 1)
+        embedded_frame_3 = self.resnet(frame_3)
+
+        frame_4 = (x[:,:,:,9:12] - mean) / std
+        frame_4 = frame_4.permute(0, 3, 2, 1)
+        embedded_frame_4 = self.resnet(frame_4)
+
+        frames = torch.cat([embedded_frame_1, embedded_frame_2, embedded_frame_3, embedded_frame_4], dim=1)
+        convoluted_frames = self.additional_convs(frames)
+        x_embed = self.fc(convoluted_frames)
+        # Normaliza x
+        # x = (x - mean) / std
+
+        # if x_embed is None:
+        #     x_embed = self.embed_context(x)
+        # else:
+        #     # otherwise, we already extracted x_embed
+        #     # e.g. outside of sampling loop
+        #     pass
 
         return self.nn_downstream(y, x_embed, t, context_mask)
 
@@ -1023,7 +1070,7 @@ class Model_cnn_mlp_resnet(nn.Module):
         return x_embed
 
 class Model_cnn_mlp(nn.Module):
-    def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, output_dim=None, cnn_out_dim=1152):
+    def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, output_dim=None, cnn_out_dim=1152, new_architecture=False):
         super(Model_cnn_mlp, self).__init__()
 
         self.x_shape = x_shape
@@ -1032,6 +1079,7 @@ class Model_cnn_mlp(nn.Module):
         self.embed_dim = embed_dim
         self.n_feat = 64
         self.net_type = net_type
+        self.new_architecture = new_architecture
 
         if output_dim is None:
             self.output_dim = y_dim  # by default, just output size of action space
@@ -1067,18 +1115,34 @@ class Model_cnn_mlp(nn.Module):
             use_prev=False,
         )
 
+        self.fc1 = nn.Linear(cnn_out_dim, 2048)
+        self.fc2 = nn.Linear(2048, 512)
+        self.fc3 = nn.Linear(512, 128)
+        self.fc4 = nn.Linear(128, 32)
+        self.fc5 = nn.Linear(32, 2)
+
+        self.bn1 = nn.BatchNorm1d(2048)
+        self.bn2 = nn.BatchNorm1d(512)
+        self.bn3 = nn.BatchNorm1d(128)
+        self.bn4 = nn.BatchNorm1d(32)
+
+        self.dropout = nn.Dropout(p=0.3)
+
     def forward(self, y, x, t, context_mask, x_embed=None):
         # torch expects batch_size, channels, height, width
         # but we feed in batch_size, height, width, channels
 
+        action_hat = None
         if x_embed is None:
             x_embed = self.embed_context(x)
+            if self.new_architecture:
+                action_hat = self.standard_bc(x_embed)
         else:
             # otherwise, we already extracted x_embed
             # e.g. outside of sampling loop
             pass
 
-        return self.nn_downstream(y, x_embed, t, context_mask)
+        return self.nn_downstream(y, x_embed, t, context_mask), action_hat
 
     def embed_context(self, x):
         x = x.permute(0, 3, 2, 1)
@@ -1090,6 +1154,34 @@ class Model_cnn_mlp(nn.Module):
         x_embed = x_embed.view(x.shape[0], -1)
         # c_embed is now [batch size, 128]
         return x_embed
+    
+    def standard_bc(self, x_embed):
+        x = self.fc1(x_embed)
+        x = self.bn1(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+
+        # Camada 2: Linear -> BatchNorm -> ReLU -> Dropout
+        x = self.fc2(x)
+        x = self.bn2(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+
+        # Camada 3: Linear -> BatchNorm -> ReLU -> Dropout
+        x = self.fc3(x)
+        x = self.bn3(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+
+        # Camada 4: Linear -> BatchNorm -> ReLU -> Dropout
+        x = self.fc4(x)
+        x = self.bn4(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+
+        # Camada 5: Linear (saída final)
+        x = self.fc5(x)
+        return x
 
 class Model_cnn_mlp_speed(nn.Module):
     def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, output_dim=None, cnn_out_dim=1152, use_velocity=True):

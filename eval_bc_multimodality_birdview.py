@@ -462,7 +462,7 @@ if __name__ == '__main__':
     model = Model_cnn_BC(x_shape=(192, 192, 4), n_hidden=128, cnn_out_dim=2).to(device)
 
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                        terminal_configs=terminal_configs, host="localhost", port=2020,
+                        terminal_configs=terminal_configs, host="localhost", port=2025,
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
     # -----------------------------------------------------------------------------------------

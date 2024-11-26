@@ -1,7 +1,11 @@
 from models import Model_cnn_bc, Model_cnn_mlp, Model_Cond_Diffusion
 from data_preprocessing import DataHandler, CarlaCustomDataset
+from eval_diffusion_bc_multimodality_birdview import evaluate_policy
 from expert_dataset import ExpertDataset
 from models_bc import Model_cnn_BC
+from rl_birdview_wrapper import RlBirdviewWrapper
+from carla_gym.envs import EndlessFixedSpawnEnv
+from data_collect import reward_configs, terminal_configs, obs_configs
 import torch.utils.data as data
 from tqdm import tqdm
 import numpy as np
@@ -13,12 +17,12 @@ import git
 import os
 
 
-class TrainerSemaphores():
+class TrainerNewArch():
     def __init__(self, n_epoch, lrate, device, n_hidden, batch_size, n_T,
                  net_type, drop_prob, extra_diffusion_steps, embed_dim,
                  guide_w, betas, dataset_path, run_wandb, record_run,
                  expert_dataset, name='', param_search=False,
-                 embedding="Model_cnn_mlp"):
+                 embedding="Model_cnn_mlp", alpha_schedule='cosine'):
 
         self.n_epoch = n_epoch
         self.lrate = lrate
@@ -42,10 +46,12 @@ class TrainerSemaphores():
         self.patience = 20
         self.early_stopping_counter = 0
         self.expert_dataset = expert_dataset
+        self.alpha_schedule = alpha_schedule
+        self.env = self.create_env()
 
     def main(self):
         if self.run_wandb:
-            self.config_wandb(project_name="Carla-Diffuser-Multimodality",
+            self.config_wandb(project_name="Carla-Diffuser-Multimodality-New-Arch",
                               name=self.name)
         dataload_train = self.prepare_dataset(self.expert_dataset)
         x_dim, y_dim = self.get_x_and_y_dim(dataload_train)
@@ -70,6 +76,9 @@ class TrainerSemaphores():
                 "guide_w": self.guide_w,
                 "dataset": self.dataset_path,
                 "model": self.embedding,
+                "Architecture": self.__class__.__name__,
+                "File": os.path.relpath(__file__),
+                "Alpha Schedule": self.alpha_schedule,
                 "commit_hash": self.get_git_commit_hash()
             }
         if name != '':
@@ -97,23 +106,6 @@ class TrainerSemaphores():
         '''
         return dataloader
     
-        # obs_path = self.expert_dataset+'all_observations.pth'
-        # obs = np.array(torch.load(obs_path))
-        # obs = np.transpose(obs, (0,1,3,4,2))
-        # obs = DataHandler().preprocess_images(obs, feature='front')
-        # # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
-        # state = np.array([np.array(ele[0]['state']) for ele in dataset])
-        # actions = np.array([np.array(ele[0]['actions']) for ele in dataset])
-        # dataset = CarlaCustomDataset(obs, actions)
-        # dataloader = data.DataLoader(dataset,
-        #                              batch_size=self.batch_size,
-        #                              shuffle=True)
-        # '''
-        # The datasets have keys with the following information: birdview,
-        # central_rgb, left_rgb, right_rgb, item_idx, done, action, state
-        # '''
-        # return dataloader
-    
     def get_x_and_y_dim(self, dataset):
         '''
         '''
@@ -131,7 +123,7 @@ class TrainerSemaphores():
             return Model_cnn_mlp(x_dim, self.n_hidden, y_dim,
                                 embed_dim=self.embed_dim,
                                 net_type=self.net_type,
-                                cnn_out_dim=cnn_out_dim).to(self.device)
+                                cnn_out_dim=cnn_out_dim, new_architecture=True).to(self.device)
         else:
             raise NotImplementedError
     
@@ -162,10 +154,18 @@ class TrainerSemaphores():
             # train loop
             pbar = tqdm(dataload_train)
             loss_ep, n_batch = 0, 0
+            if self.alpha_schedule == 'cosine':
+                alpha = cosine_decay(ep, self.n_epoch)
+            elif self.alpha_schedule == 'exponential':
+                alpha = exponential_decay(ep, self.n_epoch)
+            else:
+                alpha = float(self.alpha_schedule.split('fixed_')[-1].replace('-', '.'))
+
             for x_batch, y_batch in pbar:
                 x_batch = x_batch.type(torch.FloatTensor).to(self.device)
                 y_batch = y_batch.type(torch.FloatTensor).to(self.device)
-                loss = model.loss_on_batch(x_batch, y_batch)
+                loss_diffusion, loss_std = model.loss_on_batch(x_batch, y_batch)
+                loss = alpha * loss_std + (1-alpha) * loss_diffusion
                 optim.zero_grad()
                 loss.backward()
                 loss_ep += loss.detach().item()
@@ -180,15 +180,19 @@ class TrainerSemaphores():
                 if self.run_wandb:
                     # log metrics to wandb
                     wandb.log({"loss": loss_ep/n_batch,
-                                "lr": lr_decay,
-                                "steering_MSE": action_MSE[0],
-                                "acceleration_MSE": action_MSE[1]})
+                            "loss_diffusion": loss_diffusion,
+                            "loss_std": loss_std,
+                            "lr": lr_decay,
+                            "alpha": alpha,
+                            "steering_MSE": action_MSE[0],
+                            "acceleration_MSE": action_MSE[1]})
                         
-                    results_ep.append(loss_ep / n_batch)
+            results_ep.append(loss_ep / n_batch)
 
             if ep in [1, 20, 40, 80, 150, 250, 500, 600, 749]:
                 name=f'model_novo_ep_{ep}'
                 self.save_model(model, ep)
+                self.run_eval(ep)
 
         if self.run_wandb:
             wandb.finish()
@@ -196,8 +200,34 @@ class TrainerSemaphores():
         return model
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_06/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_06/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name, exist_ok=True)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+
+    def create_env(self):
+        env_configs = {
+            'carla_map': 'Town01',
+            'weather_group': 'dynamic_1.0',
+            'routes_group': 'multi_bruno_3_full'
+        }
+
+        spawn_point_action_histogram = {
+            'pitch':360.0,
+            'roll':0.0,
+            'x':110.6903991699219,
+            'y':194.78451538085938,
+            'yaw':179.83230590820312,
+            'z':0.0
+        }
+        env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+                        terminal_configs=terminal_configs, host="localhost", port=2020,
+                        seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
+        env = RlBirdviewWrapper(env)
+        return env
+
+    def run_eval(self, model, ep):
+        video_path = os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.mp4'
+        with torch.no_grad():
+            evaluate_policy(self.env, model, video_path, device=self.device, max_eval_steps=200)
 
 
 def extract_action_mse(y, y_hat):
@@ -206,6 +236,17 @@ def extract_action_mse(y, y_hat):
     y_diff_sum = torch.sum(y_diff_pow_2, dim=0)/len(y)
     mse = torch.pow(y_diff_sum, 0.5)
     return mse
+
+def decay_lr(epoch, lrate, episodes):
+    return lrate * ((np.cos((epoch / episodes) * np.pi) + 1) / 2)
+
+def exponential_decay(epoch, total_episodes, initial_value=1.0, final_value=0.01):
+    decay_rate = -np.log(final_value / initial_value) / total_episodes
+    return initial_value * np.exp(-decay_rate * epoch)
+
+def cosine_decay(epoch, total_episodes, initial_value=1.0, final_value=0.0):
+    cosine_decay_value = 0.5 * (1 + np.cos(np.pi * epoch / total_episodes))
+    return final_value - (final_value - initial_value) * cosine_decay_value
 
 
 if __name__ == '__main__':
@@ -218,29 +259,13 @@ if __name__ == '__main__':
     device = 'cuda'
     batch_size = 24
 
-    '''
-    The datasets have keys with the following information: birdview,
-    central_rgb, left_rgb, right_rgb, item_idx, done, action, state
-    '''
-    stop  = 1
-
-    # Dataset
-    dataset_path = "/home/casa/projects/bruno/carla-diffuser-bc/bet_data_release/carla/"
-    # obs = torch.load("/home/casa/projects/bruno/carla-diffuser-bc/bet_data_release/carla/all_observations.pth")
-    # actions = torch.load("/home/casa/projects/bruno/carla-diffuser-bc/bet_data_release/carla/all_actions_pm1.pth")
-    # seq = torch.load("/home/casa/projects/bruno/carla-diffuser-bc/bet_data_release/carla/seq_lengths.pth")
-
-    # zero_index = np.where(np.array(seq) == 0)
-    # obs = [np.array(ele[0:max_index, :, :, :]) for ele, max_index in zip(obs, seq)]
-    # actions = [np.array(ele[0:max_index, :, :, :]) for ele, max_index in zip(actions, seq)]
-
-    TrainerSemaphores(
+    TrainerNewArch(
         n_epoch=750,
         lrate=0.0001,
         device='cpu', 
         n_hidden=128,
-        batch_size=16,
-        n_T=50,
+        batch_size=32,
+        n_T=20,
         net_type='transformer',
         drop_prob=0.0,
         extra_diffusion_steps=16,
@@ -248,9 +273,10 @@ if __name__ == '__main__':
         guide_w=0.0,
         betas=(1e-4, 0.02),
         dataset_path='data_collection/town01_multimodality_t_intersection_simples',
-        run_wandb=False,
-        record_run=False,
+        run_wandb=True,
+        record_run=True,
         expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
         name='gail_experts_nroutes1_neps1',
         param_search=False,
-        embedding="Model_cnn_mlp",).main()
+        embedding="Model_cnn_mlp",
+        alpha_schedule='fixed_0-9').main()

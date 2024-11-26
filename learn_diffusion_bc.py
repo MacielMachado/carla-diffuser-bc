@@ -88,7 +88,7 @@ class Trainer():
         return repo.head.object.hexsha
 
     def prepare_dataset(self, dataset):
-        obs = DataHandler().preprocess_images(dataset, observation_type=self.data_type, embedding=self.embedding)
+        obs = DataHandler().preprocess_images(dataset, observation_type=self.data_type, embedding=self.embedding, use_greyscale=False)
         print("4.1")
         # obs = cv2.resize(obs[0], dsize=(96, 96), interpolation=cv2.INTER_CUBIC)[:,:,0], cmap=plt.get_cmap("gray")
         # state = np.array([np.array(ele[0]['state']) for ele in dataset])
@@ -247,7 +247,7 @@ if __name__ == '__main__':
                 lrate=0.0001,
                 device='cuda', 
                 n_hidden=128,
-                batch_size=256,
+                batch_size=32,
                 n_T=50,
                 net_type='transformer',
                 drop_prob=0.0,
