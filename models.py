@@ -503,7 +503,7 @@ class Model_Cond_Diffusion(nn.Module):
                 eps2 = eps[n_sample:]
                 eps = (1 + self.guide_w) * eps1 - self.guide_w * eps2
                 y_i = y_i[:n_sample]
-            y_i = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
+            y_i, std_bc_action = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
             if return_y_trace and (i % 20 == 0 or i == self.n_T or i < 8):
                 y_i_store.append(y_i.detach().cpu().numpy())
 
@@ -567,7 +567,7 @@ class Model_Cond_Diffusion(nn.Module):
                 eps2 = eps[n_sample:]
                 eps = (1 + self.guide_w) * eps1 - self.guide_w * eps2
                 y_i = y_i[:n_sample]
-            y_i = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
+            y_i, std_bc_action = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
             if return_y_trace and (i % 20 == 0 or i == self.n_T or i < 8):
                 y_i_store.append(y_i.detach().cpu().numpy())
 
@@ -631,7 +631,7 @@ class Model_Cond_Diffusion(nn.Module):
                 eps2 = eps[n_sample:]
                 eps = (1 + self.guide_w) * eps1 - self.guide_w * eps2
                 y_i = y_i[:n_sample]
-            y_i = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
+            y_i, std_bc_action = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
             if return_y_trace and (i % 20 == 0 or i == self.n_T or i < 8):
                 y_i_store.append(y_i.detach().cpu().numpy())
 
