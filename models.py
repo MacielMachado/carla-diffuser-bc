@@ -503,7 +503,7 @@ class Model_Cond_Diffusion(nn.Module):
                 eps2 = eps[n_sample:]
                 eps = (1 + self.guide_w) * eps1 - self.guide_w * eps2
                 y_i = y_i[:n_sample]
-            y_i, std_bc_action = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
+            y_i = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
             if return_y_trace and (i % 20 == 0 or i == self.n_T or i < 8):
                 y_i_store.append(y_i.detach().cpu().numpy())
 
@@ -561,13 +561,13 @@ class Model_Cond_Diffusion(nn.Module):
             z = torch.randn(y_shape).to(self.device) if i > 1 else 0
 
             # split predictions and compute weighting
-            eps = self.nn_model(y_i, x_batch, t_is, context_mask)
+            eps, std_bc_action = self.nn_model(y_i, x_batch, t_is, context_mask)
             if not is_zero:
                 eps1 = eps[:n_sample]
                 eps2 = eps[n_sample:]
                 eps = (1 + self.guide_w) * eps1 - self.guide_w * eps2
                 y_i = y_i[:n_sample]
-            y_i, std_bc_action = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
+            y_i = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
             if return_y_trace and (i % 20 == 0 or i == self.n_T or i < 8):
                 y_i_store.append(y_i.detach().cpu().numpy())
 
@@ -625,13 +625,13 @@ class Model_Cond_Diffusion(nn.Module):
             z = torch.randn(y_shape).to(self.device) if i > 1 else 0
 
             # split predictions and compute weighting
-            eps = self.nn_model(y_i, x_batch, t_is, context_mask)
+            eps, std_bc_action = self.nn_model(y_i, x_batch, t_is, context_mask)
             if not is_zero:
                 eps1 = eps[:n_sample]
                 eps2 = eps[n_sample:]
                 eps = (1 + self.guide_w) * eps1 - self.guide_w * eps2
                 y_i = y_i[:n_sample]
-            y_i, std_bc_action = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
+            y_i = self.oneover_sqrta[i] * (y_i - eps * self.mab_over_sqrtmab[i]) + self.sqrt_beta_t[i] * z
             if return_y_trace and (i % 20 == 0 or i == self.n_T or i < 8):
                 y_i_store.append(y_i.detach().cpu().numpy())
 
