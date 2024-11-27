@@ -192,7 +192,7 @@ class TrainerNewArch():
             if ep in [1, 20, 40, 80, 150, 250, 500, 600, 749]:
                 name=f'model_novo_ep_{ep}'
                 self.save_model(model, ep)
-                self.run_eval(ep)
+                self.run_eval(model, ep)
 
         if self.run_wandb:
             wandb.finish()
