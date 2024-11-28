@@ -262,7 +262,7 @@ if __name__ == '__main__':
     TrainerNewArch(
         n_epoch=750,
         lrate=0.0001,
-        device='cpu', 
+        device='cuda', 
         n_hidden=128,
         batch_size=32,
         n_T=20,
