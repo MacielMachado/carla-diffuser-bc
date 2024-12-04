@@ -83,7 +83,8 @@ class TrainerNewArch():
                 "Architecture": self.__class__.__name__,
                 "File": os.path.relpath(__file__),
                 "Alpha Schedule": self.alpha_schedule,
-                "commit_hash": self.get_git_commit_hash()
+                "commit_hash": self.get_git_commit_hash(),
+                "lrate_type": self.lrate_type
             }
         if name != '':
             return wandb.init(project=project_name, name=name, config=config)
