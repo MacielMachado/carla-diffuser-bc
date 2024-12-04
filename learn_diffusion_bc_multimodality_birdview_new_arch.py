@@ -7,9 +7,12 @@ from rl_birdview_wrapper import RlBirdviewWrapper
 from carla_gym.envs import EndlessFixedSpawnEnv
 from data_collect import reward_configs, terminal_configs, obs_configs
 import torch.utils.data as data
+import itertools
 from tqdm import tqdm
+import pandas as pd
 import numpy as np
 import torch
+import json
 import wandb
 import gym
 import gym
@@ -22,7 +25,7 @@ class TrainerNewArch():
                  net_type, drop_prob, extra_diffusion_steps, embed_dim,
                  guide_w, betas, dataset_path, run_wandb, record_run,
                  expert_dataset, name='', param_search=False,
-                 embedding="Model_cnn_mlp", alpha_schedule='cosine'):
+                 embedding="Model_cnn_mlp", alpha_schedule='cosine', lrate_type='cosine'):
 
         self.n_epoch = n_epoch
         self.lrate = lrate
@@ -48,6 +51,7 @@ class TrainerNewArch():
         self.expert_dataset = expert_dataset
         self.alpha_schedule = alpha_schedule
         self.env = self.create_env()
+        self.lrate_type = lrate_type
 
     def main(self):
         if self.run_wandb:
@@ -146,11 +150,15 @@ class TrainerNewArch():
         return lrate * ((np.cos((epoch / self.n_epoch) * np.pi) + 1) / 2)
     
     def train(self, model, dataload_train, optim):
+        distance_traveled = 0
+        best_models_df = pd.DataFrame(columns=['video_path', 'model_path', 'distance_score'])
         for ep in tqdm(range(self.n_epoch), desc="Epoch"):
             results_ep = [ep]
             model.train()
-
-            lr_decay = self.decay_lr(ep, self.lrate)
+            if self.lrate_type == 'cosine':
+                lr_decay = self.decay_lr(ep, self.lrate)
+            else:
+                lr_decay = self.lrate
             # train loop
             pbar = tqdm(dataload_train)
             loss_ep, n_batch = 0, 0
@@ -185,14 +193,31 @@ class TrainerNewArch():
                             "lr": lr_decay,
                             "alpha": alpha,
                             "steering_MSE": action_MSE[0],
-                            "acceleration_MSE": action_MSE[1]})
+                            "acceleration_MSE": action_MSE[1],
+                            "distance_traveled": distance_traveled})
                         
             results_ep.append(loss_ep / n_batch)
 
-            if ep in [1, 20, 40, 80, 150, 250, 500, 600, 749]:
+            if ep % 10 == 0:
                 name=f'model_novo_ep_{ep}'
-                self.save_model(model, ep)
-                self.run_eval(model, ep)
+                model_name = self.save_model(model, ep)
+                distance_traveled = 0
+                for i in range(5):
+                    distance_traveled_instance, video_name= self.run_eval(model, ep)
+                    distance_traveled += distance_traveled_instance
+                distance_traveled = distance_traveled/5
+                best_models_df.loc[len(best_models_df)] = [video_name, model_name, distance_traveled]
+
+                best_models_df = best_models_df.sort_values(by='distance_score', ascending=False).reset_index(drop=True)
+                best_models_df = best_models_df[:10]
+
+                video_path = '/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'
+
+                [os.remove(os.path.join(video_path, filename)) for filename in os.listdir(video_path) if filename not in list(best_models_df.video_path.values) and os.path.isfile(os.path.join(video_path, filename))]
+                [os.remove(os.path.join(video_path, filename)) for filename in os.listdir(video_path) if filename not in list(best_models_df.model_path.values) and os.path.isfile(os.path.join(video_path, filename))]
+                with open(f'{video_path}best_models_df.json', 'w') as f:
+                    json.dump(best_models_df.to_dict(orient='dict'), f, separators=(',', ':'), indent=4)
+                
 
         if self.run_wandb:
             wandb.finish()
@@ -201,7 +226,9 @@ class TrainerNewArch():
 
     def save_model(self, model, ep=''):
         os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name, exist_ok=True)
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl')
+        model_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl'
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+model_name)
+        return model_name
 
     def create_env(self):
         env_configs = {
@@ -225,9 +252,11 @@ class TrainerNewArch():
         return env
 
     def run_eval(self, model, ep):
-        video_path = os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.mp4'
+        video_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.mp4'
+        video_path = os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+ video_name
         with torch.no_grad():
-            evaluate_policy(self.env, model, video_path, device=self.device, max_eval_steps=200)
+            distance_traveled = evaluate_policy(self.env, model, video_path, device=self.device, max_eval_steps=200)
+        return distance_traveled, video_name
 
 
 def extract_action_mse(y, y_hat):
@@ -259,24 +288,39 @@ if __name__ == '__main__':
     device = 'cuda'
     batch_size = 24
 
-    TrainerNewArch(
-        n_epoch=750,
-        lrate=0.0001,
-        device='cuda', 
-        n_hidden=128,
-        batch_size=32,
-        n_T=20,
-        net_type='transformer',
-        drop_prob=0.0,
-        extra_diffusion_steps=16,
-        embed_dim=128,
-        guide_w=0.0,
-        betas=(1e-4, 0.02),
-        dataset_path='data_collection/town01_multimodality_t_intersection_simples',
-        run_wandb=True,
-        record_run=True,
-        expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
-        name='gail_experts_nroutes1_neps1',
-        param_search=False,
-        embedding="Model_cnn_mlp",
-        alpha_schedule='fixed_0-9').main()
+    alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-9', 'fixed_0-0']
+    lrate_type = ['cosine', 'fixed']
+    embedding_dim_list = [64, 128]
+    batch_size_list = [32, 512]
+
+    params_product = itertools.product(
+        alpha_schedule_list,
+        lrate_type,
+        embedding_dim_list,
+        batch_size_list
+    )
+    params_list = list(params_product)
+
+    for i, params in enumerate(params_list):
+        TrainerNewArch(
+            n_epoch=750,
+            lrate=0.0001,
+            device='cuda', 
+            n_hidden=128,
+            batch_size=params[3],
+            n_T=20,
+            net_type='transformer',
+            drop_prob=0.0,
+            extra_diffusion_steps=16,
+            embed_dim=params[2],
+            guide_w=0.0,
+            betas=(1e-4, 0.02),
+            dataset_path='data_collection/town01_multimodality_t_intersection_simples',
+            run_wandb=True,
+            record_run=True,
+            expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
+            name=f'version_{i}/new_arch',
+            param_search=False,
+            embedding="Model_cnn_mlp",
+            alpha_schedule=params[0],
+            lrate_type=params[1]).main()

@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import time
 import os
+import math
 import pandas as pd
 from gym.wrappers.monitoring.video_recorder import ImageEncoder
 from stable_baselines3.common.vec_env import SubprocVecEnv
@@ -49,15 +50,14 @@ def handle_obs(obs, observation_type, embedding):
 def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observation_type='birdview',  architecture='diffusion', movie=True, extra_steps=0, embedding=Model_cnn_mlp):
     model = model.eval()
     t0 = time.time()
-    # for i in range(env.num_envs):
-    #     env.set_attr('eval_mode', True, indices=1)
-    obs = handle_obs(env.reset(), observation_type, embedding=embedding)
+    obs = env.reset()
+    previous_position = obs['gnss']
+    obs = handle_obs(obs, observation_type, embedding=embedding)
     n_step = 0
     env_done = False
     list_render = []
     ep_stat_buffer = []
     route_completion_buffer = pd.DataFrame(columns=['step', 'simulation_time', 'route_completed_in_m', 'route_length_in_m', 'is_route_completed'])
-    # route_infraction = pd.DataFrame(columns=['outside_route_lane', 'route_deviation', 'blocked', 'collision', 'run_red_light', 'encounter_light', 'run_stop_sign', 'timeout'])
     route_infraction = pd.DataFrame(columns=['c_blocked', 'c_lat_dist', 'c_collision', 'collision', 'c_collision_px', 'timeout', 'info_dict', 'lat_dist', 'thresh_lat_dist'])
     route_infraction_2 = pd.DataFrame(columns=['collisions_layout','collisions_vehicle','collisions_pedestrian','collisions_others','route_deviation','wrong_lane','outside_lane','run_red_light','encounter_stop','stop_infraction'])
     list_render_front = []
@@ -68,14 +68,17 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
     ep_dict = {}
     ep_dict['actions'] = []
     ep_dict['state'] = []
+    distance_traveled = 0
 
-    # while n_step < max_eval_steps and env_done == False:
     while n_step < max_eval_steps:
         if architecture == 'diffusion':
             actions = model.sample_extra(torch.tensor(obs).float().to(device), extra_steps=extra_steps).to(device)[0]
         elif architecture == 'mse':
             actions = model(torch.tensor(obs).float().to(device)).to(device)[0]
         obs_clean, reward, done, info = env.step(np.array(actions.detach().cpu()))
+
+        distance_traveled += calculate_distance_traveled(obs_clean['gnss'], previous_position)
+        # previous_position = obs_clean['gnss']
 
         new_row = pd.DataFrame([info['route_completion']])
         route_completion_buffer = pd.concat([route_completion_buffer, new_row], ignore_index=True)
@@ -105,7 +108,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
         n_step += 1
         env_done = done
         
-        print(f'n_step: {n_step}')
+        print(f'n_step: {n_step} ---- distance_traveled: {distance_traveled}')
 
         for i in np.where(done)[0]:
             break
@@ -117,7 +120,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
                                                     left_array=list_render_left,
                                                     right_array=list_render_right,
                                                     birdview_array=list_render_birdview)
-            movie_maker.save_record()
+            movie_maker.save_record(text=f'{distance_traveled}')
 
         gnss_path = video_path[:-3]+'txt'
         route_completion_data_path = video_path[:-3]+'csv'
@@ -129,12 +132,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
         np.savetxt(gnss_path, list_gnss)
         ep_df = pd.DataFrame(ep_dict)
         ep_df.to_json(actions_observation_path)
-
-    # if observation_type != 'front':
-    #     encoder = ImageEncoder(video_path, list_render[0].shape, 30, 30)
-    #     for im in list_render:
-    #         encoder.capture_frame(im)
-    #     encoder.close()
+    return distance_traveled
 
 def update_dataframe(df, route_completion):
     df = df.append(route_completion, ignore_index=True)
@@ -179,6 +177,32 @@ def env_maker_multimodality():
                     no_rendering=True, **env_configs)
     env = RlBirdviewWrapper(env)
     return env
+
+
+def calculate_distance_traveled(current_position, previous_position):
+    """
+    Calcula a distância percorrida por um veículo desde a última posição registrada.
+    
+    Args:
+        vehicle: Objeto do veículo no CARLA.
+        previous_position: Última posição registrada do veículo (carla.Location).
+    
+    Returns:
+        distance: Distância percorrida desde a última posição (float).
+        current_position: Posição atual do veículo (carla.Location).
+    """
+    
+    if previous_position is None:
+        # Primeira chamada: sem deslocamento
+        return 0.0, current_position
+
+    # Calcular o deslocamento 3D
+    dx = current_position[0] - previous_position[0]
+    dy = current_position[1] - previous_position[1]
+    dz = current_position[2] - previous_position[2]
+    distance = math.sqrt(dx**2 + dy**2)
+    
+    return distance
 
 
 if __name__ == '__main__':
@@ -571,16 +595,26 @@ if __name__ == '__main__':
                         terminal_configs=terminal_configs, host="localhost", port=2020,
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
+
+
+
+    models = [
+        'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_20.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_40.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_80.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_150.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_250.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_500.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_749.pkl',
+    ]
+
     # -----------------------------------------------------------------------------------------
-    extra_steps_list = [8]
-    # extra_steps_list = [0]
+    extra_steps_list = [0,8]
     for extra_steps in extra_steps_list:
         for model_path in models:
             model.load_state_dict(torch.load(model_path))
-            for i in range(0, 1):
-                # eval_video_path = diff_bc_video+f'/diff_bc_eval_749_{i}.mp4'
-                diff_bc_video = f'test/diff_bc_video_(diffuser)/birdview/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
-                diff_bc_video = f'test/diff_bc_video_(diffuser)/birdview/resnet_18/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
+            for i in range(100):
+                diff_bc_video = f'test_2/diff_bc_video_(diffuser)/birdview/new_arch/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
@@ -595,5 +629,3 @@ if __name__ == '__main__':
                     movie=True,
                     extra_steps=extra_steps,
                     embedding='Model_cnn_mlp')
-            # object = FrontCameraMovieMaker(path=route_path, name_index=str(i)+f'_ep_0{j}')
-            # object.save_record()
