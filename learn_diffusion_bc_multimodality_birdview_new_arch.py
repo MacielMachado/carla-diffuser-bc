@@ -213,8 +213,8 @@ class TrainerNewArch():
 
                 video_path = '/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'
 
-                [os.remove(os.path.join(video_path, filename)) for filename in os.listdir(video_path) if filename not in list(best_models_df.video_path.values) and os.path.isfile(os.path.join(video_path, filename))]
-                [os.remove(os.path.join(video_path, filename)) for filename in os.listdir(video_path) if filename not in list(best_models_df.model_path.values) and os.path.isfile(os.path.join(video_path, filename))]
+                # [os.remove(os.path.join(video_path, filename)) for filename in os.listdir(video_path) if filename not in list(best_models_df.video_path.values) and os.path.isfile(os.path.join(video_path, filename))]
+                # [os.remove(os.path.join(video_path, filename)) for filename in os.listdir(video_path) if filename not in list(best_models_df.model_path.values) and os.path.isfile(os.path.join(video_path, filename))]
                 with open(f'{video_path}best_models_df.json', 'w') as f:
                     json.dump(best_models_df.to_dict(orient='dict'), f, separators=(',', ':'), indent=4)
                 
