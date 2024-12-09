@@ -289,10 +289,14 @@ if __name__ == '__main__':
     device = 'cuda'
     batch_size = 24
 
-    alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-9', 'fixed_0-0']
-    lrate_type = ['cosine', 'fixed']
-    embedding_dim_list = [64, 128]
-    batch_size_list = [32, 512]
+    # alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-9', 'fixed_0-0']
+    alpha_schedule_list = ['fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-9', 'fixed_0-0']
+    # lrate_type = ['cosine', 'fixed']
+    # embedding_dim_list = [64, 128]
+    # batch_size_list = [32, 512]
+    lrate_type = ['cosine']
+    embedding_dim_list = [64]
+    batch_size_list = [32]
 
     params_product = itertools.product(
         alpha_schedule_list,
@@ -304,7 +308,7 @@ if __name__ == '__main__':
 
     for i, params in enumerate(params_list):
         TrainerNewArch(
-            n_epoch=750,
+            n_epoch=150,
             lrate=0.0001,
             device='cuda', 
             n_hidden=128,
@@ -320,7 +324,7 @@ if __name__ == '__main__':
             run_wandb=True,
             record_run=True,
             expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
-            name=f'version_{i}/new_arch',
+            name=f'version_{i+1}/new_arch',
             param_search=False,
             embedding="Model_cnn_mlp",
             alpha_schedule=params[0],
