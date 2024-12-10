@@ -127,11 +127,11 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
         actions_observation_path = video_path[:-3]+'json'
 
         route_info = pd.concat([route_completion_buffer, route_infraction_total], axis=1)
-        route_info.to_csv(route_completion_data_path, index=False)
+        # route_info.to_csv(route_completion_data_path, index=False)
 
-        np.savetxt(gnss_path, list_gnss)
+        # np.savetxt(gnss_path, list_gnss)
         ep_df = pd.DataFrame(ep_dict)
-        ep_df.to_json(actions_observation_path)
+        # ep_df.to_json(actions_observation_path)
     return distance_traveled
 
 def update_dataframe(df, route_completion):

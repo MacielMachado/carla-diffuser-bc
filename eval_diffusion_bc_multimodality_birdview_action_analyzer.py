@@ -13,6 +13,7 @@ from models import Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet
 from data_collect import reward_configs, terminal_configs, obs_configs
 from data_preprocessing import DataHandler, FrontCameraMovieMakerArray
 from models_bc import Model_cnn_BC
+import matplotlib.pyplot as plt
 
 
 env_configs = {
@@ -59,6 +60,30 @@ def eval_policy_multimodality(env, model, img_path, device, max_eval_steps=1, ob
         actions_list.append(list(actions.detach().numpy()))
     return actions_list
 
+
+def create_and_save_histogram(actions_list):
+
+    data = np.array(actions_list)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    axes[0].hist(data[:, 0], bins=20, color='blue', alpha=0.7, edgecolor='black')
+    axes[0].set_title("Acceleration Histogram")
+    axes[0].set_xlabel("Values")
+    axes[0].set_ylabel("Frequency")
+
+    axes[1].hist(data[:, 1], bins=20, color='green', alpha=0.7, edgecolor='black')
+    axes[1].set_title("Steering Histogram")
+    axes[1].set_xlabel("Values")
+    axes[1].set_ylabel("Frequency")
+
+    plt.tight_layout()
+    plt.savefig("histogramas.png")
+    print("Histograma salvo como 'histogramas.png'")
+
+
+
+
+
 # from PIL import Image
 # Image.fromarray(np.transpose(obs['birdview'].astype(dtype=np.uint8), (1,2,0))).save('imagem.png')
 
@@ -104,7 +129,7 @@ if __name__ == '__main__':
     env = RlBirdviewWrapper(env)
 
     models = [
-        'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_20.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
         # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_40.pkl',
         # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_80.pkl',
         # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_150.pkl',

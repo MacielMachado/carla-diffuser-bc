@@ -289,8 +289,8 @@ if __name__ == '__main__':
     device = 'cuda'
     batch_size = 24
 
-    # alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-9', 'fixed_0-0']
-    alpha_schedule_list = ['fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-9', 'fixed_0-0']
+    alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-9', 'fixed_0-0']
+    # alpha_schedule_list = ['fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-9', 'fixed_0-0']
     # lrate_type = ['cosine', 'fixed']
     # embedding_dim_list = [64, 128]
     # batch_size_list = [32, 512]
