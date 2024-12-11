@@ -9,7 +9,7 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 from rl_birdview_wrapper import RlBirdviewWrapper
 # from carla_gym.envs import EndlessEnv, EndlessFixedSpawnEnv, LeaderboardEnv
 from carla_gym.envs import EndlessFixedSpawnEnv
-from models import Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet
+from models import Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet, Model_cnn_mlp_original
 from data_collect import reward_configs, terminal_configs, obs_configs
 from data_preprocessing import DataHandler, FrontCameraMovieMakerArray
 from models_bc import Model_cnn_BC
@@ -568,7 +568,7 @@ if __name__ == '__main__':
     #     net_type=net_type,
     #     cnn_out_dim=4608).to(device)
 
-    nn_model = Model_cnn_mlp(
+    nn_model = Model_cnn_mlp_original(
         x_shape,
         n_hidden,
         y_dim,
@@ -592,21 +592,21 @@ if __name__ == '__main__':
         guide_w=0.0,)
 
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                        terminal_configs=terminal_configs, host="localhost", port=2020,
+                        terminal_configs=terminal_configs, host="localhost", port=2000,
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
 
 
 
-    models = [
-        'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_20.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_40.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_80.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_150.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_250.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_500.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_749.pkl',
-    ]
+    # models = [
+    #     'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_20.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_40.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_80.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_150.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_250.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_500.pkl',
+    #     # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_749.pkl',
+    # ]
 
     # -----------------------------------------------------------------------------------------
     extra_steps_list = [0,8]

@@ -18,6 +18,7 @@ import gym
 import gym
 import git
 import os
+from eval_diffusion_bc_multimodality_birdview_action_analyzer import eval_policy_multimodality
 
 
 class TrainerNewArch():
@@ -51,6 +52,7 @@ class TrainerNewArch():
         self.expert_dataset = expert_dataset
         self.alpha_schedule = alpha_schedule
         self.env = self.create_env()
+        self.env_histogram = self.create_env_t_histogram()
         self.lrate_type = lrate_type
 
     def main(self):
@@ -154,6 +156,8 @@ class TrainerNewArch():
         distance_traveled = 0
         best_models_df = pd.DataFrame(columns=['video_path', 'model_path', 'distance_score'])
         for ep in tqdm(range(self.n_epoch), desc="Epoch"):
+            if ep > 150:
+                break
             results_ep = [ep]
             model.train()
             if self.lrate_type == 'cosine':
@@ -203,6 +207,9 @@ class TrainerNewArch():
                 name=f'model_novo_ep_{ep}'
                 model_name = self.save_model(model, ep)
                 distance_traveled = 0
+                os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name, exist_ok=True)
+                histogram_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.png'
+                eval_policy_multimodality(self.env_histogram, img_path=histogram_name,max_eval_steps=100)
                 for i in range(5):
                     distance_traveled_instance, video_name= self.run_eval(model, ep)
                     distance_traveled += distance_traveled_instance
@@ -242,6 +249,27 @@ class TrainerNewArch():
             'pitch':360.0,
             'roll':0.0,
             'x':110.6903991699219,
+            'y':194.78451538085938,
+            'yaw':179.83230590820312,
+            'z':0.0
+        }
+        env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+                        terminal_configs=terminal_configs, host="localhost", port=2020,
+                        seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
+        env = RlBirdviewWrapper(env)
+        return env
+
+    def create_env_t_histogram(self):
+        env_configs = {
+            'carla_map': 'Town01',
+            'weather_group': 'dynamic_1.0',
+            'routes_group': 'multi_bruno_3_full'
+        }
+
+        spawn_point_action_histogram = {
+            'pitch':360.0,
+            'roll':0.0,
+            'x':94.6903991699219,
             'y':194.78451538085938,
             'yaw':179.83230590820312,
             'z':0.0
@@ -308,7 +336,7 @@ if __name__ == '__main__':
 
     for i, params in enumerate(params_list):
         TrainerNewArch(
-            n_epoch=150,
+            n_epoch=750,
             lrate=0.0001,
             device='cuda', 
             n_hidden=128,
@@ -324,7 +352,7 @@ if __name__ == '__main__':
             run_wandb=True,
             record_run=True,
             expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
-            name=f'version_{i+1}/new_arch',
+            name=f'version_{i}/new_arch',
             param_search=False,
             embedding="Model_cnn_mlp",
             alpha_schedule=params[0],

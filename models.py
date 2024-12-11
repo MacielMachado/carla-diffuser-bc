@@ -1602,3 +1602,73 @@ class Model_cnn_bc(nn.Module):
         x_embed = self.output(x)
 
         return self.nn_downstream(y, x_embed, t, context_mask)
+
+
+class Model_cnn_mlp_original(nn.Module):
+    def __init__(self, x_shape, n_hidden, y_dim, embed_dim, net_type, output_dim=None, cnn_out_dim=1152):
+        super(Model_cnn_mlp_original, self).__init__()
+
+        self.x_shape = x_shape
+        self.n_hidden = n_hidden
+        self.y_dim = y_dim
+        self.embed_dim = embed_dim
+        self.n_feat = 64
+        self.net_type = net_type
+
+        if output_dim is None:
+            self.output_dim = y_dim  # by default, just output size of action space
+        else:
+            self.output_dim = output_dim  # sometimes overwrite, eg for discretised, mean/variance, mixture density models
+
+        # set up CNN for image
+        self.conv_down1 = nn.Sequential(
+            ResidualConvBlock(self.x_shape[-1], self.n_feat, is_res=True),
+            nn.MaxPool2d(2),
+        )
+        self.conv_down3 = nn.Sequential(
+            ResidualConvBlock(self.n_feat, self.n_feat * 2, is_res=True),
+            nn.MaxPool2d(2),
+        )
+        self.imageembed = nn.Sequential(nn.AvgPool2d(8))
+
+        # cnn_out_dim = self.n_feat * 2  # how many features after flattening -- WARNING, will have to adjust this for diff size input resolution
+        cnn_out_dim = cnn_out_dim
+        # it is the flattened size after CNN layers, and average pooling
+
+        # then once have flattened vector out of CNN, just feed into previous Model_mlp_diff_embed
+        self.nn_downstream = Model_mlp_diff_embed(
+            cnn_out_dim,
+            self.n_hidden,
+            self.y_dim,
+            self.embed_dim,
+            self.output_dim,
+            is_dropout=False,
+            is_batch=False,
+            activation="relu",
+            net_type=self.net_type,
+            use_prev=False,
+        )
+
+    def forward(self, y, x, t, context_mask, x_embed=None):
+        # torch expects batch_size, channels, height, width
+        # but we feed in batch_size, height, width, channels
+
+        if x_embed is None:
+            x_embed = self.embed_context(x)
+        else:
+            # otherwise, we already extracted x_embed
+            # e.g. outside of sampling loop
+            pass
+
+        return self.nn_downstream(y, x_embed, t, context_mask), None
+
+    def embed_context(self, x):
+        x = x.permute(0, 3, 2, 1)
+        x1 = self.conv_down1(x)
+        x3 = self.conv_down3(x1)  # [batch_size, 128, 35, 18]
+        # c3 is [batch size, 128, 4, 4]
+        x_embed = self.imageembed(x3)
+        # c_embed is [batch size, 128, 1, 1]
+        x_embed = x_embed.view(x.shape[0], -1)
+        # c_embed is now [batch size, 128]
+        return x_embed

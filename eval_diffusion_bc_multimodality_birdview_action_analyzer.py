@@ -9,7 +9,7 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 from rl_birdview_wrapper import RlBirdviewWrapper
 # from carla_gym.envs import EndlessEnv, EndlessFixedSpawnEnv, LeaderboardEnv
 from carla_gym.envs import EndlessFixedSpawnEnv
-from models import Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet
+from models import Model_cnn_mlp, Model_Cond_Diffusion, Model_cnn_mlp_resnet, Model_cnn_mlp_original
 from data_collect import reward_configs, terminal_configs, obs_configs
 from data_preprocessing import DataHandler, FrontCameraMovieMakerArray
 from models_bc import Model_cnn_BC
@@ -56,12 +56,16 @@ def eval_policy_multimodality(env, model, img_path, device, max_eval_steps=1, ob
         obs = handle_obs(obs, observation_type, embedding=embedding)
         if architecture == 'diffusion':
             actions = model.sample_extra(torch.tensor(obs).float().to(device), extra_steps=extra_steps).to(device)[0]
-            n_step += 1
+        elif architecture == 'mse':
+            actions = model(torch.tensor(obs).float().to(device)).to(device)[0]
+        n_step += 1
         actions_list.append(list(actions.detach().numpy()))
+        print(n_step)
+    create_and_save_histogram(actions_list, img_path)
     return actions_list
 
 
-def create_and_save_histogram(actions_list):
+def create_and_save_histogram(actions_list, img_path):
 
     data = np.array(actions_list)
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
@@ -70,15 +74,17 @@ def create_and_save_histogram(actions_list):
     axes[0].set_title("Acceleration Histogram")
     axes[0].set_xlabel("Values")
     axes[0].set_ylabel("Frequency")
+    axes[0].set_xlim(0,1)
 
     axes[1].hist(data[:, 1], bins=20, color='green', alpha=0.7, edgecolor='black')
     axes[1].set_title("Steering Histogram")
     axes[1].set_xlabel("Values")
     axes[1].set_ylabel("Frequency")
+    axes[1].set_xlim(-1,1)
 
     plt.tight_layout()
-    plt.savefig("histogramas.png")
-    print("Histograma salvo como 'histogramas.png'")
+    plt.savefig(img_path)
+    print("Histograma salvo como 'histogramas_BC.png'")
 
 
 
@@ -105,7 +111,7 @@ if __name__ == '__main__':
     n_hidden = 128
 
 
-    nn_model = Model_cnn_mlp(
+    nn_model = Model_cnn_mlp_original(
         x_shape,
         n_hidden,
         y_dim,
@@ -129,15 +135,18 @@ if __name__ == '__main__':
     env = RlBirdviewWrapper(env)
 
     models = [
-        'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_40.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_80.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_150.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_250.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_500.pkl',
-        # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/gail_experts_nroutes1_neps1_0d66_ep_749.pkl',
+        # 'model_pytorch/Diffusion_BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl',
+        'model_pytorch/Diffusion_BC_Multi_Simple_02/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl'
     ]
 
+
+
+
+
+    # models = [
+    #     'model_pytorch/BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
+    # ]
+    # model = Model_cnn_BC(x_shape=(192, 192, 4), n_hidden=128, cnn_out_dim=2).to(device)
     # -----------------------------------------------------------------------------------------
     extra_steps_list = [0,8]
     for extra_steps in extra_steps_list:
@@ -151,10 +160,10 @@ if __name__ == '__main__':
                 eval_policy_multimodality(
                     env=env,
                     model=model.to(device),
-                    img_path=eval_video_path,
+                    img_path='',
                     device=device,
                     observation_type=observation_type,
-                    max_eval_steps=200,
+                    max_eval_steps=1000,
                     architecture='diffusion',
                     extra_steps=extra_steps,
                     embedding='Model_cnn_mlp')
