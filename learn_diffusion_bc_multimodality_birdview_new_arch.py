@@ -208,7 +208,7 @@ class TrainerNewArch():
                 model_name = self.save_model(model, ep)
                 distance_traveled = 0
                 os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name, exist_ok=True)
-                histogram_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.png'
+                histogram_name = os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.png'
                 eval_policy_multimodality(self.env_histogram, img_path=histogram_name,max_eval_steps=100, model=model, device=self.device)
                 for i in range(5):
                     distance_traveled_instance, video_name= self.run_eval(model, ep)

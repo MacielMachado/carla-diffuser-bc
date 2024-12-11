@@ -60,7 +60,7 @@ def eval_policy_multimodality(env, model, img_path, device, max_eval_steps=1, ob
             actions = model(torch.tensor(obs).float().to(device)).to(device)[0]
         n_step += 1
         actions_list.append(list(actions.cpu().detach().numpy()))
-        print(n_step)
+        # print(n_step)
     create_and_save_histogram(actions_list, img_path)
     return actions_list
 
