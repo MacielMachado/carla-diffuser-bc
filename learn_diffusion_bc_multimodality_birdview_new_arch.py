@@ -52,7 +52,7 @@ class TrainerNewArch():
         self.expert_dataset = expert_dataset
         self.alpha_schedule = alpha_schedule
         self.env = self.create_env()
-        self.env_histogram = self.create_env_t_histogram()
+        # self.env_histogram = self.create_env_t_histogram()
         self.lrate_type = lrate_type
 
     def main(self):
