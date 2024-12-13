@@ -321,7 +321,7 @@ if __name__ == '__main__':
     alpha_schedule_list = ['fixed_0-3']
     lrate_type = ['cosine', 'fixed']
     embedding_dim_list = [64, 128, 256]
-    batch_size_list = [32, 128]
+    batch_size_list = [32, 64]
     # lrate_type = ['cosine']
     # embedding_dim_list = [64]
     # batch_size_list = [32]
