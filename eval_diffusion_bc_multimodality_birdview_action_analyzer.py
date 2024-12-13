@@ -60,7 +60,7 @@ def eval_policy_multimodality(env, model, img_path, device, max_eval_steps=1, ob
             actions = model(torch.tensor(obs).float().to(device)).to(device)[0]
         n_step += 1
         actions_list.append(list(actions.cpu().detach().numpy()))
-        # print(n_step)
+        print(n_step)
     create_and_save_histogram(actions_list, img_path)
     return actions_list
 
@@ -86,8 +86,18 @@ def create_and_save_histogram(actions_list, img_path):
     plt.savefig(img_path)
     print("Histograma salvo como 'histogramas_BC.png'")
 
+def encontrar_arquivos_pkl(diretorio):
+  arquivos_pkl = []
 
+  for raiz, diretorios, arquivos in os.walk(diretorio):
+    for arquivo in arquivos:
+      if arquivo.endswith(".pkl"):
+        caminho_completo = os.path.join(raiz, arquivo)
+        arquivos_pkl.append((os.path.getctime(caminho_completo), caminho_completo))
 
+  arquivos_pkl.sort()
+
+  return [caminho for _, caminho in arquivos_pkl]
 
 
 # from PIL import Image
@@ -107,11 +117,11 @@ if __name__ == '__main__':
 
     x_shape = (192, 192, 4)
     y_dim = 2
-    embed_dim = 128
+    embed_dim = 64
     n_hidden = 128
 
 
-    nn_model = Model_cnn_mlp_original(
+    nn_model = Model_cnn_mlp(
         x_shape,
         n_hidden,
         y_dim,
@@ -141,32 +151,30 @@ if __name__ == '__main__':
 
 
 
-
+    models = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch')
 
     # models = [
     #     'model_pytorch/BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
     # ]
     # model = Model_cnn_BC(x_shape=(192, 192, 4), n_hidden=128, cnn_out_dim=2).to(device)
     # -----------------------------------------------------------------------------------------
-    extra_steps_list = [0,8]
+    extra_steps_list = [0]
     for extra_steps in extra_steps_list:
         for model_path in models:
             model.load_state_dict(torch.load(model_path))
-            for i in range(100):
-                diff_bc_video = f'test_2/diff_bc_video_(diffuser)/birdview/new_arch/town01_multimodality_t_intersection_simples_extra_steps/{model_path.split("/")[1]}/town01_multimodality_t_intersection_simples_{extra_steps}_extra_steps/'
-                diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
-                os.makedirs(diff_bc_video_2, exist_ok=True)
-                eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
-                eval_policy_multimodality(
-                    env=env,
-                    model=model.to(device),
-                    img_path='',
-                    device=device,
-                    observation_type=observation_type,
-                    max_eval_steps=1000,
-                    architecture='diffusion',
-                    extra_steps=extra_steps,
-                    embedding='Model_cnn_mlp')
+            img_path=model_path.replace(".pkl", ".png")
+            if os.path.isfile(img_path):
+               continue
+            eval_policy_multimodality(
+                env=env,
+                model=model.to(device),
+                img_path=img_path,
+                device=device,
+                observation_type=observation_type,
+                max_eval_steps=1000,
+                architecture='diffusion',
+                extra_steps=extra_steps,
+                embedding='Model_cnn_mlp')
 
 
 

@@ -335,7 +335,7 @@ if __name__ == '__main__':
     params_list = list(params_product)
 
     for i, params in enumerate(params_list):
-        if i == 0:
+        if i == 0 or i == 1:
             continue
         TrainerNewArch(
             n_epoch=750,
@@ -354,7 +354,7 @@ if __name__ == '__main__':
             run_wandb=True,
             record_run=True,
             expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
-            name=f'version_{i}_again/new_arch',
+            name=f'version_{i}/new_arch',
             param_search=False,
             embedding="Model_cnn_mlp",
             alpha_schedule=params[0],
