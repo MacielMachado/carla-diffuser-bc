@@ -317,7 +317,7 @@ if __name__ == '__main__':
     device = 'cuda'
     batch_size = 24
 
-    alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-9', 'fixed_0-0']
+    alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-0']
     # alpha_schedule_list = ['fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-9', 'fixed_0-0']
     # lrate_type = ['cosine', 'fixed']
     # embedding_dim_list = [64, 128]
@@ -335,7 +335,7 @@ if __name__ == '__main__':
     params_list = list(params_product)
 
     for i, params in enumerate(params_list):
-        if i == 0 or i == 1:
+        if i == 0 or i == 1 or i == 2 or i == 3:
             continue
         TrainerNewArch(
             n_epoch=750,
