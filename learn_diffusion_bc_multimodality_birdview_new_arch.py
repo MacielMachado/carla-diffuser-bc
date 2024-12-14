@@ -335,6 +335,8 @@ if __name__ == '__main__':
     params_list = list(params_product)
 
     for i, params in enumerate(params_list):
+        if i == 1:
+            continue
         if params[3] == 32 and params[2] == 64 and params[1] == 'cosine':
             continue
         TrainerNewArch(
