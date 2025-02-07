@@ -186,12 +186,11 @@ class TrainerNewArch():
                 pbar.set_description(f"train loss: {loss_ep/n_batch:.4f}")
                 optim.step()
 
-                with torch.no_grad():
-                    y_hat_batch = model.sample(x_batch)
-                    action_MSE = extract_action_mse(y_batch, y_hat_batch)
-
                 if self.run_wandb:
                     # log metrics to wandb
+                    with torch.no_grad():
+                        y_hat_batch = model.sample(x_batch)
+                        action_MSE = extract_action_mse(y_batch, y_hat_batch)
                     wandb.log({"loss": loss_ep/n_batch,
                             "loss_diffusion": loss_diffusion,
                             "loss_std": loss_std,
@@ -314,7 +313,7 @@ if __name__ == '__main__':
     observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # Define o tipo de dimensão que terá o estado
     observation_space = gym.spaces.Dict(**observation_space)  # Cria um espaço de observação
     action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)  # Define o espaço de ação
-    device = 'cuda'
+    device = 'cpu'
     batch_size = 24
 
     alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine']
@@ -339,7 +338,7 @@ if __name__ == '__main__':
         TrainerNewArch(
             n_epoch=750,
             lrate=0.0001,
-            device='cuda', 
+            device=device, 
             n_hidden=128,
             batch_size=params[3],
             n_T=20,
@@ -350,7 +349,7 @@ if __name__ == '__main__':
             guide_w=0.0,
             betas=(1e-4, 0.02),
             dataset_path='data_collection/town01_multimodality_t_intersection_simples',
-            run_wandb=True,
+            run_wandb=False,
             record_run=True,
             expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
             name=f'version_750_{i}/new_arch',
