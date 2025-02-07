@@ -156,8 +156,8 @@ class TrainerNewArch():
         distance_traveled = 0
         best_models_df = pd.DataFrame(columns=['video_path', 'model_path', 'distance_score'])
         for ep in tqdm(range(self.n_epoch), desc="Epoch"):
-            if ep > 150:
-                break
+            # if ep > 150:
+            #     break
             results_ep = [ep]
             model.train()
             if self.lrate_type == 'cosine':
@@ -317,10 +317,11 @@ if __name__ == '__main__':
     device = 'cuda'
     batch_size = 24
 
-    # alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine', 'fixed_0-0']
-    alpha_schedule_list = ['fixed_0-3']
-    lrate_type = ['cosine', 'fixed']
-    embedding_dim_list = [64, 128, 256]
+    alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine']
+    # alpha_schedule_list = ['fixed_0-3']
+    # lrate_type = ['cosine', 'fixed']
+    lrate_type = ['cosine']
+    embedding_dim_list = [64]
     batch_size_list = [32]
     # lrate_type = ['cosine']
     # embedding_dim_list = [64]
@@ -356,7 +357,7 @@ if __name__ == '__main__':
             run_wandb=True,
             record_run=True,
             expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
-            name=f'version_2_{i}/new_arch',
+            name=f'version_750_{i}/new_arch',
             param_search=False,
             embedding="Model_cnn_mlp",
             alpha_schedule=params[0],

@@ -14,6 +14,7 @@ from data_collect import reward_configs, terminal_configs, obs_configs
 from data_preprocessing import DataHandler, FrontCameraMovieMakerArray
 from models_bc import Model_cnn_BC
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 env_configs = {
@@ -60,31 +61,59 @@ def eval_policy_multimodality(env, model, img_path, device, max_eval_steps=1, ob
             actions = model(torch.tensor(obs).float().to(device)).to(device)[0]
         n_step += 1
         actions_list.append(list(actions.cpu().detach().numpy()))
-        print(n_step)
-    create_and_save_histogram(actions_list, img_path)
+        print(f"{img_path.split('/')[-1]}: {n_step}")
+        create_and_save_histogram(actions_list, img_path)
     return actions_list
 
 
-def create_and_save_histogram(actions_list, img_path):
+# def create_and_save_histogram(actions_list, img_path):
 
+#     data = np.array(actions_list)
+#     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+#     axes[0].hist(data[:, 0], bins=20, color='blue', alpha=0.7, edgecolor='black')
+#     axes[0].set_title("Acceleration Histogram")
+#     axes[0].set_xlabel("Values")
+#     axes[0].set_ylabel("Frequency")
+#     axes[0].set_xlim(0,1)
+
+#     axes[1].hist(data[:, 1], bins=20, color='green', alpha=0.7, edgecolor='black')
+#     axes[1].set_title("Steering Histogram")
+#     axes[1].set_xlabel("Values")
+#     axes[1].set_ylabel("Frequency")
+#     axes[1].set_xlim(-1,1)
+
+#     plt.tight_layout()
+#     plt.savefig(img_path)
+#     print("Histograma salvo como 'histogramas_BC.png'")
+
+
+def create_and_save_histogram(actions_list, img_path):
     data = np.array(actions_list)
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
-    axes[0].hist(data[:, 0], bins=20, color='blue', alpha=0.7, edgecolor='black')
+    # Histograma de Aceleração
+    axes[0].hist(data[:, 0], bins=20, color='blue', alpha=0.7, edgecolor='black', density=True)
+    sns.kdeplot(data[:, 0], ax=axes[0], color='red', linewidth=2)
     axes[0].set_title("Acceleration Histogram")
     axes[0].set_xlabel("Values")
-    axes[0].set_ylabel("Frequency")
-    axes[0].set_xlim(0,1)
+    axes[0].set_ylabel("Density")
+    axes[0].set_xlim(0, 1)
 
-    axes[1].hist(data[:, 1], bins=20, color='green', alpha=0.7, edgecolor='black')
+    # Histograma de Direção
+    axes[1].hist(data[:, 1], bins=20, color='green', alpha=0.7, edgecolor='black', density=True)
+    sns.kdeplot(data[:, 1], ax=axes[1], color='red', linewidth=2)
     axes[1].set_title("Steering Histogram")
     axes[1].set_xlabel("Values")
-    axes[1].set_ylabel("Frequency")
-    axes[1].set_xlim(-1,1)
+    axes[1].set_ylabel("Density")
+    axes[1].set_xlim(-1, 1)
 
     plt.tight_layout()
     plt.savefig(img_path)
-    print("Histograma salvo como 'histogramas_BC.png'")
+    print(f"Histograma salvo como '{img_path}'")
+
+
+
 
 def encontrar_arquivos_pkl(diretorio):
   arquivos_pkl = []
@@ -111,17 +140,19 @@ if __name__ == '__main__':
 
     os.makedirs(diff_bc_video, exist_ok=True)
 
-    device = 'cpu'
+    device = 'cuda'
     net_type = 'transformer'
     observation_type = 'birdview'
 
     x_shape = (192, 192, 4)
     y_dim = 2
-    embed_dim = 64
-    n_hidden = 128
+    # embed_dim = 64
+    embed_dim = 128
+    # n_hidden = 128
+    n_hidden = 64
 
 
-    nn_model = Model_cnn_mlp(
+    nn_model = Model_cnn_mlp_original(
         x_shape,
         n_hidden,
         y_dim,
@@ -151,30 +182,54 @@ if __name__ == '__main__':
 
 
 
-    models = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch')
+    # models = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch')
+    models = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_03')
 
     # models = [
     #     'model_pytorch/BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',
     # ]
     # model = Model_cnn_BC(x_shape=(192, 192, 4), n_hidden=128, cnn_out_dim=2).to(device)
     # -----------------------------------------------------------------------------------------
+    spawn_point_action_histogram = {
+        'pitch':360.0,
+        'roll':0.0,
+        'x':94.6903991699219,
+        'y':194.78451538085938,
+        'yaw':179.83230590820312,
+        'z':0.0
+    }
     extra_steps_list = [0]
-    for extra_steps in extra_steps_list:
-        for model_path in models:
-            model.load_state_dict(torch.load(model_path))
-            img_path=model_path.replace(".pkl", ".png")
-            if os.path.isfile(img_path):
-               continue
-            eval_policy_multimodality(
-                env=env,
-                model=model.to(device),
-                img_path=img_path,
-                device=device,
-                observation_type=observation_type,
-                max_eval_steps=1000,
-                architecture='diffusion',
-                extra_steps=extra_steps,
-                embedding='Model_cnn_mlp')
+    spawn_point_list = [93, 95, 98, 99]
+    models = [
+        "model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_40.pkl",
+        "model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl",
+        "model_pytorch/Diffusion_BC_Multi_Simple_03/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_80.pkl"
+    ]
+    for spawn_point_x in spawn_point_list:
+        spawn_point_action_histogram["x"] = spawn_point_x
+        env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+                            terminal_configs=terminal_configs, host="localhost", port=2000,
+                            seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
+        env = RlBirdviewWrapper(env)
+
+
+        for extra_steps in extra_steps_list:
+            for model_path in models:
+                model.load_state_dict(torch.load(model_path))
+                img_path=model_path.replace(".pkl", f"_spawn_poin_{spawn_point_x}.png")
+                if os.path.isfile(img_path):
+                    continue
+                eval_policy_multimodality(
+                    env=env,
+                    model=model.to(device),
+                    img_path=img_path,
+                    device=device,
+                    observation_type=observation_type,
+                    max_eval_steps=1000,
+                    architecture='diffusion',
+                    extra_steps=extra_steps,
+                    embedding='Model_cnn_mlp')
+            del env
 
 
 
