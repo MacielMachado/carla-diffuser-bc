@@ -564,7 +564,7 @@ if __name__ == '__main__':
     ]
 
 
-    device = 'cuda'
+    device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -808,7 +808,7 @@ if __name__ == '__main__':
 
     ]
 
-    device = 'cuda'
+    device = 'cpu'
     x_shape = (192, 192, 4)
     y_dim = 2
     embed_dim = 64
@@ -889,7 +889,7 @@ if __name__ == '__main__':
 
     ]
 
-    device = 'cuda'
+    device = 'cpu'
     x_shape = (192, 192, 4)
     y_dim = 2
     embed_dim = 64

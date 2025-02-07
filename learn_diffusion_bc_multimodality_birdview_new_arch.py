@@ -51,7 +51,7 @@ class TrainerNewArch():
         self.early_stopping_counter = 0
         self.expert_dataset = expert_dataset
         self.alpha_schedule = alpha_schedule
-        self.env = self.create_env()
+        # self.env = self.create_env()
         # self.env_histogram = self.create_env_t_histogram()
         self.lrate_type = lrate_type
 
@@ -210,16 +210,16 @@ class TrainerNewArch():
                 # os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name, exist_ok=True)
                 # histogram_name = os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.png'
                 # eval_policy_multimodality(self.env_histogram, img_path=histogram_name,max_eval_steps=100, model=model, device=self.device)
-                for i in range(5):
-                    distance_traveled_instance, video_name= self.run_eval(model, ep)
-                    distance_traveled += distance_traveled_instance
-                distance_traveled = distance_traveled/5
-                best_models_df.loc[len(best_models_df)] = [video_name, model_name, distance_traveled]
+                # for i in range(5):
+                #     distance_traveled_instance, video_name= self.run_eval(model, ep)
+                #     distance_traveled += distance_traveled_instance
+                # distance_traveled = distance_traveled/5
+                # best_models_df.loc[len(best_models_df)] = [video_name, model_name, distance_traveled]
 
-                best_models_df = best_models_df.sort_values(by='distance_score', ascending=False).reset_index(drop=True)
-                best_models_df = best_models_df[:10]
+                # best_models_df = best_models_df.sort_values(by='distance_score', ascending=False).reset_index(drop=True)
+                # best_models_df = best_models_df[:10]
 
-                video_path = '/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'
+                # video_path = '/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'
 
                 # [os.remove(os.path.join(video_path, filename)) for filename in os.listdir(video_path) if filename not in list(best_models_df.video_path.values) and os.path.isfile(os.path.join(video_path, filename))]
                 # [os.remove(os.path.join(video_path, filename)) for filename in os.listdir(video_path) if filename not in list(best_models_df.model_path.values) and os.path.isfile(os.path.join(video_path, filename))]
@@ -254,7 +254,7 @@ class TrainerNewArch():
             'z':0.0
         }
         env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                        terminal_configs=terminal_configs, host="localhost", port=2020,
+                        terminal_configs=terminal_configs, host="localhost", port=2030,
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
         env = RlBirdviewWrapper(env)
         return env
@@ -275,7 +275,7 @@ class TrainerNewArch():
             'z':0.0
         }
         env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                        terminal_configs=terminal_configs, host="localhost", port=2020,
+                        terminal_configs=terminal_configs, host="localhost", port=2025,
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
         env = RlBirdviewWrapper(env)
         return env
@@ -336,10 +336,6 @@ if __name__ == '__main__':
     params_list = list(params_product)
 
     for i, params in enumerate(params_list):
-        if i == 1:
-            continue
-        if params[3] == 32 and params[2] == 64 and params[1] == 'cosine':
-            continue
         TrainerNewArch(
             n_epoch=750,
             lrate=0.0001,
