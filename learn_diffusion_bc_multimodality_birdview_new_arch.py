@@ -232,9 +232,9 @@ class TrainerNewArch():
         return model
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+self.name, exist_ok=True)
+        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/'+self.name, exist_ok=True)
         model_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl'
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+model_name)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/'+model_name)
         return model_name
 
     def create_env(self):
@@ -281,7 +281,7 @@ class TrainerNewArch():
 
     def run_eval(self, model, ep):
         video_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.mp4'
-        video_path = os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/'+ video_name
+        video_path = os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/'+ video_name
         with torch.no_grad():
             distance_traveled = evaluate_policy(self.env, model, video_path, device=self.device, max_eval_steps=200)
         return distance_traveled, video_name
@@ -313,10 +313,10 @@ if __name__ == '__main__':
     observation_space['state'] = gym.spaces.Box(low=-10.0, high=30.0, shape=(6,), dtype=np.float32)  # Define o tipo de dimensão que terá o estado
     observation_space = gym.spaces.Dict(**observation_space)  # Cria um espaço de observação
     action_space = gym.spaces.Box(low=np.array([0, -1]), high=np.array([1, 1]), dtype=np.float32)  # Define o espaço de ação
-    device = 'cpu'
+    device = 'cuda'
     batch_size = 24
 
-    alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3','cosine']
+    alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3', 'cosine', 'fixed_0-0']
     # alpha_schedule_list = ['fixed_0-3']
     # lrate_type = ['cosine', 'fixed']
     lrate_type = ['cosine']
@@ -348,10 +348,10 @@ if __name__ == '__main__':
             embed_dim=params[2],
             guide_w=0.0,
             betas=(1e-4, 0.02),
-            dataset_path='data_collection/town01_multimodality_t_intersection_simples',
+            dataset_path='data_collection/town01_multimodality_t_insersection_multiples',
             run_wandb=False,
             record_run=True,
-            expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
+            expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples', n_routes=34, n_eps=1, semaphore=False),
             name=f'version_750_{i}/new_arch',
             param_search=False,
             embedding="Model_cnn_mlp",
