@@ -182,8 +182,8 @@ if __name__ == '__main__':
 
 
 
-    # models = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch')
-    models = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_03')
+    models = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/')
+    # models = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_03')
 
     # models = [
     #     'model_pytorch/BC_Multi_Simple_01/Model_cnn_BC_gail_experts_multi_bruno_3_simples_birdviewt_BC_067e_ep_20.pkl',

@@ -268,6 +268,20 @@ def list_pkl_files_sorted(directory):
     return sorted(pkl_files)
 
 
+
+def encontrar_arquivos_pkl(diretorio):
+    arquivos_pkl = []
+
+    for raiz, diretorios, arquivos in os.walk(diretorio):
+        for arquivo in arquivos:
+            if arquivo.endswith(".pkl"):
+                caminho_completo = os.path.join(raiz, arquivo)
+                arquivos_pkl.append((os.path.getctime(caminho_completo), caminho_completo))
+
+    arquivos_pkl.sort()
+
+    return [caminho for _, caminho in arquivos_pkl]
+
 if __name__ == '__main__':
     diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
     diff_bc_video = 'diff_bc_video_(not_diffuser)/birdview/teste_3/'
@@ -605,7 +619,7 @@ if __name__ == '__main__':
     #     guide_w=0.0,)
 
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                        terminal_configs=terminal_configs, host="localhost", port=2020,
+                        terminal_configs=terminal_configs, host="localhost", port=2030,
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
 
@@ -888,6 +902,8 @@ if __name__ == '__main__':
         'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_0/new_arch_acc8_ep_150.pkl',
 
     ]
+
+    models = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_0')
 
     device = 'cpu'
     x_shape = (192, 192, 4)
