@@ -136,6 +136,7 @@ class RlBirdviewWrapper(gym.Wrapper):
         info['run_red_light'] = info_ma['run_red_light']
         info['encounter_stop'] = info_ma['encounter_stop']
         info['stop_infraction'] = info_ma['stop_infraction']
+        info['location'] = info_ma['location']
         return obs, reward, done, info
         # return obs, '', '', ''
 

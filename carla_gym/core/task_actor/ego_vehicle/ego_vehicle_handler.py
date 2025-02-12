@@ -132,6 +132,7 @@ class EgoVehicleHandler(object):
             info_dict['run_red_light'] = False
             info_dict['encounter_stop'] = False
             info_dict['stop_infraction'] = False
+            info_dict['location'] = terminal_debug['location']
 
             # accumulate into buffers
             self.reward_buffers[ev_id].append(reward)

@@ -109,6 +109,7 @@ class ValeoNoDetPx(object):
             'c_collision_px': c_collision_px,
             'timeout': timeout,
             'lat_dist': lat_dist,
-            'thresh_lat_dist': thresh_lat_dist
+            'thresh_lat_dist': thresh_lat_dist,
+            'location': [ev_loc.x, ev_loc.y, ev_loc.z]
         }
         return done, timeout, terminal_reward, terminal_debug

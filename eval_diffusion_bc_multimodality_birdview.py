@@ -619,7 +619,7 @@ if __name__ == '__main__':
     #     guide_w=0.0,)
 
     env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                        terminal_configs=terminal_configs, host="localhost", port=2030,
+                        terminal_configs=terminal_configs, host="localhost", port=2020,
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
 
@@ -799,7 +799,7 @@ if __name__ == '__main__':
 
 
 
-
+    # Antigo -----------------------------------------------------------------------------------
 
     models = [
         # 'model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_2/new_arch_67e4_ep_10.pkl',
@@ -847,30 +847,30 @@ if __name__ == '__main__':
         guide_w=0.0,)
 
     # -----------------------------------------------------------------------------------------
-    extra_steps_list = [0, 8]
-    for extra_steps in extra_steps_list:
-        for model_path in models:
-            model.load_state_dict(torch.load(model_path))
-            persist_points = None
-            for i in range(100):
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_2/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
-                diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
-                os.makedirs(diff_bc_video_2, exist_ok=True)
-                eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
-                # if os.path.isfile(eval_video_path[:-6]+".png"):
-                #     continue
-                _, persist_points= evaluate_policy(
-                                    env=env,
-                                    model=model.to(device),
-                                    video_path=eval_video_path,
-                                    device=device,
-                                    observation_type=observation_type,
-                                    max_eval_steps=200,
-                                    architecture='diffusion',
-                                    movie=True,
-                                    extra_steps=extra_steps,
-                                    embedding='Model_cnn_mlp',
-                                    persist_points = persist_points)
+    # extra_steps_list = [0, 8]
+    # for extra_steps in extra_steps_list:
+    #     for model_path in models:
+    #         model.load_state_dict(torch.load(model_path))
+    #         persist_points = None
+    #         for i in range(100):
+    #             diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_2/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+    #             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+    #             os.makedirs(diff_bc_video_2, exist_ok=True)
+    #             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
+    #             # if os.path.isfile(eval_video_path[:-6]+".png"):
+    #             #     continue
+    #             _, persist_points= evaluate_policy(
+    #                                 env=env,
+    #                                 model=model.to(device),
+    #                                 video_path=eval_video_path,
+    #                                 device=device,
+    #                                 observation_type=observation_type,
+    #                                 max_eval_steps=200,
+    #                                 architecture='diffusion',
+    #                                 movie=True,
+    #                                 extra_steps=extra_steps,
+    #                                 embedding='Model_cnn_mlp',
+    #                                 persist_points = persist_points)
 
 
 
@@ -903,7 +903,12 @@ if __name__ == '__main__':
 
     ]
 
-    models = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_0')
+    models_0 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_0')
+    models_1 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_1')
+    models_2 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_2')
+    models_3 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_3') 
+
+    models = models_0 + models_1 + models_2 + models_3
 
     device = 'cpu'
     x_shape = (192, 192, 4)
