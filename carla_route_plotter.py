@@ -111,7 +111,7 @@ class CarlaRoutePlotter:
             point_loc = global_plan_world_coord[point_idx][0].transform.location
             point_x = meters_to_pixel_x * (point_loc.y - self.camera_y) + self.image_width / 2
             point_y = meters_to_pixel_y * (point_loc.x - self.camera_x) + self.image_height / 2
-            draw.line((last_point_x, last_point_y, point_x, point_y), width=2, fill=route_color)
+            draw.line((last_point_x, last_point_y, point_x, point_y), width=20, fill=route_color)
             last_point_x = point_x
             last_point_y = point_y
         
@@ -157,7 +157,7 @@ class CarlaRoutePlotter:
     
     def plot_routes_from_list(self, 
                             routes: List[List[Tuple[float, float, float]]], 
-                            output_dir: Union[str, Path]) -> None:
+                            path: Union[str, Path]) -> None:
         """
         Plot routes from a list of route coordinates.
         
@@ -165,8 +165,8 @@ class CarlaRoutePlotter:
             routes: List of routes, where each route is a list of (x, y, z) coordinates
             output_dir: Directory to save the output images
         """
-        output_dir = Path(output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
+        # output_dir = Path(output_dir)
+        # output_dir.mkdir(parents=True, exist_ok=True)
         
         # Create base image if not exists
         if self.base_image is None:
@@ -181,8 +181,10 @@ class CarlaRoutePlotter:
             self._plot_route(global_plan_world_coord)
             
             # Save current state
-            image_path = output_dir / f'routes_0_to_{route_id:02d}.png'
-            self.current_image.save(image_path.as_posix())
+            # image_path = path / f'routes_0_to_{route_id:02d}.png'
+            image_path = path
+            # self.current_image.save(image_path.as_posix())
+            self.current_image.save(image_path)
     
     def set_camera_params(self,
                          image_width: int = None,
@@ -265,8 +267,8 @@ class Camera:
             self.camera.destroy()
 
 
-# Initialize the plotter
-plotter = CarlaRoutePlotter(host='localhost', port=2020, town='Town01')
+# # Initialize the plotter
+# plotter = CarlaRoutePlotter(host='localhost', port=2020, town='Town01')
 
-# Option 1: Plot routes from a file
-plotter.plot_routes_from_file('town01_routes.txt', 'paper_plots/traj_plot')
+# # Option 1: Plot routes from a file
+# plotter.plot_routes_from_file('town01_routes.txt', 'paper_plots/traj_plot')

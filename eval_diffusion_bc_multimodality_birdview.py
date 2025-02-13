@@ -14,6 +14,8 @@ from data_collect import reward_configs, terminal_configs, obs_configs
 from data_preprocessing import DataHandler, FrontCameraMovieMakerArray
 from models_bc import Model_cnn_BC
 import matplotlib.pyplot as plt
+from carla_route_plotter import CarlaRoutePlotter
+
 
 env_configs = {
     'carla_map': 'Town01',
@@ -43,12 +45,72 @@ spawn_point_action_histogram = {
     'z':0.0
 }
 
+def convert_coord_dict_to_routes(coord_dict):
+        """
+        Convert a dictionary of coordinates into a list of routes.
+        
+        Args:
+            coord_dict: Dictionary with keys 'x', 'y', 'z', where each key contains
+                       a list of lists representing coordinates for each route.
+                       Example:
+                       {
+                           'x': [[x1, x2, x3], [x1, x2]],
+                           'y': [[y1, y2, y3], [y1, y2]],
+                           'z': [[z1, z2, z3], [z1, z2]]
+                       }
+        
+        Returns:
+            List of routes, where each route is a list of (x, y, z) tuples.
+            Example:
+            [
+                [(x1, y1, z1), (x2, y2, z2), (x3, y3, z3)],
+                [(x1, y1, z1), (x2, y2, z2)]
+            ]
+        
+        Raises:
+            ValueError: If the input dictionary is missing required keys or if the
+                       coordinate lists have inconsistent lengths.
+        """
+        # Validate input
+        required_keys = {'x', 'y', 'z'}
+        if not all(key in coord_dict for key in required_keys):
+            missing_keys = required_keys - set(coord_dict.keys())
+            raise ValueError(f"Missing required keys: {missing_keys}")
+        
+        # Get number of routes and validate consistency
+        n_routes = len(coord_dict['x'])
+        if not all(len(coord_dict[key]) == n_routes for key in required_keys):
+            raise ValueError("Inconsistent number of routes across coordinates")
+        
+        # Convert to list of route tuples
+        routes = []
+        for route_idx in range(n_routes):
+            # Validate route point consistency
+            route_lengths = [len(coord_dict[key][route_idx]) for key in required_keys]
+            if not all(length == route_lengths[0] for length in route_lengths):
+                raise ValueError(f"Inconsistent coordinate lengths in route {route_idx}")
+            
+            # Create route points
+            route_points = []
+            for point_idx in range(route_lengths[0]):
+                point = (
+                    coord_dict['x'][route_idx][point_idx],
+                    coord_dict['y'][route_idx][point_idx],
+                    coord_dict['z'][route_idx][point_idx]
+                )
+                route_points.append(point)
+            routes.append(route_points)
+        
+        return routes
 
 def handle_obs(obs, observation_type, embedding):
     obs = DataHandler().preprocess_images(obs, observation_type=observation_type , eval=True, embedding=embedding)
     return obs
 
 def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observation_type='birdview',  architecture='diffusion', movie=True, extra_steps=0, embedding=Model_cnn_mlp, persist_points = None):
+    
+    # max_eval_steps = 10
+    
     model = model.eval()
     t0 = time.time()
     obs = env.reset()
@@ -65,19 +127,21 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
     list_render_left = []
     list_render_right = []
     list_render_birdview = []
-    list_gnss = []
+    list_locations = []
     ep_dict = {}
     ep_dict['actions'] = []
     ep_dict['state'] = []
     distance_traveled = 0
+    plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
     while n_step < max_eval_steps:
         if architecture == 'diffusion':
             actions = model.sample_extra(torch.tensor(obs).float().to(device), extra_steps=extra_steps).to(device)[0]
         elif architecture == 'mse':
             actions = model(torch.tensor(obs).float().to(device)).to(device)[0]
         obs_clean, reward, done, info = env.step(np.array(actions.detach().cpu()))
-
-        distance_traveled += calculate_distance_traveled(obs_clean['gnss'], previous_position)
+        if n_step == 0:
+            previous_position = np.array(info['location'])
+        distance_traveled += calculate_distance_traveled(np.array(info['location']), previous_position)
 
         new_row = pd.DataFrame([info['route_completion']])
         route_completion_buffer = pd.concat([route_completion_buffer, new_row], ignore_index=True)
@@ -99,7 +163,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
             list_render_right.append(np.transpose(obs_clean['right_rgb'], (1,2,0)))
             list_render_left.append(np.transpose(obs_clean['left_rgb'], (1,2,0)))
             list_render_birdview.append(np.transpose(obs_clean['birdview'], (1,2,0)))
-            list_gnss.append(info['gnss'])
+            list_locations.append(info['location'])
             ep_dict['state'].append(np.transpose(obs_clean['birdview'], (1,2,0)))
             ep_dict['actions'].append([actions[0].item(), actions[1].item()])
         else:
@@ -120,7 +184,12 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
         #                                             right_array=list_render_right,
         #                                             birdview_array=list_render_birdview)
         #     movie_maker.save_record(text=f'{distance_traveled}')
-        persist_points = plot_gnss_2d(list_gnss, output_path=video_path[:-6]+".png", persist_points=persist_points)
+        # plotter.plot_routes_from_list(persist_points_list, 'paper_plots/traj_plot')
+        # persist_points = plot_gnss_2d(list_locations, output_path=video_path[:-6]+".png", persist_points=persist_points)
+        persist_points = plot_gnss_2d(list_locations, output_path=video_path[:-6]+".png", persist_points=persist_points)
+        persist_points_list = convert_coord_dict_to_routes(persist_points)
+        plotter.plot_routes_from_list(persist_points_list, video_path[:-6]+"_map.png")
+        # plot_left_right_trajectories(output_path=video_path[:-6]+"_trajectory.png", persist_points=persist_points)
         plot_left_right_trajectories(output_path=video_path[:-6]+"_trajectory.png", persist_points=persist_points)
         gnss_path = video_path[:-3]+'txt'
         route_completion_data_path = video_path[:-3]+'csv'
@@ -142,9 +211,9 @@ def plot_left_right_trajectories(output_path, persist_points):
             continue  # Pula listas vazias
         last_value = sublist[-1]
         
-        if last_value < -0.0018:
+        if last_value < 180:
             classifications['Left'] += 1
-        elif last_value > -0.0017:
+        elif last_value > 210:
             classifications['Right'] += 1
         else:
             classifications['Straight'] += 1
@@ -160,13 +229,15 @@ def plot_left_right_trajectories(output_path, persist_points):
 
 def plot_gnss_2d(list_gnss, output_path="gnss_plot.png", persist_points=None):
     if persist_points is None:
-        persist_points = {"x": [], "y": []}
+        persist_points = {"x": [], "y": [], "z": []}
 
     # Adicionar novos pontos ao histórico
     x_coords = [array[0] for array in list_gnss]
     y_coords = [array[1] for array in list_gnss]
+    z_coords = [array[2] for array in list_gnss]
     persist_points["x"].append(x_coords)
     persist_points["y"].append(y_coords)
+    persist_points["z"].append(z_coords)
     
     # Criar ou atualizar o gráfico
     plt.figure(figsize=(8, 6))
@@ -176,7 +247,7 @@ def plot_gnss_2d(list_gnss, output_path="gnss_plot.png", persist_points=None):
     plt.title("2D GNSS Coordinates (x, y) - Updated")
     plt.xlabel("X Coordinate")
     plt.ylabel("Y Coordinate")
-    plt.xlim([-0.0018, -0.0017])
+    # plt.xlim([-0.0018, -0.0017])
     plt.grid(True, linestyle='--', linewidth=0.5)
     plt.legend()
 
@@ -941,7 +1012,7 @@ if __name__ == '__main__':
             model.load_state_dict(torch.load(model_path))
             persist_points = None
             for i in range(100):
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_2/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
