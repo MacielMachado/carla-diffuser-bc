@@ -107,7 +107,7 @@ def handle_obs(obs, observation_type, embedding):
     obs = DataHandler().preprocess_images(obs, observation_type=observation_type , eval=True, embedding=embedding)
     return obs
 
-def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observation_type='birdview',  architecture='diffusion', movie=True, extra_steps=0, embedding=Model_cnn_mlp, persist_points = None):
+def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observation_type='birdview',  architecture='diffusion', movie=True, extra_steps=0, embedding=Model_cnn_mlp, persist_points = None, plotter=None):
     
     # max_eval_steps = 10
     
@@ -132,7 +132,6 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
     ep_dict['actions'] = []
     ep_dict['state'] = []
     distance_traveled = 0
-    plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
     while n_step < max_eval_steps:
         if architecture == 'diffusion':
             actions = model.sample_extra(torch.tensor(obs).float().to(device), extra_steps=extra_steps).to(device)[0]
@@ -351,7 +350,7 @@ def encontrar_arquivos_pkl(diretorio):
 
     arquivos_pkl.sort()
 
-    return [caminho for _, caminho in arquivos_pkl]
+    return [caminho for _, caminho in arquivos_pkl[::-1]]
 
 if __name__ == '__main__':
     diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
@@ -362,7 +361,7 @@ if __name__ == '__main__':
     # diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
     os.makedirs(diff_bc_video, exist_ok=True)
 
-    device = 'cpu'
+    device = 'cuda'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -649,7 +648,7 @@ if __name__ == '__main__':
     ]
 
 
-    device = 'cpu'
+    device = 'cuda'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -893,7 +892,7 @@ if __name__ == '__main__':
 
     ]
 
-    device = 'cpu'
+    device = 'cuda'
     x_shape = (192, 192, 4)
     y_dim = 2
     embed_dim = 64
@@ -981,7 +980,7 @@ if __name__ == '__main__':
 
     models = models_0 + models_1 + models_2 + models_3
 
-    device = 'cpu'
+    device = 'cuda'
     x_shape = (192, 192, 4)
     y_dim = 2
     embed_dim = 64
@@ -1007,6 +1006,7 @@ if __name__ == '__main__':
 
     # -----------------------------------------------------------------------------------------
     extra_steps_list = [8]
+    plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
     for extra_steps in extra_steps_list:
         for model_path in models:
             model.load_state_dict(torch.load(model_path))
@@ -1029,7 +1029,8 @@ if __name__ == '__main__':
                                     movie=True,
                                     extra_steps=extra_steps,
                                     embedding='Model_cnn_mlp',
-                                    persist_points = persist_points)
+                                    persist_points = persist_points,
+                                    plotter=plotter)
 
 
 

@@ -21,6 +21,8 @@ from carla_gym.utils import config_utils
 from carla_gym.core.task_actor.common.navigation.global_route_planner import GlobalRoutePlanner
 from carla_gym.core.task_actor.common.navigation.route_manipulation import downsample_route
 import random
+from carla_gym.core.task_actor.common.navigation.global_route_planner import RoadOption
+
 
 
 class CarlaRoutePlotter:
@@ -97,7 +99,8 @@ class CarlaRoutePlotter:
         meters_to_pixel_y = -self.image_height / (2 * np.tan(self.camera_fov * np.pi / 180 / 2) * self.camera_z)
         
         # Plot first point
-        last_point = global_plan_world_coord[0][0].transform.location
+        # last_point = global_plan_world_coord[0][0].transform.location
+        last_point = global_plan_world_coord[0][0].location
         last_point_x = meters_to_pixel_x * (last_point.y - self.camera_y) + self.image_width / 2
         last_point_y = meters_to_pixel_y * (last_point.x - self.camera_x) + self.image_height / 2
         
@@ -108,10 +111,11 @@ class CarlaRoutePlotter:
         
         # Plot route
         for point_idx in range(1, len(global_plan_world_coord)):
-            point_loc = global_plan_world_coord[point_idx][0].transform.location
+            # point_loc = global_plan_world_coord[point_idx][0].transform.location
+            point_loc = global_plan_world_coord[point_idx][0].location
             point_x = meters_to_pixel_x * (point_loc.y - self.camera_y) + self.image_width / 2
             point_y = meters_to_pixel_y * (point_loc.x - self.camera_x) + self.image_height / 2
-            draw.line((last_point_x, last_point_y, point_x, point_y), width=20, fill=route_color)
+            draw.line((last_point_x, last_point_y, point_x, point_y), width=2, fill=route_color)
             last_point_x = point_x
             last_point_y = point_y
         
@@ -120,25 +124,42 @@ class CarlaRoutePlotter:
                       last_point_x + radius, last_point_y + radius],
                      fill=route_color)
     
+    # def _process_route(self, route_coords: List[Tuple[float, float, float]]) -> List:
+    #     """Process route coordinates into a CARLA route plan."""
+    #     transforms = []
+    #     for x, y, z in route_coords:
+    #         location = carla.Location(x=x, y=y, z=z)
+    #         transform = carla.Transform(location, carla.Rotation())
+    #         transforms.append(transform)
+        
+    #     spawn_transform = transforms[0]
+    #     target_transforms = transforms[1:]
+    #     current_location = spawn_transform.location
+    #     global_plan_world_coord = []
+        
+    #     for tt in target_transforms:
+    #         next_target_location = tt.location
+    #         route_trace = self.planner.trace_route(current_location, next_target_location)
+    #         global_plan_world_coord += route_trace
+    #         current_location = next_target_location
+            
+    #     return global_plan_world_coord
+    
     def _process_route(self, route_coords: List[Tuple[float, float, float]]) -> List:
-        """Process route coordinates into a CARLA route plan."""
-        transforms = []
+        """
+        Process route coordinates into a CARLA route plan.
+        For dense trajectory data, preserves the original path without interpolation.
+        """
+        global_plan_world_coord = []
+        
+        # Convert each coordinate to a CARLA transform
         for x, y, z in route_coords:
             location = carla.Location(x=x, y=y, z=z)
             transform = carla.Transform(location, carla.Rotation())
-            transforms.append(transform)
+            # Create a dummy waypoint for compatibility with the existing plotting code
+            # The RoadOption.LANEFOLLOW is just a placeholder
+            global_plan_world_coord.append((transform, RoadOption.LANEFOLLOW))
         
-        spawn_transform = transforms[0]
-        target_transforms = transforms[1:]
-        current_location = spawn_transform.location
-        global_plan_world_coord = []
-        
-        for tt in target_transforms:
-            next_target_location = tt.location
-            route_trace = self.planner.trace_route(current_location, next_target_location)
-            global_plan_world_coord += route_trace
-            current_location = next_target_location
-            
         return global_plan_world_coord
     
     def plot_routes_from_file(self, file_path: Union[str, Path], output_dir: Union[str, Path]) -> None:
