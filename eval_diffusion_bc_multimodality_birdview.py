@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import time
 import os
+import re
 import math
 import pandas as pd
 from gym.wrappers.monitoring.video_recorder import ImageEncoder
@@ -353,6 +354,28 @@ def encontrar_arquivos_pkl(diretorio):
     arquivos_pkl.sort()
 
     return [caminho for _, caminho in arquivos_pkl[::-1]]
+
+
+def sort_by_filename_and_version(file_paths):
+    def get_sort_key(path):
+        # Extract the filename
+        filename = os.path.basename(path)
+        
+        # Extract the epoch number from the filename
+        # Looking for pattern like 'new_arch_26b7_ep_10.pkl'
+        epoch_match = re.search(r'ep_(\d+)\.pkl', filename)
+        epoch_num = int(epoch_match.group(1)) if epoch_match else 0
+        
+        # Extract the version number from the folder path
+        # Looking for pattern like 'version_750_2'
+        version_match = re.search(r'version_\d+_(\d+)', path)
+        version_num = int(version_match.group(1)) if version_match else 0
+        
+        # Return a tuple that will sort first by epoch, then by version
+        return (epoch_num, version_num)
+    
+    return sorted(file_paths, key=get_sort_key)
+
 
 if __name__ == '__main__':
     diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
@@ -975,12 +998,23 @@ if __name__ == '__main__':
 
     ]
 
-    models_0 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_0')
-    models_1 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_1')
-    models_2 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_2')
-    models_3 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_3') 
+    # models_0 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_0')
+    # models_1 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_1')
+    # models_2 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_2')
+    # models_3 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_New_Arch/version_750_3') 
 
-    models = models_0 + models_1 + models_2 + models_3
+
+
+
+    models_0 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0')
+    models_1 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_1')
+    models_2 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_2')
+    models_3 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_3') 
+    models_4 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_4') 
+
+    models = models_0 + models_1 + models_2 + models_3 + models_4
+
+    models = sort_by_filename_and_version(models)
 
     device = 'cuda'
     x_shape = (192, 192, 4)
