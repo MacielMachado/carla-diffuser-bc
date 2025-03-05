@@ -225,9 +225,9 @@ class TrainerNewArch():
         return model
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/'+self.name, exist_ok=True)
+        os.makedirs(os.getcwd()+'/model_pytorch/BC_Multi_Multiple_New_Arch/'+self.name, exist_ok=True)
         model_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl'
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/'+model_name)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/BC_Multi_Multiple_New_Arch/'+model_name)
         return model_name
 
     def create_env(self):
