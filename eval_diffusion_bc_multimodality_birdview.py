@@ -1041,12 +1041,12 @@ if __name__ == '__main__':
         guide_w=0.0,)
 
     # -----------------------------------------------------------------------------------------
-    extra_steps_list = [0]
+    extra_steps_list = [8]
     plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
     for extra_steps in extra_steps_list:
         for model_path in models:
-            # if int(model_path.split('.')[0].split('_')[-1]) % 20 != 0:
-            #     continue
+            if int(model_path.split('.')[0].split('_')[-1]) % 20 != 0:
+                continue
             model.load_state_dict(torch.load(model_path))
             persist_points = None
             diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
