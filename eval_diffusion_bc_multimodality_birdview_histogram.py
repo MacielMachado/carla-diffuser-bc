@@ -144,9 +144,9 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
     ep_dict['actions'] = []
     ep_dict['state'] = []
     distance_traveled = 0
-    actions_list = []
     while n_step < max_eval_steps:
         action_counter = 0
+        actions_list = []
         while action_counter < num_of_actions:
             if architecture == 'diffusion':
                 actions = model.sample_extra(torch.tensor(obs).float().to(device), extra_steps=extra_steps).to(device)[0]
@@ -367,7 +367,8 @@ if __name__ == '__main__':
                         seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     env = RlBirdviewWrapper(env)
 
-    models_0 = ['model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_20.pkl',
+    models_0 = [
+            #   'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_20.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_30.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_60.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_70.pkl',
@@ -412,20 +413,20 @@ if __name__ == '__main__':
         guide_w=0.0,)
 
     # -----------------------------------------------------------------------------------------
-    extra_steps_list = [8]
+    extra_steps_list = [0]
     for extra_steps in extra_steps_list:
         for model_path in models:
-            if int(model_path.split('.')[0].split('_')[-1]) % 20 != 0:
-                continue
+            # if int(model_path.split('.')[0].split('_')[-1]) % 20 != 0:
+            #     continue
             model.load_state_dict(torch.load(model_path))
             persist_points = None
             diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_histogram/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
             os.makedirs(diff_bc_video_2, exist_ok=True)
             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
-            if os.path.exists(eval_video_path[:-6]+"_map.png"):
-                continue
-            for i in range(25):
+            # if os.path.exists(eval_video_path[:-6]+"_map.png"):
+            #     continue
+            for i in range(1):
                 diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_histogram/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
                 os.makedirs(diff_bc_video_2, exist_ok=True)
