@@ -1014,6 +1014,26 @@ if __name__ == '__main__':
 
     models = models_0 + models_1 + models_2 + models_3 + models_4
 
+
+    models_0 = [
+            #   'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_20.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_30.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_60.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_70.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_80.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_100.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_110.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_120.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_140.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_150.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_220.pkl',]
+    
+    models_2 = ['model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_2/new_arch_bc03_ep_80.pkl',]
+
+    models_4 = ['model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_4/new_arch_bc03_ep_80.pkl',]
+    
+    models = models_0 + models_2 + models_4
+
     models = sort_by_filename_and_version(models)
 
     device = 'cuda'
