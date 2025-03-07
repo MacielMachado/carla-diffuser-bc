@@ -118,13 +118,13 @@ def gerar_histogramas(actions, save_path):
     axs[0].set_title('Acceleration')
 
     axs[0].set_xlim([0, 1])
-    axs[0].set_ylim([0, 500])
+    # axs[0].set_ylim([0, 500])
 
     axs[1].hist(coluna_b, bins=10, color='green', alpha=0.7)
     axs[1].set_title('Steering')
 
     axs[1].set_xlim([-1, 1])
-    axs[1].set_ylim([0, 500])
+    # axs[1].set_ylim([0, 500])
 
     plt.tight_layout()
     plt.show()
