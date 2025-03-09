@@ -386,7 +386,7 @@ if __name__ == '__main__':
     # diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
     os.makedirs(diff_bc_video, exist_ok=True)
 
-    device = 'cuda'
+    device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -673,7 +673,7 @@ if __name__ == '__main__':
     ]
 
 
-    device = 'cuda'
+    device = 'cpu'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -917,7 +917,7 @@ if __name__ == '__main__':
 
     ]
 
-    device = 'cuda'
+    device = 'cpu'
     x_shape = (192, 192, 4)
     y_dim = 2
     embed_dim = 64
@@ -1036,7 +1036,7 @@ if __name__ == '__main__':
 
     models = sort_by_filename_and_version(models)
 
-    device = 'cuda'
+    device = 'cpu'
     x_shape = (192, 192, 4)
     y_dim = 2
     embed_dim = 64
@@ -1061,22 +1061,22 @@ if __name__ == '__main__':
         guide_w=0.0,)
 
     # -----------------------------------------------------------------------------------------
-    extra_steps_list = [8]
+    extra_steps_list = [0]
     plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
     for extra_steps in extra_steps_list:
         for model_path in models:
-            if int(model_path.split('.')[0].split('_')[-1]) % 20 != 0:
-                continue
+            # if int(model_path.split('.')[0].split('_')[-1]) % 20 != 0:
+            #     continue
             model.load_state_dict(torch.load(model_path))
             persist_points = None
             diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
             os.makedirs(diff_bc_video_2, exist_ok=True)
             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
-            if os.path.exists(eval_video_path[:-6]+"_map.png"):
-                continue
+            # if os.path.exists(eval_video_path[:-6]+"_map.png"):
+            #     continue
             for i in range(25):
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_3000/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
@@ -1086,7 +1086,7 @@ if __name__ == '__main__':
                                     video_path=eval_video_path,
                                     device=device,
                                     observation_type=observation_type,
-                                    max_eval_steps=200,
+                                    max_eval_steps=3000,
                                     architecture='diffusion',
                                     movie=True,
                                     extra_steps=extra_steps,
