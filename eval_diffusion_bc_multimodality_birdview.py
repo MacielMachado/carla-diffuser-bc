@@ -192,7 +192,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
         persist_points_list = convert_coord_dict_to_routes(persist_points)
         plotter.plot_routes_from_list(persist_points_list, video_path[:-6]+"_map.png")
         # plot_left_right_trajectories(output_path=video_path[:-6]+"_trajectory.png", persist_points=persist_points)
-        plot_left_right_trajectories(output_path=video_path[:-6]+"_trajectory.png", persist_points=persist_points)
+        # plot_left_right_trajectories(output_path=video_path[:-6]+"_trajectory.png", persist_points=persist_points)
         gnss_path = video_path[:-3]+'txt'
         route_completion_data_path = video_path[:-3]+'csv'
         actions_observation_path = video_path[:-3]+'json'
@@ -386,7 +386,7 @@ if __name__ == '__main__':
     # diff_bc_video = 'diff_bc_video_(not_diffuser)/multi_birdview/'
     os.makedirs(diff_bc_video, exist_ok=True)
 
-    device = 'cpu'
+    device = 'cuda'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -673,7 +673,7 @@ if __name__ == '__main__':
     ]
 
 
-    device = 'cpu'
+    device = 'cuda'
     net_type = 'transformer'
     observation_type = 'birdview'
 
@@ -917,7 +917,7 @@ if __name__ == '__main__':
 
     ]
 
-    device = 'cpu'
+    device = 'cuda'
     x_shape = (192, 192, 4)
     y_dim = 2
     embed_dim = 64
@@ -1032,11 +1032,11 @@ if __name__ == '__main__':
 
     models_4 = ['model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_4/new_arch_bc03_ep_80.pkl',]
     
-    models = models_0 + models_2 + models_4
+    models = models_2 + models_0 + models_4
 
     models = sort_by_filename_and_version(models)
 
-    device = 'cpu'
+    device = 'cuda'
     x_shape = (192, 192, 4)
     y_dim = 2
     embed_dim = 64
