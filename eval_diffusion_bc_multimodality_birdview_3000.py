@@ -178,6 +178,8 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
         for i in np.where(done)[0]:
             break
 
+        if sum(list(route_infraction_total.collisions_layout.values)) > 0:
+            break
         # if n_step > 2:
         #     break
 
