@@ -206,7 +206,7 @@ def evaluate_policy(env, model, video_path, device, max_eval_steps=3000, observa
         np.savetxt(video_path[:-4]+'_distance_traveled.txt', [distance_traveled])
         np.savetxt(gnss_path, list_locations)
         ep_df = pd.DataFrame(ep_dict)
-        ep_df.to_json(actions_observation_path)
+        # ep_df.to_json(actions_observation_path)
     return distance_traveled, None
 
 def plot_left_right_trajectories(output_path, persist_points):
@@ -1022,13 +1022,15 @@ if __name__ == '__main__':
     models_0 = [
             #   'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_20.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_30.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_40.pkl',
+              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_50.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_60.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_70.pkl',
-              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_80.pkl',
+            #   'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_80.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_100.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_110.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_120.pkl',
-              'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_140.pkl',
+            #   'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_140.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_150.pkl',
               'model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_0/new_arch_bc03_ep_220.pkl',]
     
@@ -1083,7 +1085,7 @@ if __name__ == '__main__':
             #     continue
             for i in range(10):
                 diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_3000/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
-                diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + f'/it_{i}/'
+                diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2]
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
                 _, persist_points= evaluate_policy(
