@@ -46,6 +46,46 @@ spawn_point_action_histogram = {
     'z':0.0
 }
 
+def get_models_pathes():
+    indices = {
+        0: [500, 520, 600, 640, 680, 20, 30, 40, 50, 60, 70, 80, 100, 110, 120, 150, 160, 170, 190, 270, 310, 330, 340],
+        1: [80, 100, 120, 130, 140, 220, 300, 480],
+        2: [30, 60, 70, 80, 90, 100, 130, 140, 200, 230, 250, 340, 380, 600],
+        3: [40, 130, 140, 150, 170, 180, 520, 540],
+        4: [580, 500, 480, 460, 440, 420, 400, 380, 330, 280, 260, 240, 230, 210, 200, 180, 170, 160, 140, 100, 90, 80, 70, 60, 50, 40]
+    }
+
+    models = []
+    base_path = "model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/version_750_"
+
+    for version, idx_list in indices.items():
+        for idx in idx_list:
+            if version == 0:
+                if 380 <= idx <= 740:
+                    template = "new_arch_26b7_ep"
+                else:
+                    template = "new_arch_bc03_ep"
+            elif version == 1:
+                template = "new_arch_26b7_ep"
+            elif version == 2:
+                if 0 <= idx <= 180:
+                    template = "new_arch_26b7_ep"
+                elif 200 <= idx <= 280:
+                    template = "new_arch_cfc7_ep"
+                else:
+                    template = "new_arch_37b5_ep"
+            elif version == 3:
+                template = "new_arch_37b5_ep"
+            elif version == 4:
+                template = "new_arch_37b5_ep"
+            
+            model_path = f"{base_path}{version}/{template}_{idx}.pkl"
+            models.append(model_path)
+
+    # Exibir os primeiros elementos para verificação
+    return models
+
+
 def convert_coord_dict_to_routes(coord_dict):
         """
         Convert a dictionary of coordinates into a list of routes.
@@ -1044,6 +1084,8 @@ if __name__ == '__main__':
 
     models = sort_by_filename_and_version(models)
 
+    models = sort_by_filename_and_version(get_models_pathes())
+
     device = 'cuda'
     x_shape = (192, 192, 4)
     y_dim = 2
@@ -1077,16 +1119,17 @@ if __name__ == '__main__':
             #     continue
             model.load_state_dict(torch.load(model_path))
             persist_points = None
-            diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
-            diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
-            os.makedirs(diff_bc_video_2, exist_ok=True)
-            eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
+            # diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+            # diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+            # os.makedirs(diff_bc_video_2, exist_ok=True)
+            # eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
+
             # if os.path.exists(eval_video_path[:-6]+"_map.png"):
             #     continue
             # if model_path.split('/')[-2] == 'version_750_0':
             #     continue
             for i in range(10):
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_3000/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_3000_2/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2]
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
@@ -1103,7 +1146,4 @@ if __name__ == '__main__':
                                     embedding='Model_cnn_mlp',
                                     persist_points = persist_points,
                                     plotter=plotter)
-
-
-
 
