@@ -232,9 +232,9 @@ class TrainerNewArch():
         return model
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch_Full/'+self.name, exist_ok=True)
+        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/'+self.name, exist_ok=True)
         model_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl'
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch_Full/'+model_name)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/'+model_name)
         return model_name
 
     def create_env(self):
@@ -317,6 +317,7 @@ if __name__ == '__main__':
     batch_size = 24
 
     alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3', 'cosine', 'fixed_0-0']
+    alpha_schedule_list = ['exponential', 'fixed_0-3', 'fixed_0-0']
     # alpha_schedule_list = ['fixed_0-3']
     # lrate_type = ['cosine', 'fixed']
     lrate_type = ['cosine']
@@ -348,11 +349,11 @@ if __name__ == '__main__':
             embed_dim=params[2],
             guide_w=0.0,
             betas=(1e-4, 0.02),
-            dataset_path='data_collection/town01_fixed_route_without_trajectory',
+            dataset_path='data_collection/town01_fixed_route',
             run_wandb=False,
             record_run=True,
-            expert_dataset=ExpertDataset('data_collection/town01_fixed_route_without_trajectory', n_routes=10, n_eps=1, semaphore=False),
-            name=f'version_750_{i}/new_arch',
+            expert_dataset=ExpertDataset('data_collection/town01_fixed_route', n_routes=10, n_eps=1, semaphore=False),
+            name=f'version_750_{i}/new_arch_fixed',
             param_search=False,
             embedding="Model_cnn_mlp",
             alpha_schedule=params[0],
