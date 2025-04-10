@@ -317,7 +317,7 @@ if __name__ == '__main__':
     batch_size = 24
 
     alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3', 'cosine', 'fixed_0-0']
-    alpha_schedule_list = ['exponential', 'fixed_0-3', 'fixed_0-0']
+    alpha_schedule_list = ['fixed_0-0', 'exponential', 'fixed_0-3']
     # alpha_schedule_list = ['fixed_0-3']
     # lrate_type = ['cosine', 'fixed']
     lrate_type = ['cosine']
