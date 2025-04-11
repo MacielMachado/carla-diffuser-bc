@@ -336,6 +336,8 @@ if __name__ == '__main__':
     params_list = list(params_product)
 
     for i, params in enumerate(params_list):
+        if i == 0:
+            continue
         TrainerNewArch(
             n_epoch=750,
             lrate=0.0001,
