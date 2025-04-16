@@ -117,7 +117,7 @@ class Trainer():
     def create_conv_model(self, x_dim, y_dim):
         cnn_out_dim = 2
         if self.embedding == "Model_cnn_BC":
-            return Model_cnn_BC(x_dim, self.n_hidden, cnn_out_dim).to(self.device)
+            return Model_cnn_BC(x_dim, self.n_hidden, y_dim).to(self.device)
         elif self.embedding[:-2] == 'Model_cnn_BC_resnet':
             return Model_cnn_BC_resnet( x_dim, self.n_hidden, cnn_out_dim=y_dim,
                                         resnet_depth=self.embedding[-2:],
