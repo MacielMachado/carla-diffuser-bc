@@ -1100,8 +1100,8 @@ if __name__ == '__main__':
             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
             os.makedirs(diff_bc_video_2, exist_ok=True)
             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
-            # if os.path.exists(eval_video_path[:-6]+"_map.png"):
-            #     continue
+            if os.path.exists(eval_video_path[:-4]+"_map.png"):
+                continue
             for i in range(10):
                 diff_bc_video = f'diff_bc_video_(diffuser)/birdview/bc_carla_route_plotter_multi/{model_path.split("/")[1]}/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'

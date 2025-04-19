@@ -1086,6 +1086,76 @@ if __name__ == '__main__':
 
     models = sort_by_filename_and_version(get_models_pathes())
 
+    # device = 'cuda'
+    # x_shape = (192, 192, 4)
+    # y_dim = 2
+    # embed_dim = 64
+    # n_hidden = 128
+
+    # nn_model = Model_cnn_mlp(
+    #     x_shape,
+    #     n_hidden,
+    #     y_dim,
+    #     embed_dim=embed_dim,
+    #     net_type=net_type,
+    #     cnn_out_dim=4608).to(device)
+
+    # model = Model_Cond_Diffusion(
+    #     nn_model,
+    #     betas=(1e-4, 0.02),
+    #     n_T=20,
+    #     device=device,
+    #     x_dim=x_shape,
+    #     y_dim=2,
+    #     drop_prob=0.0,
+    #     guide_w=0.0,)
+
+    # # -----------------------------------------------------------------------------------------
+    # extra_steps_list = [0]
+    # plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
+    # for extra_steps in extra_steps_list:
+    #     for model_path in models:
+    #         # if int(model_path.split('.')[0].split('_')[-1]) % 20 != 0:
+    #         #     continue
+    #         model.load_state_dict(torch.load(model_path))
+    #         persist_points = None
+    #         # diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+    #         # diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+    #         # os.makedirs(diff_bc_video_2, exist_ok=True)
+    #         # eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
+
+    #         # if os.path.exists(eval_video_path[:-6]+"_map.png"):
+    #         #     continue
+    #         # if model_path.split('/')[-2] == 'version_750_0':
+    #         #     continue
+    #         for i in range(10):
+    #             diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_3000_2/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+    #             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2]
+    #             os.makedirs(diff_bc_video_2, exist_ok=True)
+    #             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
+    #             _, persist_points= evaluate_policy(
+    #                                 env=env,
+    #                                 model=model.to(device),
+    #                                 video_path=eval_video_path,
+    #                                 device=device,
+    #                                 observation_type=observation_type,
+    #                                 max_eval_steps=3000,
+    #                                 architecture='diffusion',
+    #                                 movie=True,
+    #                                 extra_steps=extra_steps,
+    #                                 embedding='Model_cnn_mlp',
+    #                                 persist_points = persist_points,
+    #                                 plotter=plotter)
+
+
+    models_0 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/version_750_0')
+    models_1 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/version_750_1')
+    models_inf = ['model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/version_750_0/new_arch_fixed_f70d_ep_250.pkl',
+                  'model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/version_750_0/new_arch_fixed_f70d_ep_200.pkl']
+    models = models_inf + models_0 + models_1
+
+    # models = sort_by_filename_and_version(models)
+
     device = 'cuda'
     x_shape = (192, 192, 4)
     y_dim = 2
@@ -1115,22 +1185,19 @@ if __name__ == '__main__':
     plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
     for extra_steps in extra_steps_list:
         for model_path in models:
-            # if int(model_path.split('.')[0].split('_')[-1]) % 20 != 0:
-            #     continue
+            if int(model_path.split('.')[0].split('_')[-1]) % 50 != 0:
+                continue
             model.load_state_dict(torch.load(model_path))
             persist_points = None
-            # diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
-            # diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
-            # os.makedirs(diff_bc_video_2, exist_ok=True)
-            # eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
-
-            # if os.path.exists(eval_video_path[:-6]+"_map.png"):
-            #     continue
-            # if model_path.split('/')[-2] == 'version_750_0':
-            #     continue
-            for i in range(10):
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_3000_2/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
-                diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2]
+            diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_Full_Trajectory/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+            diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+            os.makedirs(diff_bc_video_2, exist_ok=True)
+            eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
+            if os.path.exists(eval_video_path[:-6]+"_map.png"):
+                continue
+            for i in range(25):
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_Full_Trajectory/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+                diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
                 _, persist_points= evaluate_policy(
@@ -1146,4 +1213,3 @@ if __name__ == '__main__':
                                     embedding='Model_cnn_mlp',
                                     persist_points = persist_points,
                                     plotter=plotter)
-

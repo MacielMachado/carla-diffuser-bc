@@ -1031,7 +1031,11 @@ if __name__ == '__main__':
     models_3 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch_Full/version_750_3') 
     models_4 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch_Full/version_750_4') 
 
-    models = models_0 + models_1 + models_2 + models_3 + models_4
+
+    models_0 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/version_750_0')
+    models_1 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/version_750_1')
+
+    models = models_0 + models_1
 
     models = sort_by_filename_and_version(models)
 
@@ -1068,14 +1072,14 @@ if __name__ == '__main__':
                 continue
             model.load_state_dict(torch.load(model_path))
             persist_points = None
-            diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_Full/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+            diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_Full_Trajectory/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
             os.makedirs(diff_bc_video_2, exist_ok=True)
             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
             if os.path.exists(eval_video_path[:-6]+"_map.png"):
                 continue
             for i in range(25):
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_Full/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/new_arch_carla_route_plotter_Full_Trajectory/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
