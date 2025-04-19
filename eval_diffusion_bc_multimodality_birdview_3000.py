@@ -1152,6 +1152,7 @@ if __name__ == '__main__':
     models_1 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/version_750_1')
     models_inf = ['model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/version_750_0/new_arch_fixed_f70d_ep_250.pkl',
                   'model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full/version_750_0/new_arch_fixed_f70d_ep_200.pkl']
+    models_inf = ['model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep/version_750_1/new_arch_fixed_a334_ep_250.pkl']
     models = models_inf + models_0 + models_1
 
     # models = sort_by_filename_and_version(models)
@@ -1159,7 +1160,7 @@ if __name__ == '__main__':
     device = 'cuda'
     x_shape = (192, 192, 4)
     y_dim = 2
-    embed_dim = 64
+    embed_dim = 128
     n_hidden = 128
 
     nn_model = Model_cnn_mlp(
