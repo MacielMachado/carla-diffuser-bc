@@ -16,6 +16,8 @@ from data_preprocessing import DataHandler, FrontCameraMovieMakerArray
 from models_bc import Model_cnn_BC
 import matplotlib.pyplot as plt
 from carla_route_plotter import CarlaRoutePlotter
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 env_configs = {
@@ -425,26 +427,29 @@ def sort_by_filename_and_version(file_paths):
 
 if __name__ == '__main__':
 # Fixed BC --------------------------------------------------------------------
-    # env_configs = {
-    # 'carla_map': 'Town01',
-    # 'weather_group': 'dynamic_1.0',
-    # 'routes_group': 'multi_bruno_3_full'
-    # }
+    env_configs = {
+    'carla_map': 'Town01',
+    'weather_group': 'dynamic_1.0',
+    'routes_group': 'multi_bruno_3_full'
+    }
 
-    # env = EndlessFixed(obs_configs=obs_configs, reward_configs=reward_configs,
-    #                     terminal_configs=terminal_configs, host="localhost", port=2020,
-    #                     seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
+    env = EndlessFixedSpawnEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+                        terminal_configs=terminal_configs, host="localhost", port=2020,
+                        seed=2021, no_rendering=False, **env_configs, spawn_point=spawn_point_action_histogram)
     
-    env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-                terminal_configs=terminal_configs, host='localhost', port=2020,
-                seed=np.random.randint(1, 3001), no_rendering=True, **env_configs)
+    # env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+    #             terminal_configs=terminal_configs, host='localhost', port=2020,
+    #             seed=np.random.randint(1, 3001), no_rendering=True, **env_configs)
     
     env = RlBirdviewWrapper(env)
 
-    models_0 = encontrar_arquivos_pkl('model_pytorch/BC_Full_Trajectory_300_00')
-    models_1 = encontrar_arquivos_pkl('model_pytorch/BC_Full_Trajectory_300_01')
+    models_1 = encontrar_arquivos_pkl('model_pytorch/BC_Multi_Simple_01')
+    models_2 = encontrar_arquivos_pkl('model_pytorch/BC_Multi_Simple_02')
+    models_3 = encontrar_arquivos_pkl('model_pytorch/BC_Multi_Simple_03')
+    models_4 = encontrar_arquivos_pkl('model_pytorch/BC_Multi_Simple_04')
+    models_5 = encontrar_arquivos_pkl('model_pytorch/BC_Multi_Simple_05')
 
-    models = models_0 + models_1
+    models = models_1 + models_2 + models_3 + models_4 + models_5
 
     models = sort_by_filename_and_version(models)
 
@@ -462,18 +467,18 @@ if __name__ == '__main__':
     plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
     for extra_steps in extra_steps_list:
         for model_path in models:
-            if int(model_path.split('.')[0].split('_')[-1]) % 50 != 0 and int(model_path.split('.')[0].split('_')[-1]) != 290:
-                continue
+            # if int(model_path.split('.')[0].split('_')[-1]) % 50 != 0 and int(model_path.split('.')[0].split('_')[-1]) != 290:
+            #     continue
             model.load_state_dict(torch.load(model_path))
             persist_points = None
-            diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route/BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+            diff_bc_video = f'diff_bc_video_(diffuser)/birdview/t_interction/BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
             os.makedirs(diff_bc_video_2, exist_ok=True)
             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
             if os.path.exists(eval_video_path[:-6]+"_map.png"):
                 continue
-            for i in range(10):
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route/BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+            for i in range(100):
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/t_interction/BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
@@ -493,11 +498,13 @@ if __name__ == '__main__':
                 
 # Fixed DBC -------------------------------------------------------------------
 
-    models_0 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep_0/version_750_0')
-    models_1 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep_0/version_750_2')
-    models_2 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep_1/version_750_0')
-    models_3 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep_1/version_750_2')
-    models = models_0 + models_1 + models_2 + models_3
+    models_1 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_01')
+    models_2 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_02')
+    models_3 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_03')
+    models_4 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_04')
+    models_5 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Simple_05')
+
+    models = models_1 + models_2 + models_3 + models_4 + models_5
 
     models = sort_by_filename_and_version(models)[::-1]
     
@@ -533,18 +540,18 @@ if __name__ == '__main__':
     # plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
     for extra_steps in extra_steps_list:
         for model_path in models:
-            if int(model_path.split('.')[0].split('_')[-1]) % 50 != 0 and int(model_path.split('.')[0].split('_')[-1]) != 290:
-                continue
+            # if int(model_path.split('.')[0].split('_')[-1]) % 50 != 0 and int(model_path.split('.')[0].split('_')[-1]) != 290:
+            #     continue
             model.load_state_dict(torch.load(model_path))
             persist_points = None
-            diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route/Diffusion-BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+            diff_bc_video = f'diff_bc_video_(diffuser)/birdview/t_interction/Diffusion-BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
             os.makedirs(diff_bc_video_2, exist_ok=True)
             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
             # if os.path.exists(eval_video_path[:-6]+"_map.png"):
             #     continue
-            for i in range(10):
-                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route/Diffusion-BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+            for i in range(100):
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/t_interction/Diffusion-BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
                 os.makedirs(diff_bc_video_2, exist_ok=True)
                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
