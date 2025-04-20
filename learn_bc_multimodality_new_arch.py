@@ -225,9 +225,9 @@ class TrainerNewArch():
         return model
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/BC_Full_Trajectory_00/'+self.name, exist_ok=True)
+        os.makedirs(os.getcwd()+'/model_pytorch/BC_Full_Trajectory_300_01/'+self.name, exist_ok=True)
         model_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl'
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/BC_Full_Trajectory_00/'+model_name)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/BC_Full_Trajectory_300_01/'+model_name)
         return model_name
 
     def create_env(self):
@@ -329,7 +329,7 @@ if __name__ == '__main__':
 
     for i, params in enumerate(params_list):
         TrainerNewArch(
-            n_epoch=750,
+            n_epoch=300,
             lrate=0.0001,
             device=device, 
             n_hidden=128,
@@ -344,7 +344,7 @@ if __name__ == '__main__':
             dataset_path='data_collection/town01_fixed_route',
             run_wandb=False,
             record_run=True,
-            expert_dataset=ExpertDataset('data_collection/town01_fixed_route', n_routes=10, n_eps=1, semaphore=False),
+            expert_dataset=ExpertDataset('data_collection/town01_fixed_route', n_routes=1, n_eps=1, semaphore=False),
             name=f'version_750',
             param_search=False,
             embedding="Model_cnn_BC",
