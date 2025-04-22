@@ -329,7 +329,7 @@ if __name__ == '__main__':
 
     for i, params in enumerate(params_list):
         TrainerNewArch(
-            n_epoch=300,
+            n_epoch=700,
             lrate=0.0001,
             device=device, 
             n_hidden=128,
