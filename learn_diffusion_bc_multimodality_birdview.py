@@ -237,7 +237,7 @@ if __name__ == '__main__':
     TrainerSemaphores(
         n_epoch=750,
         lrate=0.0001,
-        device='cpu', 
+        device='cuda', 
         n_hidden=128,
         batch_size=16,
         n_T=50,
@@ -247,10 +247,10 @@ if __name__ == '__main__':
         embed_dim=128,
         guide_w=0.0,
         betas=(1e-4, 0.02),
-        dataset_path='data_collection/town01_multimodality_t_intersection_simples',
+        dataset_path='data_collection/town01_multimodality_t_insersection_multiples',
         run_wandb=False,
         record_run=False,
-        expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=10, semaphore=False),
-        name='gail_experts_nroutes1_neps1',
+        expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples', n_routes=34, n_eps=1, semaphore=False),
+        name='gail_experts_nroversion_750utes1_neps1',
         param_search=False,
         embedding="Model_cnn_mlp",).main()
