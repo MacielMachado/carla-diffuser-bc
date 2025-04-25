@@ -184,9 +184,9 @@ class TrainerNewArch():
         return model
 
     def save_model(self, model, ep):
-        os.makedirs(os.getcwd()+'/model_pytorch/' + self.model_ckpt_path.split('/')[1] +'/'+self.name, exist_ok=True)
+        os.makedirs(os.getcwd()+'/model_pytorch/' + 'bc_fixed_multiple_01/'+self.name, exist_ok=True)
         model_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl'
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/' + self.model_ckpt_path.split('/')[1] + '/' + model_name)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/' + 'bc_fixed_multiple_01/' + model_name)
         return model_name
 
 import os
@@ -415,8 +415,9 @@ class TrainerNewArch_Diffusion_BC:
 
     def save_model(self, model, ep):
         os.makedirs(os.getcwd()+'/model_pytorch/' + self.model_ckpt_path.split('/')[1] + '/' + self.model_ckpt_path.split('/')[2] + '/' + self.name, exist_ok=True)
+        os.makedirs(os.getcwd()+'/model_pytorch/' + 'dbc_fixed_multiple_01/'+self.name, exist_ok=True)
         model_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl'
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/' + self.model_ckpt_path.split('/')[1] + '/' + self.model_ckpt_path.split('/')[2] + '/' + model_name)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/' + 'dbc_fixed_multiple_01/' + model_name)
         return model_name
 
 def extract_action_mse(y, y_hat):
@@ -910,7 +911,7 @@ if __name__ == '__main__':
         run_wandb=False,
         record_run=True,
         expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples_trajectory'),
-        name="version_750",
+        name="new_arch_fixed_fixed_0_0",
         embedding="Model_cnn_mlp",
         model_ckpt_path=None,
         alpha_schedule='fixed_0-0',
@@ -937,7 +938,7 @@ if __name__ == '__main__':
         run_wandb=False,
         record_run=True,
         expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples_trajectory'),
-        name="new_arch_fixed",
+        name="new_arch_fixed_fixed_0_3'",
         embedding="Model_cnn_mlp",
         model_ckpt_path=None,
         alpha_schedule='fixed_0-3',
