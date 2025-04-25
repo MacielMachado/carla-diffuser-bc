@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
 
     env = RlBirdviewWrapper(env)
-    expert_file_dir = Path('data-collect/town01_multimodality_t_insersection_multiples')
+    expert_file_dir = Path('data_collection/town01_multimodality_t_insersection_multiples_trajectory')
     expert_file_dir.mkdir(parents=True, exist_ok=True)
     # obs_metrics = ['control', 'vel_xy', 'linear_speed', 'vec', 'traj', 'cmd', 'command', 'state']
     for route_id in tqdm.tqdm(range(34)):
