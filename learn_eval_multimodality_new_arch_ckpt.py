@@ -922,7 +922,7 @@ if __name__ == '__main__':
 
     trainer = TrainerNewArch_Diffusion_BC(
         n_epoch=701,
-        start_epoch=600,
+        start_epoch=0,
         lrate=1e-4,
         device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
         n_hidden=128,
