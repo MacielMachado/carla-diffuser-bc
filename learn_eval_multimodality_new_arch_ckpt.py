@@ -414,7 +414,7 @@ class TrainerNewArch_Diffusion_BC:
     #     return model
 
     def save_model(self, model, ep):
-        os.makedirs(os.getcwd()+'/model_pytorch/' + self.model_ckpt_path.split('/')[1] + '/' + self.model_ckpt_path.split('/')[2] + '/' + self.name, exist_ok=True)
+        # os.makedirs(os.getcwd()+'/model_pytorch/' + self.model_ckpt_path.split('/')[1] + '/' + self.model_ckpt_path.split('/')[2] + '/' + self.name, exist_ok=True)
         os.makedirs(os.getcwd()+'/model_pytorch/' + 'dbc_fixed_multiple_02/'+self.name, exist_ok=True)
         model_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl'
         torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/' + 'dbc_fixed_multiple_02/' + model_name)
