@@ -867,217 +867,213 @@ def sort_by_filename_and_version(file_paths):
 
 if __name__ == '__main__':
 
-    trainer = TrainerNewArch(
-        n_epoch=701,
-        start_epoch=0,
-        lrate=1e-4,
-        device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-        n_hidden=128,
-        batch_size=32,
-        n_T=20,
-        net_type="mse",
-        drop_prob=0.0,
-        extra_diffusion_steps=0,
-        embed_dim=64,
-        guide_w=1.0,
-        betas=(1e-4, 0.02),
-        dataset_path='data_collection/town01_multimodality_t_insersection_multiples_trajectory',
-        run_wandb=False,
-        record_run=True,
-        expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples_trajectory', n_routes=34, n_eps=1, semaphore=False),
-        name="version_750",
-        embedding="Model_cnn_BC",
-        model_ckpt_path=None
-    )
-    trainer.main()
+    # trainer = TrainerNewArch(
+    #     n_epoch=701,
+    #     start_epoch=0,
+    #     lrate=1e-4,
+    #     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+    #     n_hidden=128,
+    #     batch_size=32,
+    #     n_T=20,
+    #     net_type="mse",
+    #     drop_prob=0.0,
+    #     extra_diffusion_steps=0,
+    #     embed_dim=64,
+    #     guide_w=1.0,
+    #     betas=(1e-4, 0.02),
+    #     dataset_path='data_collection/town01_multimodality_t_insersection_multiples_trajectory',
+    #     run_wandb=False,
+    #     record_run=True,
+    #     expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples_trajectory', n_routes=34, n_eps=1, semaphore=False),
+    #     name="version_750",
+    #     embedding="Model_cnn_BC",
+    #     model_ckpt_path=None
+    # )
+    # trainer.main()
 
 
 
-    trainer = TrainerNewArch_Diffusion_BC(
-        n_epoch=701,
-        start_epoch=0,
-        lrate=1e-4,
-        device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-        n_hidden=128,
-        batch_size=32,
-        n_T=20,
-        net_type="transformer",
-        drop_prob=0.0,
-        extra_diffusion_steps=0,
-        embed_dim=128,
-        guide_w=0.0,
-        betas=(1e-4, 0.02),
-        dataset_path='data_collection/town01_multimodality_t_insersection_multiples_trajectory',
-        run_wandb=False,
-        record_run=True,
-        expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples_trajectory', n_routes=34, n_eps=1, semaphore=False),
-        name="new_arch_fixed_fixed_0_0",
-        embedding="Model_cnn_mlp",
-        model_ckpt_path=None,
-        alpha_schedule='fixed_0-0',
-        lrate_type='cosine'
-    )
-    trainer.main()
+    # trainer = TrainerNewArch_Diffusion_BC(
+    #     n_epoch=701,
+    #     start_epoch=0,
+    #     lrate=1e-4,
+    #     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+    #     n_hidden=128,
+    #     batch_size=32,
+    #     n_T=20,
+    #     net_type="transformer",
+    #     drop_prob=0.0,
+    #     extra_diffusion_steps=0,
+    #     embed_dim=128,
+    #     guide_w=0.0,
+    #     betas=(1e-4, 0.02),
+    #     dataset_path='data_collection/town01_multimodality_t_insersection_multiples_trajectory',
+    #     run_wandb=False,
+    #     record_run=True,
+    #     expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples_trajectory', n_routes=34, n_eps=1, semaphore=False),
+    #     name="new_arch_fixed_fixed_0_0",
+    #     embedding="Model_cnn_mlp",
+    #     model_ckpt_path=None,
+    #     alpha_schedule='fixed_0-0',
+    #     lrate_type='cosine'
+    # )
+    # trainer.main()
 
 
-    trainer = TrainerNewArch_Diffusion_BC(
-        n_epoch=701,
-        start_epoch=0,
-        lrate=1e-4,
-        device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
-        n_hidden=128,
-        batch_size=32,
-        n_T=20,
-        net_type="transformer",
-        drop_prob=0.0,
-        extra_diffusion_steps=0,
-        embed_dim=128,
-        guide_w=0.0,
-        betas=(1e-4, 0.02),
-        dataset_path='data_collection/town01_multimodality_t_insersection_multiples_trajectory',
-        run_wandb=False,
-        record_run=True,
-        expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples_trajectory', n_routes=34, n_eps=1, semaphore=False),
-        name="new_arch_fixed_fixed_0_3'",
-        embedding="Model_cnn_mlp",
-        model_ckpt_path=None,
-        alpha_schedule='fixed_0-3',
-        lrate_type='cosine'
-    )
-    trainer.main()
+    # trainer = TrainerNewArch_Diffusion_BC(
+    #     n_epoch=701,
+    #     start_epoch=0,
+    #     lrate=1e-4,
+    #     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+    #     n_hidden=128,
+    #     batch_size=32,
+    #     n_T=20,
+    #     net_type="transformer",
+    #     drop_prob=0.0,
+    #     extra_diffusion_steps=0,
+    #     embed_dim=128,
+    #     guide_w=0.0,
+    #     betas=(1e-4, 0.02),
+    #     dataset_path='data_collection/town01_multimodality_t_insersection_multiples_trajectory',
+    #     run_wandb=False,
+    #     record_run=True,
+    #     expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples_trajectory', n_routes=34, n_eps=1, semaphore=False),
+    #     name="new_arch_fixed_fixed_0_3'",
+    #     embedding="Model_cnn_mlp",
+    #     model_ckpt_path=None,
+    #     alpha_schedule='fixed_0-3',
+    #     lrate_type='cosine'
+    # )
+    # trainer.main()
 
-# # ----------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------
 
-#     env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
-#                 terminal_configs=terminal_configs, host='localhost', port=2020,
-#                 seed=np.random.randint(1, 3001), no_rendering=True, **env_configs)
+    env = EndlessEnv(obs_configs=obs_configs, reward_configs=reward_configs,
+                terminal_configs=terminal_configs, host='localhost', port=2020,
+                seed=np.random.randint(1, 3001), no_rendering=True, **env_configs)
     
-#     env = RlBirdviewWrapper(env)
+    env = RlBirdviewWrapper(env)
 
-#     models_0 = encontrar_arquivos_pkl('model_pytorch/BC_Full_Trajectory_300_00')
-#     models_1 = encontrar_arquivos_pkl('model_pytorch/BC_Full_Trajectory_300_01')
-#     models_2 = encontrar_arquivos_pkl('model_pytorch/BC_Full_Trajectory_300_02')
+    models_0 = encontrar_arquivos_pkl('model_pytorch/bc_fixed_multiple_02')
+    # models_1 = encontrar_arquivos_pkl('model_pytorch/BC_Full_Trajectory_300_01')
+    # models_2 = encontrar_arquivos_pkl('model_pytorch/BC_Full_Trajectory_300_02')
 
-#     models = models_2 + models_0 + models_1
+    models = models_0
 
-#     models = sort_by_filename_and_version(models)
+    models = sort_by_filename_and_version(models)
 
-#     device = 'cuda'
-#     x_shape = (192, 192, 4)
-#     y_dim = 2
-#     embed_dim = 64
-#     n_hidden = 128
+    device = 'cuda'
+    x_shape = (192, 192, 4)
+    y_dim = 2
+    embed_dim = 64
+    n_hidden = 128
 
-#     model = Model_cnn_BC(x_shape=(192, 192, 4), n_hidden=128, cnn_out_dim=2).to(device)
+    model = Model_cnn_BC(x_shape=(192, 192, 4), n_hidden=128, cnn_out_dim=2).to(device)
 
 
-#     # -----------------------------------------------------------------------------------------
-#     extra_steps_list = [0]
-#     plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
-#     # for extra_steps in extra_steps_list:
-#     #     for model_path in models:
-#     #         if int(model_path.split('.')[0].split('_')[-1]) < 300:
-#     #             continue
-#     #         if int(model_path.split('.')[0].split('_')[-1]) % 50 != 0 and int(model_path.split('.')[0].split('_')[-1]) != 290:
-#     #             continue
-#     #         model.load_state_dict(torch.load(model_path))
-#     #         persist_points = None
-#     #         diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route_2/BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
-#     #         diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
-#     #         os.makedirs(diff_bc_video_2, exist_ok=True)
-#     #         eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
-#     #         if os.path.exists(eval_video_path[:-4]+"_map.png"):
-#     #             continue
-#     #         for i in range(10):
-#     #             diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route_2/BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
-#     #             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
-#     #             os.makedirs(diff_bc_video_2, exist_ok=True)
-#     #             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
-#     #             _, persist_points= evaluate_policy(
-#     #                                 env=env,
-#     #                                 model=model.to(device),
-#     #                                 video_path=eval_video_path,
-#     #                                 device=device,
-#     #                                 observation_type='birdview',
-#     #                                 max_eval_steps=3000,
-#     #                                 architecture='mse',
-#     #                                 movie=True,
-#     #                                 extra_steps=extra_steps,
-#     #                                 embedding='Model_cnn_mlp',
-#     #                                 persist_points = persist_points,
-#     #                                 plotter=plotter)
+    # -----------------------------------------------------------------------------------------
+    extra_steps_list = [0]
+    plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
+    for extra_steps in extra_steps_list:
+        for model_path in models:
+            # if int(model_path.split('.')[0].split('_')[-1]) < 300:
+            #     continue
+            # if int(model_path.split('.')[0].split('_')[-1]) % 50 != 0 and int(model_path.split('.')[0].split('_')[-1]) != 290:
+            if int(model_path.split('.')[0].split('_')[-1]) % 50 != 0:
+                continue
+            model.load_state_dict(torch.load(model_path))
+            persist_points = None
+            diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route_Multiple/BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+            diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+            os.makedirs(diff_bc_video_2, exist_ok=True)
+            eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
+            if os.path.exists(eval_video_path[:-4]+"_map.png"):
+                continue
+            for i in range(10):
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route_Multiple/BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+                diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+                os.makedirs(diff_bc_video_2, exist_ok=True)
+                eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
+                _, persist_points= evaluate_policy(
+                                    env=env,
+                                    model=model.to(device),
+                                    video_path=eval_video_path,
+                                    device=device,
+                                    observation_type='birdview',
+                                    max_eval_steps=30000,
+                                    architecture='mse',
+                                    movie=True,
+                                    extra_steps=extra_steps,
+                                    embedding='Model_cnn_mlp',
+                                    persist_points = persist_points,
+                                    plotter=plotter)
                 
-# # Fixed DBC -------------------------------------------------------------------
+# Fixed DBC -------------------------------------------------------------------
 
-#     models_0 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep_0/version_750_0')
-#     models_1 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep_1/version_750_0')
-#     models_2 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep_2/version_750_0')
-#     models_3 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep_0/version_750_2')
-#     models_4 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep_1/version_750_2')
-#     models_5 = encontrar_arquivos_pkl('model_pytorch/Diffusion_BC_Multi_Fixed_New_Arch_Full_1ep_2/version_750_2')
-#     models = models_0 + models_1 + models_2 + models_3 + models_4 + models_5
+    models_0 = encontrar_arquivos_pkl('model_pytorch/dbc_fixed_multiple_02')
+    models = models_0
 
-#     models = sort_by_filename_and_version(models)
+    models = sort_by_filename_and_version(models)
     
-#     observation_type = 'birdview'
-#     device = 'cuda'
-#     net_type = 'transformer'
+    observation_type = 'birdview'
+    device = 'cuda'
+    net_type = 'transformer'
 
-#     x_shape = (192, 192, 4)
-#     y_dim = 2
-#     embed_dim = 128
-#     n_hidden = 128
+    x_shape = (192, 192, 4)
+    y_dim = 2
+    embed_dim = 128
+    n_hidden = 128
 
-#     nn_model = Model_cnn_mlp(
-#         x_shape,
-#         n_hidden,
-#         y_dim,
-#         embed_dim=embed_dim,
-#         net_type=net_type,
-#         cnn_out_dim=4608).to(device)
+    nn_model = Model_cnn_mlp(
+        x_shape,
+        n_hidden,
+        y_dim,
+        embed_dim=embed_dim,
+        net_type=net_type,
+        cnn_out_dim=4608).to(device)
 
-#     model = Model_Cond_Diffusion(
-#         nn_model,
-#         betas=(1e-4, 0.02),
-#         n_T=20,
-#         device=device,
-#         x_dim=x_shape,
-#         y_dim=2,
-#         drop_prob=0.0,
-#         guide_w=0.0,)
+    model = Model_Cond_Diffusion(
+        nn_model,
+        betas=(1e-4, 0.02),
+        n_T=20,
+        device=device,
+        x_dim=x_shape,
+        y_dim=2,
+        drop_prob=0.0,
+        guide_w=0.0,)
 
-#     # -----------------------------------------------------------------------------------------
-#     extra_steps_list = [0]
-#     # plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
-#     for extra_steps in extra_steps_list:
-#         for model_path in models:
-#             if int(model_path.split('.')[0].split('_')[-1]) < 300:
-#                 continue
-#             if int(model_path.split('.')[0].split('_')[-1]) % 50 != 0 and int(model_path.split('.')[0].split('_')[-1]) != 290:
-#                 continue
-#             model.load_state_dict(torch.load(model_path))
-#             persist_points = None
-#             diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route_2/Diffusion-BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
-#             diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
-#             os.makedirs(diff_bc_video_2, exist_ok=True)
-#             eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
-#             if os.path.exists(eval_video_path[:-4]+"_map.png"):
-#                 continue
-#             for i in range(10):
-#                 diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route_2/Diffusion-BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
-#                 diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
-#                 os.makedirs(diff_bc_video_2, exist_ok=True)
-#                 eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
-#                 _, persist_points= evaluate_policy(
-#                                     env=env,
-#                                     model=model.to(device),
-#                                     video_path=eval_video_path,
-#                                     device=device,
-#                                     observation_type=observation_type,
-#                                     max_eval_steps=3000,
-#                                     architecture='diffusion',
-#                                     movie=True,
-#                                     extra_steps=extra_steps,
-#                                     embedding='Model_cnn_mlp',
-#                                     persist_points = persist_points,
-#                                     plotter=plotter)
+    # -----------------------------------------------------------------------------------------
+    extra_steps_list = [0]
+    # plotter = CarlaRoutePlotter(host='localhost', port=2030, town='Town01')
+    for extra_steps in extra_steps_list:
+        for model_path in models:
+            # if int(model_path.split('.')[0].split('_')[-1]) < 300:
+            #     continue
+            if int(model_path.split('.')[0].split('_')[-1]) % 50 != 0:
+                continue
+            model.load_state_dict(torch.load(model_path))
+            persist_points = None
+            diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route_Multiple/Diffusion-BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+            diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+            os.makedirs(diff_bc_video_2, exist_ok=True)
+            eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{0}' + '.mp4'
+            if os.path.exists(eval_video_path[:-4]+"_map.png"):
+                continue
+            for i in range(10):
+                diff_bc_video = f'diff_bc_video_(diffuser)/birdview/Fixed_Route_Multiple/Diffusion-BC/{model_path.split("/")[1]}_{extra_steps}_extra_steps/'
+                diff_bc_video_2 = diff_bc_video + model_path.split('/')[-2] + '/'
+                os.makedirs(diff_bc_video_2, exist_ok=True)
+                eval_video_path = diff_bc_video_2 + model_path.split('/')[-1].split('.')[0] + f'_{i}' + '.mp4'
+                _, persist_points= evaluate_policy(
+                                    env=env,
+                                    model=model.to(device),
+                                    video_path=eval_video_path,
+                                    device=device,
+                                    observation_type=observation_type,
+                                    max_eval_steps=30000,
+                                    architecture='diffusion',
+                                    movie=True,
+                                    extra_steps=extra_steps,
+                                    embedding='Model_cnn_mlp',
+                                    persist_points = persist_points,
+                                    plotter=plotter)
