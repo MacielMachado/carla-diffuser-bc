@@ -355,7 +355,7 @@ if __name__ == '__main__':
                 dataset_path='data_collection/town01_multimodality_t_intersection_simples',
                 run_wandb=False,
                 record_run=True,
-                expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=1, n_eps=1, semaphore=False),
+                expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=2, n_eps=1, semaphore=False),
                 name=f'Model_{j}/version_750_{i}/Multiple_New_Arch',
                 param_search=False,
                 embedding="Model_cnn_mlp",
