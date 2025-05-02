@@ -232,9 +232,9 @@ class TrainerNewArch():
         return model
 
     def save_model(self, model, ep=''):
-        os.makedirs(os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/'+self.name, exist_ok=True)
+        os.makedirs(os.getcwd()+'/model_pytorch/t_intersec_New_Arch/'+self.name, exist_ok=True)
         model_name = self.name+'_'+self.get_git_commit_hash()[0:4]+'_ep_'+f'{ep}'+'.pkl'
-        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/Diffusion_BC_Multi_Multiple_New_Arch/'+model_name)
+        torch.save(model.state_dict(), os.getcwd()+'/model_pytorch/t_intersec_New_Arch/'+model_name)
         return model_name
 
     def create_env(self):
@@ -317,7 +317,7 @@ if __name__ == '__main__':
     batch_size = 24
 
     alpha_schedule_list = ['exponential', 'fixed_0-1', 'fixed_0-3', 'cosine', 'fixed_0-0']
-    alpha_schedule_list = ['fixed_0-0', 'exponential', 'fixed_0-3']
+    alpha_schedule_list = ['exponential', 'fixed_0-3']
     # alpha_schedule_list = ['fixed_0-3']
     # lrate_type = ['cosine', 'fixed']
     lrate_type = ['cosine']
@@ -335,28 +335,29 @@ if __name__ == '__main__':
     )
     params_list = list(params_product)
 
-    for i, params in enumerate(params_list):
-        if i == 1:
-            continue
-        TrainerNewArch(
-            n_epoch=7500,
-            lrate=0.0001,
-            device=device, 
-            n_hidden=128,
-            batch_size=params[3],
-            n_T=20,
-            net_type='transformer',
-            drop_prob=0.0,
-            extra_diffusion_steps=16,
-            embed_dim=params[2],
-            guide_w=0.0,
-            betas=(1e-4, 0.02),
-            dataset_path='data_collection/town01_multimodality_t_insersection_multiples',
-            run_wandb=False,
-            record_run=True,
-            expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_insersection_multiples', n_routes=34, n_eps=1, semaphore=False),
-            name=f'version_750_{i}/Multiple_New_Arch',
-            param_search=False,
-            embedding="Model_cnn_mlp",
-            alpha_schedule=params[0],
-            lrate_type=params[1]).main()
+    for j in range(5):
+        for i, params in enumerate(params_list):
+            # if i == 1:
+            #     continue
+            TrainerNewArch(
+                n_epoch=750,
+                lrate=0.0001,
+                device=device, 
+                n_hidden=128,
+                batch_size=32,
+                n_T=20,
+                net_type='transformer',
+                drop_prob=0.0,
+                extra_diffusion_steps=16,
+                embed_dim=128,
+                guide_w=0.0,
+                betas=(1e-4, 0.02),
+                dataset_path='data_collection/town01_multimodality_t_intersection_simples',
+                run_wandb=False,
+                record_run=True,
+                expert_dataset=ExpertDataset('data_collection/town01_multimodality_t_intersection_simples', n_routes=1, n_eps=1, semaphore=False),
+                name=f'Model_{j}/version_750_{i}/Multiple_New_Arch',
+                param_search=False,
+                embedding="Model_cnn_mlp",
+                alpha_schedule=params[0],
+                lrate_type=params[1]).main()
